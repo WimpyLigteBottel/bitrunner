@@ -1,5 +1,6 @@
 /** @param {import(".").NS } ns */
 
+//Version 1.0.0
 export async function main(ns) {
   let args = arguments["0"].args;
   let files = ns.ls("home", ".js");
