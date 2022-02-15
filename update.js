@@ -10,9 +10,9 @@ export async function main(ns) {
   );
 
   let baseUrl =
-    "https://raw.githubusercontent.com/WimpyLigteBottel/bitrunner/master/";
+    "https://raw.githubusercontent.com/WimpyLigteBottel/bitrunner/master/scripts/";
 
-  let files = ["scripts/copy-to-server.js", "scripts/createProgram.js"];
+  let files = ["copy-to-server.js", "createProgram.js"];
 
   for (let x = 0; x < files.length; x++) {
     //https://raw.githubusercontent.com/WimpyLigteBottel/bitrunner/master/scripts/copy-to-server.js
