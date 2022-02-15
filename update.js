@@ -18,7 +18,7 @@ export async function main(ns) {
     //https://raw.githubusercontent.com/WimpyLigteBottel/bitrunner/master/scripts/copy-to-server.js
     let newFile = baseUrl + files[x];
 
-    ns.print(`${newFile}`);
+    ns.tprint(`${newFile}`);
     await ns.wget(newFile, files[x]);
   }
 
