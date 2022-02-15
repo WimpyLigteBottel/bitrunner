@@ -1,7 +1,6 @@
 /** @param {import(".").NS } ns */
 export async function main(ns) {
   let args = arguments["0"].args;
-  ns.tprint(`arguments ${args}`);
 
   let HOSTNAME = ns.getHostname();
   ns.print(`HOSTNAME ${HOSTNAME}`);
