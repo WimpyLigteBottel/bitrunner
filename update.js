@@ -17,7 +17,7 @@ export async function main(ns) {
   for (let x = 0; x < files.length; x++) {
     //https://raw.githubusercontent.com/WimpyLigteBottel/bitrunner/master/scripts/copy-to-server.js
     let newFile = baseUrl + files[x];
-    await ns.wget(newFile, files[x], "home");
+    await ns.wget(newFile, files[x]);
   }
 
   if (args.includes("--lite")) {
