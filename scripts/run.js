@@ -2,7 +2,7 @@
 
 let args = [];
 
-let scripts = ["scripts/hack.js", "scripts/weaken.js", "scripts/grow.js"];
+let scripts = ["hack.js", "weaken.js", "grow.js"];
 
 export async function main(ns) {
   args = arguments["0"].args;
@@ -24,9 +24,9 @@ async function liteMode(ns) {
     let scriptName = scripts[index];
 
     switch (scriptName) {
-      case "scripts/hack.js":
-      case "scripts/grow.js":
-      case "scripts/weaken.js":
+      case "hack.js":
+      case "grow.js":
+      case "weaken.js":
       default:
         let result = await ns.run(scriptName, 1, ns.getHostname());
         ns.print(`${scriptName}[pid=${result}]`);
@@ -45,12 +45,12 @@ async function moderateMode(ns) {
 
     let result;
     switch (scriptName) {
-      case "scripts/hack.js":
+      case "hack.js":
         result = await ns.run(scriptName, 3, ns.getHostname());
         ns.print(`${scriptName}[pid=${result}]`);
         break;
-      case "scripts/grow.js":
-      case "scripts/weaken.js":
+      case "grow.js":
+      case "weaken.js":
       default:
         result = await ns.run(scriptName, 1, ns.getHostname());
         ns.print(`${scriptName}[pid=${result}]`);

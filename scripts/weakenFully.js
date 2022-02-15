@@ -1,8 +1,8 @@
 var hostName;
 let args = [];
 
-let weakenScript = "/scripts/weaken.js";
-let weakenScriptFully = "/scripts/weakenFully.js";
+let weakenScript = "weaken.js";
+let weakenScriptFully = "weakenFully.js";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {

@@ -19,18 +19,18 @@ export async function main(ns) {
       await executeScript(
         ns,
         targetHost,
-        "/scripts/copy-to-server.js",
+        "copy-to-server.js",
         targetHost
       );
-      await executeScript(ns, targetHost, "/scripts/gainRootAccess.js");
-      await executeScript(ns, targetHost, "/scripts/killAll.js");
+      await executeScript(ns, targetHost, "gainRootAccess.js");
+      await executeScript(ns, targetHost, "killAll.js");
 
       if (args.includes("--weaken")) {
-        await executeScript(ns, targetHost, "/scripts/weakenFully.js");
+        await executeScript(ns, targetHost, "weakenFully.js");
       } else if (args.includes("--grow")) {
-        await executeScript(ns, targetHost, "/scripts/grow.js");
+        await executeScript(ns, targetHost, "grow.js");
       } else {
-        await executeScript(ns, targetHost, "/scripts/hackFully.js");
+        await executeScript(ns, targetHost, "hackFully.js");
       }
     }
   }

@@ -1,8 +1,8 @@
 var hostName;
 let args = [];
 
-let hackScript = "/scripts/hack.js";
-let hackFullyScript = "/scripts/hackFully.js";
+let hackScript = "hack.js";
+let hackFullyScript = "hackFully.js";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
