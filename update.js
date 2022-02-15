@@ -29,6 +29,8 @@ export async function main(ns) {
     let newFile = baseUrl + files[x];
     let result = await ns.wget(newFile, files[x]);
 
+    ns.rm(files[x]);
+
     ns.tprint(`${newFile} : ${result}`);
   }
 }
