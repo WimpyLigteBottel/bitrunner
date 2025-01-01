@@ -7,37 +7,31 @@ export async function main(ns) {
   let hostname = `${ns.args[0]}`;
   let level = `${ns.args[1]}`
 
-  switch (level) {
-    case "1":
-      await level1Hack(ns, hostname)
-      break;
-    default:
-      await level0Hack(ns, hostname)
-      break;
-  }
+  let servers = ns.scan(hostname)
 
+  for(let index in servers){
+    switch (level) {
+      case "1":
+        await level1Hack(ns, servers[index])
+        break;
+      default:
+        await level0Hack(ns, servers[index])
+        break;
+    }
+  }
 
 }
 
 /** @param {NS} ns **/
 async function level1Hack(ns, hostname) {
-
-  ns.print("target host: " + hostname)
   ns.print("brutessh: " + hostname)
   await ns.brutessh(hostname)
-  ns.print("nuking: " + hostname)
-  await ns.nuke(hostname)
-
-  await copyScript(ns,hostname)
-
-  await weakenServerExec(ns,hostname)
+  await level0Hack(ns, hostname)
 
 }
 
 /** @param {NS} ns **/
 async function level0Hack(ns, hostname) {
-
-  ns.print("target host: " + hostname)
   ns.print("nuking: " + hostname)
   await ns.nuke(hostname)
 
