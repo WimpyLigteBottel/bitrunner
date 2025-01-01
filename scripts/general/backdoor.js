@@ -63,7 +63,7 @@ async function copyScript(ns,hostname) {
 /** @param {NS} ns **/
 async function weakenServerExec(ns,hostname) {
   let weakenCost = 2
-  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname) / weakenCost) - 1
+  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname)-1 / weakenCost)
 
   ns.print(`Weakening server with ${maxPossibleThreads}`)
   await ns.exec("scripts/general/weaken-host.js", hostname, maxPossibleThreads, `${hostname}`)
