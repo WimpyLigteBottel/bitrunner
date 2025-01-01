@@ -1,7 +1,7 @@
 
 var NS;
 
-var targetPercentage = 0.90
+var targetPercentage = 0.70
 
 
 /** @param {NS} ns **/

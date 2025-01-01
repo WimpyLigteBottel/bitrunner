@@ -1,5 +1,6 @@
 
 var NS;
+var targetPercentage = 0.70
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -8,13 +9,8 @@ export async function main(ns) {
 
   NS.print(`works`)
 
-
-  var { hostname } = await currentServerStats();
-
-
-  while (NS.getServerMoneyAvailable(hostname) > 0) {
-    await weakenWhenBelow(0.70)
-    await NS.hack(hostname)
+  while (await weakenWhenBelow(targetPercentage)) {
+   
   }
 
 }
@@ -24,10 +20,12 @@ async function weakenWhenBelow(percentage) {
 
   if (NS.hackAnalyzeChance(hostname) > percentage) {
     NS.print(`Network is stronger than ${percentage} [currentLevel=${NS.hackAnalyzeChance(hostname)}]`)
-    return
+    return false
   }
 
   await NS.weaken(hostname)
+
+  return true
 }
 
 
