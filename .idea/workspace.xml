@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="adding readme to get setup">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="basic hack analyze">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/hack.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/hack.js" afterDir="false" />
     </list>
@@ -171,7 +170,15 @@
       <option name="project" value="LOCAL" />
       <updated>1681745023769</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="basic hack analyze">
+      <option name="closed" value="true" />
+      <created>1735743929921</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1735743929921</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -194,6 +201,7 @@
     <MESSAGE value="Starting from scratch" />
     <MESSAGE value="Addking hack.js in script folder" />
     <MESSAGE value="adding readme to get setup" />
-    <option name="LAST_COMMIT_MESSAGE" value="adding readme to get setup" />
+    <MESSAGE value="basic hack analyze" />
+    <option name="LAST_COMMIT_MESSAGE" value="basic hack analyze" />
   </component>
 </project>
