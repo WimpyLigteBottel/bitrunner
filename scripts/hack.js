@@ -1,5 +1,12 @@
+/** @param {NS} ns */
 export async function main(ns) {
-  while (true) {
-    await ns.hack("n00dles");
-  }
+
+  var hostname = ns.getHostname()
+
+  ns.print("Hostname: "+ hostname)
+
+  var analyze = ns.hackAnalyzeSecurity(1,hostname)
+
+  ns.print("Security: "+ analyze)
+
 }
