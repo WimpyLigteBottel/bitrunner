@@ -4,10 +4,8 @@
 export async function main(ns) {
   ns.clearLog()
 
-  let hostname = "BLANK";
-  let level = 0
-  hostname = `${ns.args[0]}`
-  level = `${ns.args[1]}`
+  let hostname = `${ns.args[0]}`;
+  let level =  `${ns.args[1]}` + "";
 
   switch (level) {
     case "1":
