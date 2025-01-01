@@ -1,19 +1,28 @@
-/** @param {NS} ns */
+ /** @param {NS} ns **/
 export async function main(ns) {
-
+  
   ns.print("--------------")
 
+  
   var { hostname, hackTime, hackLevel } = await currentServerStats(ns)
-
+  
   ns.print(`Current Hostname: ${hostname}`)
   ns.print(`Current hackTime: ${hackTime}`)
   ns.print(`Current hackLevel: ${hackLevel}`)
-
+  
   var servers = await serversConnectedToo(ns, hostname)
+  ns.print("#####")
+  // needed for debugging
+  for (var index in servers) {
+    ns.print(`${hostname} -> ${servers[index]}`)
+  }
+  ns.print("--------------")
 
 }
 
-async function currentServerStats(ns) {
+
+/** @param {ns} ns */
+export async  function currentServerStats(ns) {
   var currentServer = {
     hostname: ns.getHostname().toString(),
     hackTime: ns.getHackTime().toString(),
@@ -23,13 +32,9 @@ async function currentServerStats(ns) {
   return currentServer
 }
 
-
-async function serversConnectedToo(ns, hostname) {
+/** @param {ns} ns */
+export async function serversConnectedToo(ns, hostname) {
   var servers = await ns.scan(hostname)
-
-  for (var index in servers) {
-    ns.print(`${hostname} -> ${servers[index]}`)
-  }
 
   return servers
 }
