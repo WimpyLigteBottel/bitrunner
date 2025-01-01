@@ -1,10 +1,10 @@
-var targetPercentage = 0.70
-var hostname = "BLANK";
+let targetPercentage = 0.70
 
 /** @param {NS} ns **/
 export async function main(ns) {
   ns.clearLog()
-  hostname = `${ns.args[0]}`
+
+  let hostname =  `${ns.args[0]}`
 
   var counter = 0
 
@@ -12,7 +12,7 @@ export async function main(ns) {
     ns.clearLog()
     ns.print(hostname)
     ns.print(`Has run ${counter} times`)
-    await weakenWhenBelow(ns,targetPercentage)
+    await weakenWhenBelow(ns,targetPercentage,hostname)
     await ns.hack(hostname)
     counter++;
   }
@@ -20,7 +20,7 @@ export async function main(ns) {
 }
 
 /** @param {NS} ns **/
-async function weakenWhenBelow(ns,percentage) {
+async function weakenWhenBelow(ns,percentage,hostname) {
   var chance = ns.hackAnalyzeChance(hostname)
   if (chance > percentage) {
     ns.print(`Network is stronger than ${percentage} [currentLevel=${chance}]`)
