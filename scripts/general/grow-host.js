@@ -6,11 +6,10 @@ export async function main(ns) {
   hostname = `${ns.args[0]}`
 
   var counter = 0
+   ns.print(hostname)
 
   while (true) {
-    ns.print(hostname)
-    ns.print(`Has run ${counter} times`)
-    await ns.grow(hostname)
-    counter++;
+    var result = await ns.grow(hostname)
+    ns.print(`Has grown by ${result}`)
   }
 }
