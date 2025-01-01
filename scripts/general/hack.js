@@ -1,6 +1,5 @@
 
 var NS;
-
 var targetPercentage = 0.70
 
 
@@ -27,10 +26,11 @@ async function weakenWhenBelow(percentage) {
 
   if (NS.hackAnalyzeChance(hostname) > percentage) {
     NS.print(`Network is stronger than ${percentage} [currentLevel=${NS.hackAnalyzeChance(hostname)}]`)
-    return
+    return false
   }
 
   await NS.weaken(hostname)
+  return true
 }
 
 
