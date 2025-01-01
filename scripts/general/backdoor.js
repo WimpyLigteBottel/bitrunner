@@ -5,14 +5,14 @@ export async function main(ns) {
   ns.clearLog()
 
   let hostname = `${ns.args[0]}`;
-  let level =  `${ns.args[1]}` + "";
+  let level = `${ns.args[1]}`
 
   switch (level) {
     case "1":
-      level1Hack(ns, hostname)
+      await level1Hack(ns, hostname)
       break;
     default:
-      level0Hack(ns, hostname)
+      await level0Hack(ns, hostname)
       break;
   }
 
@@ -28,9 +28,9 @@ async function level1Hack(ns, hostname) {
   ns.print("nuking: " + hostname)
   await ns.nuke(hostname)
 
-  await copyScript(ns)
+  await copyScript(ns,hostname)
 
-  await weakenServerExec(ns)
+  await weakenServerExec(ns,hostname)
 
 }
 
@@ -41,32 +41,30 @@ async function level0Hack(ns, hostname) {
   ns.print("nuking: " + hostname)
   await ns.nuke(hostname)
 
-  await copyScript(ns)
+  await copyScript(ns,hostname)
 
-  await weakenServerExec(ns)
+  await weakenServerExec(ns,hostname)
 
 }
 
 /** @param {NS} ns **/
-async function copyScript(ns) {
+async function copyScript(ns,hostname) {
   ns.print("Copying update.js to location " + hostname)
 
   if (!ns.fileExists("update.js", hostname)) {
     await ns.scp("update.js", hostname)
   }
-  await ns.sleep(100)
 
-  ns.print("running update.js to get scripts " + hostname)
+
   await ns.exec("update.js", hostname)
 
-  await ns.sleep(5000)
 }
 
 /** @param {NS} ns **/
-async function weakenServerExec(ns) {
-  var weakenCost = 3
-  var maxPossibleThreads = ns.getServerMaxRam() / weakenCost
+async function weakenServerExec(ns,hostname) {
+  let weakenCost = 2
+  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname) / weakenCost)
 
-  ns.print(`Weaking server with ${maxPossibleThreads}`)
-  await ns.exec("/scripts/general/weaken-host.js", hostname, maxPossibleThreads, `"${hostname}"`)
+  ns.print(`Weakening server with ${maxPossibleThreads}`)
+  await ns.exec("scripts/general/weaken-host.js", hostname, maxPossibleThreads, `${hostname}`)
 }
