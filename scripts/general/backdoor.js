@@ -49,21 +49,16 @@ async function level0Hack(ns, hostname) {
 
 /** @param {NS} ns **/
 async function copyScript(ns,hostname) {
-  ns.print("Copying update.js to location " + hostname)
+  ns.print("Copying weaken script to location " + hostname)
 
-  if (!ns.fileExists("update.js", hostname)) {
-    await ns.scp("update.js", hostname)
-  }
-
-
-  await ns.exec("update.js", hostname)
-
+  let path = "scripts/general/weaken-host.js"  ;
+  await ns.scp(path, hostname)
 }
 
 /** @param {NS} ns **/
 async function weakenServerExec(ns,hostname) {
   let weakenCost = 2
-  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname)-1 / weakenCost)
+  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname) / weakenCost) -1
 
   ns.print(`Weakening server with ${maxPossibleThreads}`)
   await ns.exec("scripts/general/weaken-host.js", hostname, maxPossibleThreads, `${hostname}`)
