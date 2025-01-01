@@ -24,7 +24,7 @@ export async function main(ns) {
 async function weakenWhenBelow(percentage) {
   var { hostname } = await currentServerStats();
 
-  if (NS.hackAnalyzeChance(hostname) > percentage) {
+  if (await NS.hackAnalyzeChance(hostname) > percentage) {
     NS.print(`Network is stronger than ${percentage} [currentLevel=${NS.hackAnalyzeChance(hostname)}]`)
     return false
   }
@@ -36,7 +36,7 @@ async function weakenWhenBelow(percentage) {
 
 async function currentServerStats() {
   var currentServer = {
-    hostname: NS.getHostname().toString(),
+    hostname: await NS.getHostname().toString(),
   }
 
   return currentServer
