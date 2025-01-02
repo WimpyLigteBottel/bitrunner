@@ -5,25 +5,23 @@ export async function main(ns) {
   ns.clearLog()
 
   let hostname = `${ns.args[0]}`;
-  let level = `${ns.args[1]}`
+  let level = `${ns.args[1]}`;
 
-  let servers = ns.scan(hostname)
-  let toBeProcessed = []
-  let wasProcessed = ["home", "home-1", "home-2", "home-2-0"]
+  let toBeProcessed = findAllServers(ns, hostname, 10)
 
-  servers.forEach((value) => {
-    toBeProcessed.push(value)
-  })
+  ns.print(`${toBeProcessed}`)
 
-  while (toBeProcessed.length > 1) {
+  await ns.sleep(1000)
+
+  while (toBeProcessed != []) {
     let currentHostTarget = toBeProcessed.pop()
 
-    ns.scan(currentHostTarget).forEach((value) => {
-      if (!wasProcessed.includes(value)) {
-        ns.print("adding " + value)
-        toBeProcessed.push(value)
-      }
-    })
+    if (currentHostTarget == undefined || ns.hasRootAccess(currentHostTarget)) {
+      break;
+    }
+    ns.print(currentHostTarget + "")
+
+
 
     try {
       switch (level) {
@@ -42,11 +40,28 @@ export async function main(ns) {
       ns.print("Failed to process server " + currentHostTarget);
       ns.print("XXXXXXXXXXXX");
     }
-
-
-    wasProcessed.push(currentHostTarget)
   }
 
+}
+
+/** @param {NS} ns **/
+function findAllServers(ns, hostname, maxDepth) {
+  if (maxDepth < 1) {
+    return []
+  }
+
+  let servers = ns.scan(hostname)
+  let toBeProcessed = new Set([])
+
+  servers.forEach((value) => {
+    toBeProcessed.add(value)
+    let temp = findAllServers(ns, value, maxDepth - 1)
+    temp.forEach((x) => {
+      toBeProcessed.add(x)
+    });
+  })
+
+  return Array.from(toBeProcessed)
 }
 
 /** @param {NS} ns **/
