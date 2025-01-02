@@ -35,9 +35,9 @@ export async function main(ns) {
       continue;
     }
 
-    const weakenThreads = Math.floor(availableRam * 0.5 / weakenRam); // 50% for weaken
-    const growThreads = Math.floor(availableRam * 0.3 / growRam);   // 30% for grow
-    const hackThreads = Math.floor(availableRam * 0.2 / hackRam);    // 20% of RAM
+    let weakenThreads = Math.floor(availableRam * 0.5 / weakenRam); // 50% for weaken
+    let growThreads = Math.floor(availableRam * 0.3 / growRam);   // 30% for grow
+    let hackThreads = Math.floor(availableRam * 0.2 / hackRam);    // 20% of RAM
 
     // Safety checks
     if (weakenThreads <= 0 || growThreads <= 0 || hackThreads <= 0) {
@@ -45,8 +45,7 @@ export async function main(ns) {
       continue;
     }
 
-    ns.print(`Processing server: ${server}`);
-    ns.print(`Threads - Weaken: ${weakenThreads}, Grow: ${growThreads}, Hack: ${hackThreads}`);
+    ns.print(`${server}: Weaken: ${weakenThreads}, Grow: ${growThreads}, Hack: ${hackThreads}`);
 
     if (killAll) {
       ns.killall(server);
@@ -55,15 +54,27 @@ export async function main(ns) {
     // Copy scripts if not already present
     await ns.scp([weakenScript, growScript, hackScript], server);
 
-    // Execute scripts
-    ns.exec(weakenScript, server, Math.floor(weakenThreads / 2), hostname);
-    await ns.sleep(100)
-    ns.exec(weakenScript, server, Math.floor(weakenThreads / 2), hostname);
-    await ns.sleep(100)
-    ns.exec(growScript, server, Math.floor(growThreads / 2), hostname);
-    await ns.sleep(100)
-    ns.exec(growScript, server, Math.floor(growThreads / 2), hostname);
-    await ns.sleep(100)
-    ns.exec(hackScript, server, hackThreads, hostname);
+
+    while (weakenThreads >= 1 || growThreads >= 1 || hackThreads >= 1) {
+
+      await ns.sleep(10);
+
+      if (weakenThreads >= 1) {
+        await ns.exec(weakenScript, server, 1, hostname);
+        weakenThreads--;
+      }
+
+      if (growThreads >= 1) {
+        await ns.exec(growScript, server, 1, hostname);
+        growThreads--;
+      }
+
+      if (hackThreads >= 1) {
+        await ns.exec(hackScript, server, 1, hostname);
+        hackThreads--;
+      }
+    }
+    ns.print("Done launching scripts")
+
   }
 }

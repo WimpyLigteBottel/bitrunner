@@ -75,24 +75,24 @@ function findAllServers(ns, hostname, maxDepth) {
  */
 async function processServer(ns, hostname, scriptPath) {
   // Skip servers already rooted
-  if (!ns.hasRootAccess(hostname)) {
+
     // Level-specific hacks
     if (ns.fileExists("FTPCrack.exe", "home")) {
       await ns.ftpcrack(hostname);
     }
+
     if (ns.fileExists("BruteSSH.exe", "home")) {
       await ns.brutessh(hostname);
+    }
+
+    if (ns.fileExists("relaySMTP.exe", "home")) {
+      await ns.relaysmtp(hostname);
     }
 
     try {
       // Always attempt to nuke
       await ns.nuke(hostname);
     } catch (error) { }
-  }
-
-
-
-
 
   // Deploy and run the hack script
   await deployAndRunScript(ns, hostname, scriptPath);
