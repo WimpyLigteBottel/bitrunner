@@ -13,7 +13,6 @@ export async function main(ns) {
     return value.includes("grow")
   })
 
-  
   let home_nodes = ns.scan("home").filter((value) => {
     return value.includes("home")
   })
