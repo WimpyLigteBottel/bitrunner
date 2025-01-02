@@ -35,9 +35,9 @@ export async function main(ns) {
       continue;
     }
 
-    let weakenThreads = Math.floor(availableRam * 0.5 / weakenRam); // 50% for weaken
+    let weakenThreads = Math.floor(availableRam * 0.4 / weakenRam); // 40% for weaken
     let growThreads = Math.floor(availableRam * 0.3 / growRam);   // 30% for grow
-    let hackThreads = Math.floor(availableRam * 0.2 / hackRam);    // 20% of RAM
+    let hackThreads = Math.floor(availableRam * 0.3 / hackRam);    // 30% of RAM
 
     // Safety checks
     if (weakenThreads <= 0 || growThreads <= 0 || hackThreads <= 0) {
@@ -45,7 +45,7 @@ export async function main(ns) {
       continue;
     }
 
-    ns.print(`${server}: Weaken: ${weakenThreads}, Grow: ${growThreads}, Hack: ${hackThreads}`);
+    ns.print(`${server}: W: ${weakenThreads}, G: ${growThreads}, H: ${hackThreads}`);
 
     if (killAll) {
       ns.killall(server);
@@ -56,8 +56,7 @@ export async function main(ns) {
 
 
     while (weakenThreads >= 1 || growThreads >= 1 || hackThreads >= 1) {
-
-      await ns.sleep(10);
+      await ns.sleep(5);
 
       if (weakenThreads >= 1) {
         await ns.exec(weakenScript, server, 1, hostname);
@@ -74,7 +73,5 @@ export async function main(ns) {
         hackThreads--;
       }
     }
-    ns.print("Done launching scripts")
-
   }
 }
