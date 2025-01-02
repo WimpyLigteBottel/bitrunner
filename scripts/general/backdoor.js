@@ -1,98 +1,122 @@
-
-
 /** @param {NS} ns **/
 export async function main(ns) {
-  ns.clearLog()
+  ns.clearLog();
+  ns.disableLog("ALL"); // Prevents spammy logs
+  ns.tail(); // Opens the log window for better visibility
 
-  let hostname = `${ns.args[0]}`;
-  let level = `${ns.args[1]}`;
+  const startHostname = ns.args[0] || "home"; // Default to 'home' if not provided
+  const maxDepth = 10; // Max recursion depth
+  const scriptPath = "scripts/general/hack-host.js"; // Path to the script
 
-  let toBeProcessed = findAllServers(ns, hostname, 5)
+  
+  let grow_nodes = ns.scan("home").filter((value) => {
+    return value.includes("grow")
+  })
 
-  ns.print(`${toBeProcessed}`)
+  
+  let home_nodes = ns.scan("home").filter((value) => {
+    return value.includes("home")
+  })
 
-  while (toBeProcessed != []) {
-    let currentHostTarget = toBeProcessed.pop()
-    ns.print(currentHostTarget + "")
-    if (currentHostTarget == undefined) {
-      break;
+  // Verify script exists
+  if (!ns.fileExists(scriptPath, "home")) {
+    ns.tprint(`ERROR: Script "${scriptPath}" not found on home!`);
+    return;
+  }
+
+  const serversToProcess = findAllServers(ns, startHostname, maxDepth);
+
+  for (const server of serversToProcess) {
+
+    if(home_nodes.includes(server) || grow_nodes.includes(server) || server == "home"){
+      ns.print("skipping node " + server);
+      continue
+    }
+
+
+    try {
+      ns.print(`Processing server: ${server}`);
+      await processServer(ns, server, scriptPath);
+    } catch (err) {
+      ns.print(`ERROR: Failed to process server: ${server}. ${err}`);
+    }
+  }
+}
+
+/**
+ * Recursively finds all servers up to a given depth.
+ * @param {NS} ns
+ * @param {string} hostname
+ * @param {number} maxDepth
+ * @returns {string[]}
+ */
+function findAllServers(ns, hostname, maxDepth) {
+  const visited = new Set();
+  const queue = [{ host: hostname, depth: 0 }];
+
+  while (queue.length > 0) {
+    const { host, depth } = queue.pop();
+    if (visited.has(host) || depth > maxDepth) continue;
+
+    visited.add(host);
+    const neighbors = ns.scan(host);
+    neighbors.forEach((neighbor) => queue.push({ host: neighbor, depth: depth + 1 }));
+  }
+  
+  return Array.from(visited);
+}
+
+/**
+ * Processes a server based on its hacking level.
+ * @param {NS} ns
+ * @param {string} hostname
+ * @param {string} level
+ * @param {string} scriptPath
+ */
+async function processServer(ns, hostname, scriptPath) {
+  // Skip servers already rooted
+  if (!ns.hasRootAccess(hostname)) {
+    // Level-specific hacks
+    if (ns.fileExists("FTPCrack.exe", "home")) {
+      await ns.ftpcrack(hostname);
+    }
+    if (ns.fileExists("BruteSSH.exe", "home")) {
+      await ns.brutessh(hostname);
     }
 
     try {
-      switch (level) {
-        case "2":
-          await level2Hack(ns, currentHostTarget)
-          break;
-        case "1":
-          await level1Hack(ns, currentHostTarget)
-          break;
-        default:
-          await level0Hack(ns, currentHostTarget)
-          break;
-      }
-    } catch (error) {
-      ns.print("XXXXXXXXXXXX");
-      ns.print("Failed to process server " + currentHostTarget);
-      ns.print("XXXXXXXXXXXX");
-    }
+      // Always attempt to nuke
+      await ns.nuke(hostname);
+    } catch (error) { }
   }
 
+
+
+
+
+  // Deploy and run the hack script
+  await deployAndRunScript(ns, hostname, scriptPath);
 }
 
-/** @param {NS} ns **/
-function findAllServers(ns, hostname, maxDepth) {
-  if (maxDepth < 1) {
-    return []
+/**
+ * Copies the hacking script to the server and executes it.
+ * @param {NS} ns
+ * @param {string} hostname
+ * @param {string} scriptPath
+ */
+async function deployAndRunScript(ns, hostname, scriptPath) {
+  const weakenCost = ns.getScriptRam(scriptPath) + 0.15;
+  const maxRam = ns.getServerMaxRam(hostname);
+  const maxThreads = Math.max(1, Math.floor(maxRam / weakenCost) - 1); // Ensure at least 1 thread
+
+  // Skip servers with insufficient RAM
+  if (maxThreads < 1) {
+    ns.print(`Insufficient RAM on server: ${hostname}`);
+    return;
   }
 
-  let servers = ns.scan(hostname)
-  let toBeProcessed = new Set([])
-
-  servers.forEach((value) => {
-    toBeProcessed.add(value)
-    let temp = findAllServers(ns, value, maxDepth - 1)
-    temp.forEach((x) => {
-      toBeProcessed.add(x)
-    });
-  })
-
-  return Array.from(toBeProcessed)
-}
-
-/** @param {NS} ns **/
-async function level2Hack(ns, hostname) {
-  await ns.ftpcrack(hostname)
-  await level1Hack(ns, hostname)
-}
-
-
-/** @param {NS} ns **/
-async function level1Hack(ns, hostname) {
-  await ns.brutessh(hostname)
-  await level0Hack(ns, hostname)
-
-}
-
-/** @param {NS} ns **/
-async function level0Hack(ns, hostname) {
-  await ns.nuke(hostname)
-
-  await copyScript(ns, hostname)
-  await weakenServerExec(ns, hostname)
-}
-
-/** @param {NS} ns **/
-async function copyScript(ns, hostname) {
-  let path = "scripts/general/hack-host.js";
-  await ns.scp(path, hostname)
-}
-
-/** @param {NS} ns **/
-async function weakenServerExec(ns, hostname) {
-  let weakenCost = ns.getScriptRam("scripts/general/hack-host.js", ns.getHostname()) + 0.15
-
-  ns.killall(hostname)
-  let maxPossibleThreads = Math.round(ns.getServerMaxRam(hostname) / weakenCost) - 1
-
-  await ns.exec("scripts/general/hack-host.js", hostname, maxPossibleThreads, `${hostname}`)
+  // Copy script and execute
+  await ns.scp(scriptPath, hostname);
+  ns.killall(hostname);
+  ns.exec(scriptPath, hostname, maxThreads, hostname);
 }

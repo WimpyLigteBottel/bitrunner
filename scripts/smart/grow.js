@@ -8,8 +8,8 @@ export async function main(ns) {
   let killAll = `${ns.args[1]}`;
 
 
-  let toBeProcessed = ns.scan("grow").filter((value) => {
-    return value.includes("grow")
+  let toBeProcessed = ns.scan("home").filter((value) => {
+    return value.lowercase.includes("grow")
   })
 
   toBeProcessed.push("grow")
