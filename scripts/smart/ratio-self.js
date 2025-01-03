@@ -6,10 +6,8 @@ export async function main(ns) {
 
   // Arguments
   const hostname = ns.args[0];
-  const killAll = ns.args[1]?.toLowerCase() === "true";
-
   // Scan for servers to process
-  const toBeProcessed = findAllServers(ns, "home", 11);
+  const toBeProcessed = findAllServers(ns, "home", 20);
 
   // Script RAM requirements
   const weakenScript = "scripts/general/weaken-host.js";
@@ -20,6 +18,18 @@ export async function main(ns) {
   const growRam = ns.getScriptRam(growScript);
   const hackRam = ns.getScriptRam(hackScript);
 
+
+  for (const server of toBeProcessed) {
+      if(server.includes("home")){
+        ns.print("skipping node " + server);
+        continue
+      }
+
+    if (ns.args[1] == "true") {
+      await ns.killall(server);
+    }
+  }
+
   for (const server of toBeProcessed) {
       if(server.includes("home")){
         ns.print("skipping node " + server);
@@ -28,29 +38,19 @@ export async function main(ns) {
 
     await ns.sleep(100)
     const maxRam = ns.getServerMaxRam(server);
-    const availableRam = maxRam * 0.95;
+    const availableRam = maxRam * 0.99;
 
     // Skip servers with insufficient RAM
     if (availableRam <= 0) {
-      ns.print(`Skipping ${server}, insufficient RAM.`);
       continue;
     }
 
-    let weakenThreads = Math.floor(availableRam * 0.5 / weakenRam); // 50% for weaken
-    let growThreads = Math.floor(availableRam * 0.3 / growRam);   // 30% for grow
-    let hackThreads = Math.floor(availableRam * 0.2 / hackRam);    // 20% of RAM
+    let weakenThreads = Math.floor(availableRam * 0.1 / weakenRam); // 40% for weaken
+    let growThreads = Math.floor(availableRam * 0.1 / growRam);   // 30% for grow
+    let hackThreads = Math.floor(availableRam * 0.7 / hackRam);    // 30% of RAM
 
-    // Safety checks
-    if (weakenThreads <= 0 || growThreads <= 0 || hackThreads <= 0) {
-      ns.print(`Skipping ${server}, insufficient threads.`);
-      continue;
-    }
+    ns.print(`${server}: W: ${weakenThreads}, G: ${growThreads}, H: ${hackThreads}`);
 
-    ns.print(`${server}: Weaken: ${weakenThreads}, Grow: ${growThreads}, Hack: ${hackThreads}`);
-
-    if (killAll) {
-      ns.killall(server);
-    }
 
     // Copy scripts if not already present
     await ns.scp([weakenScript, growScript, hackScript], server);
@@ -75,8 +75,6 @@ export async function main(ns) {
         hackThreads--;
       }
     }
-    ns.print("Done launching scripts")
-
   }
 }
 

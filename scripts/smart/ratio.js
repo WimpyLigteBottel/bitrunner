@@ -9,11 +9,9 @@ export async function main(ns) {
   const killAll = ns.args[1]?.toLowerCase() === "true";
 
   // Scan for servers to process
-  const toBeProcessed = ns.scan("home").filter(server => {
-    return ns.getServerMaxRam(server) > 0; // Only servers with RAM
-  });
-
-  toBeProcessed.push("home")
+  const toBeProcessed = ["home"].concat(ns.scan("home").filter(server => {
+    return ns.getServerMaxRam(server) > 0 && server.includes("home"); // Only servers with RAM
+  }));
 
   // Script RAM requirements
   const weakenScript = "scripts/general/weaken-host.js";
@@ -35,15 +33,10 @@ export async function main(ns) {
       continue;
     }
 
-    let weakenThreads = Math.floor(availableRam * 0.4 / weakenRam); // 40% for weaken
-    let growThreads = Math.floor(availableRam * 0.3 / growRam);   // 30% for grow
-    let hackThreads = Math.floor(availableRam * 0.3 / hackRam);    // 30% of RAM
+    let weakenThreads = Math.floor(availableRam * 0.1 / weakenRam); // 40% for weaken
+    let growThreads = Math.floor(availableRam * 0.1 / growRam);   // 30% for grow
+    let hackThreads = Math.floor(availableRam * 0.8 / hackRam);    // 30% of RAM
 
-    // Safety checks
-    if (weakenThreads <= 0 || growThreads <= 0 || hackThreads <= 0) {
-      ns.print(`Skipping ${server}, insufficient threads.`);
-      continue;
-    }
 
     ns.print(`${server}: W: ${weakenThreads}, G: ${growThreads}, H: ${hackThreads}`);
 
