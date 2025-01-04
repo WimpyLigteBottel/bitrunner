@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="update">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/contract/contract.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/utility.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/backdoor.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/backdoor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/cleanup/cleanup.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/cleanup/cleanup.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/smart/ratio.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/ratio.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -447,7 +448,23 @@
       <option name="project" value="LOCAL" />
       <updated>1735839622756</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="update">
+      <option name="closed" value="true" />
+      <created>1735842810849</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1735842810849</updated>
+    </task>
+    <task id="LOCAL-00049" summary="update">
+      <option name="closed" value="true" />
+      <created>1735926766042</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1735926766042</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
