@@ -6,14 +6,11 @@ export async function main(ns) {
   let servers = findAllServersR(ns, "home")
 
   while (true) {
-    await ns.sleep(1000)
     ns.clearLog()
-
 
     ns.print(`Found total = ${servers.length}`)
 
     let findHostNameArg = ns.args[0] ?? "joesguns"
-
 
     ns.print("------")
 
