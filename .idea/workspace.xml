@@ -5,33 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/cleanup/cleanup.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/contract/contract.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/contract/sequence.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/general/whgw.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/automate.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/grow.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/hack.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/ratio-split.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/upgrade.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/weaken.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/scripts/update.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/contract/contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/contract/rleCompression.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/contract/sequence.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/backdoor.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/backdoor.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/grow-host-max-threads.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/grow-host-max-threads.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/grow-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/grow-host.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/hack-host-max-threads.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/hack-host-max-threads.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/hack-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/hack-host.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/general/weaken-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/weaken-host.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/grow.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio-self.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/smart/ratio.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/weaken.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/cleanup/cleanup.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/cleanup/cleanup.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/contract/contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract/contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/contract/sequence.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract/sequence.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/general/backdoor.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/backdoor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/general/grow-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/grow-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/general/hack-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/hack-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/general/weaken-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/weaken-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/general/whgw.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/general/whgw.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/automate.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/automate.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/grow.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/grow.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/hack.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/hack.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/ratio-split.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/ratio-split.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/ratio.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/ratio.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/upgrade.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/upgrade.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/smart/weaken.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/weaken.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts/utility.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/utility.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/update.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/update.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/utility.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/utility.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,6 +90,7 @@
       <recent name="D:\coding repo\bitburner" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\code\bitrunner\scripts" />
       <recent name="C:\code\bitrunner" />
     </key>
   </component>
@@ -201,14 +193,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1681745023769</updated>
-    </task>
-    <task id="LOCAL-00016" summary="update">
-      <option name="closed" value="true" />
-      <created>1735751728947</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1735751728947</updated>
     </task>
     <task id="LOCAL-00017" summary="update">
       <option name="closed" value="true" />
@@ -490,7 +474,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736017424725</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="update">
+      <option name="closed" value="true" />
+      <created>1736087815922</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1736087815922</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
