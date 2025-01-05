@@ -2,24 +2,26 @@
 export async function main(ns) {
   ns.tail()
 
-  ns.killall("home")
-  ns.run("scripts/general/backdoor.js", 1)
-  ns.run("scripts/smart/upgrade.js", 1)
+   ns.exec("scripts/utility/connect.js", "home", 1, "I.I.I.I","CSEC","run4theh111z", "02h")
 
-  for (let x = 0; x < 1; x++) {
-    await ns.sleep(60 * 1000 * 2)
-   ns.exec("scripts/smart/ratio-split.js", "home", 1, " ", "true")
-  }
-
-  for (let x = 0; x < 1; x++) {
-    await ns.sleep(60 * 1000 * 2)
-    ns.exec("scripts/smart/ratio-split.js", "home", 1, " ")
+  if (await ns.prompt("Should kill all tasks?", { type: "boolean" })) {
+    ns.killall()
   }
 
 
-  for (let x = 0; x < 1; x++) {
-    await ns.sleep(60 * 1000 * 2)
-    ns.exec("scripts/smart/ratio-split.js", "home", 1, " ")
+  if (await ns.prompt("Want to backdoor systems?", { type: "boolean" })) {
+    let pid = ns.exec("scripts/general/backdoor.js", "home", 1)
+    ns.closeTail(await pid)
+  }
+
+  if (await ns.prompt("Want to run upgrade scripts?", { type: "boolean" })) {
+    let pid = ns.exec("scripts/smart/upgrade.js", "home", 1)
+    ns.closeTail(await pid)
+  }
+
+  if (await ns.prompt("Want to hack servers (ratio-split)?", { type: "boolean" })) {
+    let pid = ns.exec("scripts/smart/ratio-split.js", "home", 1, " ")
+    ns.closeTail(await pid)
   }
 
 }

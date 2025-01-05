@@ -4,28 +4,35 @@ export async function main(ns) {
   ns.disableLog("ALL")
   ns.tail();
 
-  while (true) {
-    await hackServer(ns)
-    await ns.sleep(100)
+
+  try {
+    while (true) {
+      await hackServer(ns)
+      await ns.sleep(1000)
+      ns.print("Restating.... " + new Date().toISOString())
+    }
+  } catch (error) {
+    ns.print(`Failed for server ${error} `)
   }
 }
 
-
+/** @param {NS} ns **/
 async function hackServer(ns) {
-  let hostname = ns.args[0] ?? "";
-  const killAll = ns.args[1] ?? false;
+  let hostname = ns.args[0] ?? " ";
+  const killAll = ns.args[1] ?? "false";
 
   // Scan for servers to process
   const toBeProcessed = ["home"].concat(ns.scan("home").filter(server => {
-    return server.includes("home"); // Only servers with RAM
+    return server.includes("home");
   }));
 
   let allServer = findAllServers(ns)
     .filter((x) => !x.includes("home"))
+    .filter((x) => ns.hasRootAccess(x))
     .filter((x) => ns.getServerRequiredHackingLevel(x) < ns.getHackingLevel())
     .filter((x) => ns.getServerMaxMoney(x) > 0)
+    .filter((x) => ns.getHackTime(x) < 60 * 2 * 1000)
     .sort((a, b) => ns.getHackTime(b) - ns.getHackTime(a))
-
 
 
   for (const server of toBeProcessed) {
@@ -33,21 +40,22 @@ async function hackServer(ns) {
       ns.print("WARN ", "Killing all threads " + server)
       await ns.killall(server);
     }
-    try {
-      if (ns.args[0].trim() == "") {
-        hostname = allServer.pop()
 
-        ns.print("No hostname using " + hostname)
-      }
-
-      let serverData = getServerData(ns, server, hostname)
-
-      copyToServer(ns, serverData)
-
-      await executeThreads(ns, serverData)
-    } catch (error) {
-      ns.print(`Failed for server ${server} ` + error)
+    if (ns.args[0] == undefined || ns.args[0].trim() == "") {
+      hostname = allServer.pop()
     }
+
+    if (hostname == undefined) {
+      ns.print("No more servers to process")
+      return;
+    }
+
+    let serverData = getServerData(ns, server, hostname)
+
+    copyToServer(ns, serverData)
+
+    await executeThreads(ns, serverData)
+
   }
 }
 
@@ -91,12 +99,6 @@ function getServerData(ns, server, hostname) {
   const maxRam = ns.getServerMaxRam(server);
   const availableRam = Math.floor(maxRam * 0.99);
 
-
-  // Skip servers with insufficient RAM
-  if (availableRam <= 0) {
-    throw Error("Skipping ${server}, insufficient RAM.");
-  }
-
   return {
     "hostname": hostname,
     "server": server,
@@ -112,9 +114,7 @@ function getServerData(ns, server, hostname) {
 
 /** @param {NS} ns **/
 async function executeThreads(ns, { weakenScript, growScript, hackScript, server, hostname, maxRam }) {
-
-  let delay = 0;
-
+  let delay = 50;
 
   const hackTime = ns.getHackTime(hostname);
   const growTime = ns.getGrowTime(hostname);
@@ -122,24 +122,21 @@ async function executeThreads(ns, { weakenScript, growScript, hackScript, server
 
   let stats = setupStats(ns, hostname, maxRam, server)
 
-  try {
-    let totalCost = stats.totalThreadsUsed * 1.75
+  let totalCost = stats.totalThreadsUsed * 1.75
 
-    let ramAvail = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
-    while (totalCost < ramAvail) {
-      ramAvail = maxRam - ns.getServerUsedRam(server)
-      ns.exec(weakenScript, server, stats.weaken, hostname, delay)
-      ns.exec(hackScript, server, stats.hack, hostname, Math.abs(weakenTime - hackTime + delay))
-      ns.exec(growScript, server, stats.grow, hostname, Math.abs(hackTime - growTime + delay))
-      ns.exec(weakenScript, server, stats.weaken2, hostname, (Math.abs(growTime - weakenTime + delay)))
-      delay += delay
-      ramAvail = maxRam - ns.getServerUsedRam(server)
-      await ns.sleep(1)
-    }
+  let ramAvail = ns.getServerMaxRam(server) - ns.getServerUsedRam(server)
+  let counter = 100
+  while (totalCost <= ramAvail && counter > 0) {
+    ns.exec(weakenScript, server, stats.weaken, hostname, delay)
+    ns.exec(hackScript, server, stats.hack, hostname, Math.abs(weakenTime - hackTime + delay))
+    ns.exec(growScript, server, stats.grow, hostname, Math.abs(hackTime - growTime + delay))
+    ns.exec(weakenScript, server, stats.weaken2, hostname, (Math.abs(growTime - weakenTime + delay)))
+    ramAvail = maxRam - ns.getServerUsedRam(server)
+    counter--
+  }
 
-    ns.print(`${server} is executing threads towards ${hostname}`)
-  } catch (err) {
-    ns.print("ERROR" + err)
+  if (counter == 0) {
+    ns.print(`Run over 100 times`)
   }
 
 }
@@ -154,9 +151,6 @@ function setupStats(ns, hostname, maxRam, server) {
   let totalCost = 1.75 * 4
   let totalThreadsAvail = Math.floor(Math.floor(maxRam / totalCost) * 0.95)
 
-
-
-
   let money = ns.getServerMoneyAvailable(hostname)
   if (money === 0)
     money = 1;
@@ -165,8 +159,6 @@ function setupStats(ns, hostname, maxRam, server) {
   const sec = ns.getServerSecurityLevel(hostname)
 
   const cores = ns.getServer(hostname).cpuCores;
-
-  ns.securit
 
   let stats = {
     name: hostname,
