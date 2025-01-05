@@ -5,11 +5,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/scripts/contract/contract.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/utility.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/cleanup/cleanup.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/contract/contract.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/contract/sequence.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/general/whgw.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/automate.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/grow.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/hack.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/ratio-split.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/upgrade.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/smart/weaken.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/scripts/update.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/cleanup/cleanup.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/cleanup/cleanup.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/ratio.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/contract/contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/contract/rleCompression.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/contract/sequence.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/backdoor.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/backdoor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/grow-host-max-threads.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/grow-host-max-threads.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/grow-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/grow-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/hack-host-max-threads.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/hack-host-max-threads.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/hack-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/hack-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/general/weaken-host.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/general/weaken-host.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/smart/grow.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio-self.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/smart/ratio.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/smart/weaken.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/update.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/update.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/utility.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts/utility.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +83,7 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/code/bitrunner/scripts/smart&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/code/bitrunner/scripts&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
@@ -70,10 +92,14 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\code\bitrunner\scripts" />
+      <recent name="C:\code\bitrunner\scripts\contract" />
       <recent name="C:\code\bitrunner\scripts\smart" />
       <recent name="C:\code\bitrunner\scripts\general" />
       <recent name="D:\coding repo\bitburner" />
-      <recent name="D:\coding repo\bitburner\scripts\setup" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\code\bitrunner" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -175,22 +201,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1681745023769</updated>
-    </task>
-    <task id="LOCAL-00014" summary="basic hack analyze">
-      <option name="closed" value="true" />
-      <created>1735743929921</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1735743929921</updated>
-    </task>
-    <task id="LOCAL-00015" summary="update">
-      <option name="closed" value="true" />
-      <created>1735745073858</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1735745073860</updated>
     </task>
     <task id="LOCAL-00016" summary="update">
       <option name="closed" value="true" />
@@ -464,7 +474,23 @@
       <option name="project" value="LOCAL" />
       <updated>1735926766042</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="update">
+      <option name="closed" value="true" />
+      <created>1735996199031</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1735996199031</updated>
+    </task>
+    <task id="LOCAL-00051" summary="update">
+      <option name="closed" value="true" />
+      <created>1736017424725</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1736017424725</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

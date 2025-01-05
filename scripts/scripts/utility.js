@@ -6,6 +6,7 @@ export async function main(ns) {
   let servers = findAllServersR(ns, "home")
 
   while (true) {
+    await ns.sleep(100)
     ns.clearLog()
 
     ns.print(`Found total = ${servers.length}`)
@@ -14,16 +15,13 @@ export async function main(ns) {
 
     ns.print("------")
 
-
     let server = findServer(findHostNameArg, servers)
 
     server = populate(ns, server, server.host)
 
+
     ns.print("INFO \n", JSON.stringify(server, null, 2))
-    ns.print(new Date())
   }
-
-
 }
 
 function findServer(name, servers) {
@@ -45,6 +43,8 @@ function populate(ns, obj, host) {
   server["hackTime"] = ns.getHackTime(host)
   server["growTime"] = ns.getGrowTime(host)
   server["weakenTime"] = ns.getWeakenTime(host)
+
+
 
   server["moneyToGrowPercentage"] = (ns.getServerMoneyAvailable(host) / ns.getServerMaxMoney(host)) * 100
 
