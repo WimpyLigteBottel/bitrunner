@@ -5,11 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/scripts/contract/squareRoot.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/utility/connect.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/guidance/batcher-explainer.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/smart/ratio-self.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/utility/killall.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/utility/profits.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/automate.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/automate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/smart/ratio-split.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/smart/ratio-split.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

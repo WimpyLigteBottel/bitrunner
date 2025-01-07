@@ -4,6 +4,9 @@ export async function main(ns) {
   ns.clearLog();
   ns.tail();
 
+
+
+
   const contracts = findAllServers(ns, "home", 20).flatMap((server) => {
     let files = ns.ls(server)
     let tempContracts = files.filter((file) => file.endsWith(".cct"))
