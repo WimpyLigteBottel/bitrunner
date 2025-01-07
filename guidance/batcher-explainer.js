@@ -1,3 +1,5 @@
+declare global { const NS: NS; }
+
 /** @param {NS} ns **/
 export async function main(ns) {
     ns.clearLog();

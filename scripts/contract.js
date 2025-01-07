@@ -4,8 +4,7 @@ export async function main(ns) {
   ns.clearLog();
   ns.tail();
 
-
-
+ //test
 
   const contracts = findAllServers(ns, "home", 20).flatMap((server) => {
     let files = ns.ls(server)

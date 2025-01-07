@@ -1,3 +1,5 @@
+declare global { const NS: NS; }
+
 /** All netscript definitions */
 
 /** @public */
