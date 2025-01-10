@@ -107,6 +107,43 @@ export function createTasks(ns: NS, hostToTarget: string, delay: number, default
 
     return [hack, weaken1, grow, weaken2];
 }
+
+
+// Construct a batch of tasks with proper delays
+export function createTasksHGW(ns: NS, hostToTarget: string, defaultDelay = 50): {
+    hack: Task,
+    weaken: Task,
+    grow: Task
+} {
+    const hackTime = ns.getHackTime(hostToTarget)
+    const weakenTime = ns.getWeakenTime(hostToTarget)
+    const growTime = ns.getGrowTime(hostToTarget)
+
+
+    let hack = {
+        time: hackTime,
+        script: hackScriptName,
+        delay: weakenTime - hackTime - defaultDelay,
+        name: TASK_NAME.h,
+    } as Task
+
+    let grow = {
+        time: growTime,
+        script: growScriptName,
+        delay: weakenTime - growTime,
+        name: TASK_NAME.g,
+    } as Task
+
+    let weaken = {
+        time: weakenTime,
+        script: weakenScriptName,
+        delay: defaultDelay + defaultDelay,
+        name: TASK_NAME.W,
+    } as Task
+
+
+    return {hack,grow,weaken};
+}
 /*
 
 It should generate as follows

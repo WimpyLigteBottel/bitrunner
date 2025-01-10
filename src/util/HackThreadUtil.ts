@@ -1,4 +1,5 @@
 import { NS } from "@ns";
+import { growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
 
 
 const hackScript = "../v1/hack.js";
@@ -53,20 +54,15 @@ export function calculateFullCycleThreads(ns: NS, target: string): {
 }
 
 
-export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun: string, hackPercent: number = 0.1, counter: number = 3000): {
+export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun: string, hackPercent: number = 0.1): {
     hackThreads: number;
-    weakenThreads1: number;
     growThreads: number;
-    weakenThreads2: number;
+    weakenThreads: number;
+    hackPercent: number;
 } {
-    if (counter < 1) {
-        return {
-            hackThreads: 0, weakenThreads1: 0, growThreads: 0, weakenThreads2: 0
-        }
-    }
     // Get target server stats
     const maxMoney = ns.getServerMaxMoney(target);
-    const availableMoney = ns.getServerMoneyAvailable(target);
+    const availableMoney = Math.max(ns.getServerMoneyAvailable(target), 1);
 
     // Constants
     const hackSecurityIncrease = ns.hackAnalyzeSecurity(1); // Security increase per hack thread
@@ -75,37 +71,50 @@ export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun:
 
     // 1. Calculate Hack Threads
     const hackAmount = maxMoney * hackPercent; // Amount to hack (10% of max money)
-    const hackThreads = Math.abs(Math.ceil(ns.hackAnalyzeThreads(target, hackAmount)));
+    const hackThreads = Math.min(
+        Math.ceil(ns.hackAnalyzeThreads(target, hackAmount)), 
+        Math.floor(maxMoney / 2) // Prevent excessive thread allocation
+    );
 
     // 3. Calculate Grow Threads (to regrow hacked money)
-    const growthMultiplier = Math.abs(maxMoney / hackAmount);
-
-    const growThreads = Math.abs(Math.ceil(ns.growthAnalyze(target, growthMultiplier)));
+    // 2. Calculate Grow Threads (to regrow hacked money)
+    const growMultiplier = maxMoney / Math.max(availableMoney - hackAmount, 1);
+    const growThreads = Math.ceil(ns.growthAnalyze(target, growMultiplier));
 
     // 4. Calculate Weaken Threads (to offset security from growing)
-    const weakenThreads2 = Math.abs(Math.ceil(((growThreads * growSecurityIncrease) + (hackSecurityIncrease * hackSecurityIncrease)) / weakenEffect));
 
+    const totalSecurityIncrease = hackThreads * hackSecurityIncrease + growThreads * growSecurityIncrease;
+    const weakenThreads = Math.ceil(totalSecurityIncrease / weakenEffect);
 
     let totalCost = getTotalCost(ns, hackThreads, hackScript) +
-        getTotalCost(ns, weakenThreads2, weakenScript) +
-        getTotalCost(ns, growThreads, growScript) +
-        getTotalCost(ns, weakenThreads2, weakenScript)
+        getTotalCost(ns, weakenThreads, weakenScript) +
+        getTotalCost(ns, growThreads, growScript)
 
 
     if (getAvailiableRam(ns, serverToRun) > totalCost) {
         return {
             hackThreads,
-            weakenThreads1: weakenThreads2,
             growThreads,
-            weakenThreads2
+            weakenThreads,
+            hackPercent
         };
     }
 
-    return calculateFullCycleThreadsV2(ns, target, serverToRun, hackPercent / 2, counter - 1)
+    return {
+        hackThreads: 0, growThreads: 0, weakenThreads: 0, hackPercent: hackPercent
+    }
 }
 
 export function getTotalCost(ns: NS, thread: number, script: string): number {
     return ns.getScriptRam(script) * Math.abs(thread)
+}
+
+export function getTotalCostThreads(ns: NS, hackThreads: number, weakenThreads: number, growThreads: number,): number {
+
+    let hackCost = getTotalCost(ns, hackThreads, hackScriptName)
+    let growCost = getTotalCost(ns, growThreads, growScriptName)
+    let weakenCost = getTotalCost(ns, weakenThreads, weakenScriptName)
+    return hackCost + growCost + weakenCost
 }
 
 export function getAvailiableRam(ns: NS, serverName: string): number {

@@ -1,78 +1,71 @@
 import { NS } from "@ns";
 import { findAllServers, prepServersForHack } from "/util/FindAllServers";
-import { calculateFullCycleThreadsV2, getAvailiableRam } from "/util/HackThreadUtil";
-import { createBatch } from "/v1/batcher";
+import { calculateFullCycleThreadsV2, getAvailiableRam, getTotalCost, getTotalCostThreads } from "/util/HackThreadUtil";
+import { createTasksHGW } from "/v1/batcher";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
-    ns.disableLog("ALL");
+
+    dissableLogs(ns)
+
     ns.tail();
 
-    const targetHost: string = await ns.prompt("Server to hack", { type: "text" }) as string;
+    let targetHost: string = ns.args[0] as string ?? await ns.prompt("Server to hack", { type: "text" }) as string;
 
     prepServersForHack(ns);
 
+    let batchNumber = 0
     while (true) {
         try {
-            await hackFullCycleEachServer(ns, targetHost);
+            batchNumber = await hackFullCycleEachServer(ns, targetHost, batchNumber);
         } catch (error) {
             ns.print("ERROR" + error)
+            batchNumber = 0
+            await ns.sleep(1000)
         }
-        await ns.sleep(100)
     }
 }
 
-async function hackFullCycleEachServer(ns: NS, targetHost: string) {
+async function hackFullCycleEachServer(ns: NS, targetHost: string, batchNumber: number) {
     let servers = findAllServers(ns, false, true);
 
-    if (!servers.length) {
-        ns.print("No available servers for batching. Sleeping...");
-        await ns.sleep(2000);
-        return;
-    }
-
-    let previousDelay = 0
     for (const server of servers) {
         let threads: {
             hackThreads: number;
-            weakenThreads1: number;
             growThreads: number;
-            weakenThreads2: number;
-        } = calculateFullCycleThreadsV2(ns, targetHost, server.host, 0.6)
+            weakenThreads: number;
+        } = calculateFullCycleThreadsV2(ns, targetHost, server.host)
 
         // Skip if no threads are calculated
-        if (threads.hackThreads === 0 || threads.weakenThreads1 === 0 || threads.growThreads === 0) {
+        if (threads.weakenThreads === 0 || threads.growThreads === 0) {
+            await ns.sleep(100)
             ns.print(`Server ${server.host} cannot handle the batch. Skipping...`);
             continue;
         }
 
-        let batch = createBatch(ns, targetHost, previousDelay)
-        for (const task of batch.tasks) {
-            let threadsToUse: number = threadsTouse(task, threads)
-            ns.exec(task.script, server.host, { threads: threadsToUse }, targetHost, task.delay, threadsToUse)
+        let tasks = createTasksHGW(ns, targetHost)
+
+        let totalCost = getTotalCostThreads(ns, threads.hackThreads, threads.weakenThreads, threads.growThreads)
+
+        if (getAvailiableRam(ns, server.host) >= totalCost) {
+            ns.exec(tasks.hack.script, server.host, { threads: threads.hackThreads }, targetHost, tasks.hack.delay + batchNumber, threads.hackThreads)
+            ns.exec(tasks.grow.script, server.host, { threads: threads.growThreads }, targetHost, tasks.grow.delay + batchNumber, threads.growThreads)
+            ns.exec(tasks.weaken.script, server.host, { threads: threads.weakenThreads }, targetHost, tasks.weaken.delay + batchNumber, threads.weakenThreads)
         }
-        previousDelay += 50 * batch.tasks.length
-    }
-    await ns.sleep(previousDelay);
-}
-
-function threadsTouse(task: any, threads: any) {
-    let threadsToUse: number = 0
-    switch (task.name) {
-        case "w":
-            threadsToUse = threads.weakenThreads1
-            break;
-        case "W":
-            threadsToUse = threads.weakenThreads2
-            break;
-        case "h":
-            threadsToUse = threads.hackThreads
-            break;
-        default:
-            threadsToUse = threads.growThreads
-            break;
     }
 
-    return threadsToUse
+    return batchNumber + 200
 }
 
+
+
+
+function dissableLogs(ns: NS) {
+
+    ns.disableLog("exec")
+    ns.disableLog("getServerMaxRam")
+    ns.disableLog("scan")
+    ns.disableLog("getServerMaxMoney")
+    ns.disableLog("getServerUsedRam")
+    ns.disableLog("getServerMoneyAvailable")
+}
