@@ -12,7 +12,6 @@ export async function main(ns) {
 
   let homes = ns.scan("home")
     .filter((x) => x.includes(hostname))
-    .sort((a, b) => ns.getServerMaxMoney(a) - ns.getServerMaxRam(b))
 
   for (let x = ns.getPurchasedServerLimit(); x > homes.length; x--) {
     ns.purchaseServer(hostname, 1)
@@ -30,7 +29,9 @@ function upgradeRam(ns, servers) {
   for (let home of servers) {
     let upgrade = ns.getServerMaxRam(home) * 2
     let response = ns.upgradePurchasedServer(home, upgrade)
-    if (response)
+    if (response) {
       ns.print(`${home} upgraded to ${upgrade}`)
+      break
+    }
   }
 }

@@ -1,4 +1,5 @@
-
+/** @type import(".").NS */
+let ns = null;
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -14,6 +15,7 @@ export async function main(ns) {
 
   await ns.sleep(delay)
 
+  ns.tprint("H")
 }
 
 /** @param {NS} ns **/

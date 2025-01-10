@@ -7,7 +7,7 @@ export async function main(ns) {
 
   for (const server of servers) {
 
-    
+
     const first = calculateFullCycleMoneyPerSecond(ns, server.host);
 
     if (first == undefined) {
@@ -35,40 +35,6 @@ export async function main(ns) {
 }
 
 /** @param {NS} ns **/
-export function calculateMoneyPerSecond(ns, server) {
-  // Get server stats
-  const maxMoney = ns.getServerMaxMoney(server);
-  const hackTime = ns.getHackTime(server);
-  const growTime = ns.getGrowTime(server);
-  const weakenTime = ns.getWeakenTime(server);
-  const securityLevel = ns.getServerSecurityLevel(server);
-  const minSecurityLevel = ns.getServerMinSecurityLevel(server);
-
-  // Early exit if server can't generate money
-  if (maxMoney === 0) {
-    return 0;
-  }
-
-  // Analyze threads required for hacking
-  const hackThreads = ns.hackAnalyzeThreads(server, maxMoney); // Steal 10% per hack
-  const hackChance = ns.hackAnalyzeChance(server); // Probability of success
-
-  // Analyze threads required for growth and weakening
-  const growThreads = Math.ceil(ns.growthAnalyze(server, 1.1)); // Grow by 10%
-  const weakenThreads = Math.ceil((securityLevel - minSecurityLevel) / ns.weakenAnalyze(1)); // Normalize security
-
-  // Calculate execution times (milliseconds)
-  const averageTime = (hackTime + growTime + weakenTime) / 3;
-
-  // Estimate money generated per hack cycle
-  const moneyPerHack = maxMoney * hackChance; // 10% of maxMoney times success rate
-  const moneyPerSecond = moneyPerHack / (averageTime / 1000); // Convert time to seconds
-
-  // ns.tprint(`Server ${server} generates approximately $${ns.formatNumber(moneyPerSecond)} per second.`);
-  return moneyPerSecond;
-}
-
-/** @param {NS} ns **/
 export function calculateFullCycleMoneyPerSecond(ns, server) {
   // Get server stats
   const maxMoney = ns.getServerMaxMoney(server);
@@ -76,13 +42,12 @@ export function calculateFullCycleMoneyPerSecond(ns, server) {
 
   // Early exit if server can't generate money
   if (maxMoney === 0) {
-    ns.tprint(`Server ${server} has no money to hack.`);
     return undefined;
   }
 
   // Calculate threads and times for each phase
   const hackAmount = maxMoney * 0.1; // Steal 10% of max money
-  const hackThreads = Math.ceil(ns.hackAnalyzeThreads(server, hackAmount)); // Threads for hacking
+  const hackThreads = 1; // Threads for hacking
   const growThreads = Math.ceil(ns.growthAnalyze(server, 1.1)); // Threads to regrow by 10%
   const weakenThreads1 = Math.ceil(ns.weakenAnalyze(1) * hackThreads); // Threads to counter hack security increase
   const weakenThreads2 = Math.ceil(ns.weakenAnalyze(1) * growThreads); // Threads to counter grow security increase

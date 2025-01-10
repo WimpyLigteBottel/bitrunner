@@ -14,6 +14,7 @@ export async function main(ns) {
   updateLog(ns, hostname, result, shouldRecord)
 
   await ns.sleep(delay)
+  ns.tprint("W")
 }
 
 function updateLog(ns, hostname, result, shouldRecord) {

@@ -10,6 +10,8 @@ export async function main(ns) {
   let result = await ns.grow(hostname, { stock: true })
   updateLog(ns, hostname, result, shouldRecord)
   await ns.sleep(delay)
+
+  ns.tprint("G")
 }
 
 
