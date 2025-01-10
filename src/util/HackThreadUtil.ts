@@ -53,19 +53,20 @@ export function calculateFullCycleThreads(ns: NS, target: string): {
 }
 
 
-export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun: string, hackPercent: number = 0.1, counter: number = 0): {
+export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun: string, hackPercent: number = 0.1, counter: number = 3000): {
     hackThreads: number;
     weakenThreads1: number;
     growThreads: number;
     weakenThreads2: number;
 } {
-    if (counter > 3000) {
+    if (counter < 1) {
         return {
             hackThreads: 0, weakenThreads1: 0, growThreads: 0, weakenThreads2: 0
         }
     }
     // Get target server stats
     const maxMoney = ns.getServerMaxMoney(target);
+    const availableMoney = ns.getServerMoneyAvailable(target);
 
     // Constants
     const hackSecurityIncrease = ns.hackAnalyzeSecurity(1); // Security increase per hack thread
@@ -92,27 +93,15 @@ export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun:
 
 
     if (getAvailiableRam(ns, serverToRun) > totalCost) {
-        let response = {
+        return {
             hackThreads,
             weakenThreads1: weakenThreads2,
             growThreads,
             weakenThreads2
-        }
-
-        return response;
+        };
     }
 
-    if (counter == 2999) {
-        let response = {
-            hackThreads,
-            weakenThreads1: weakenThreads2 + weakenThreads2,
-            growThreads
-        }
-
-        ns.print(`Server cant run threads ${serverToRun} => ${JSON.stringify(response)}`)
-    }
-
-    return calculateFullCycleThreadsV2(ns, target, serverToRun, hackPercent / 2, counter + 1)
+    return calculateFullCycleThreadsV2(ns, target, serverToRun, hackPercent / 2, counter - 1)
 }
 
 export function getTotalCost(ns: NS, thread: number, script: string): number {

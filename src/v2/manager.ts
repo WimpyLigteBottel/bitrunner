@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { findAllServers } from "/util/FindAllServers";
+import { findAllServers, prepServersForHack } from "/util/FindAllServers";
 import { calculateFullCycleThreadsV2, getAvailiableRam } from "/util/HackThreadUtil";
 import { createBatch } from "/v1/batcher";
 
@@ -8,10 +8,9 @@ export async function main(ns: NS): Promise<void> {
     ns.disableLog("ALL");
     ns.tail();
 
-    ns.formulas.hacking.growAmount
+    const targetHost: string = await ns.prompt("Server to hack", { type: "text" }) as string;
 
-    
-    const targetHost: string = await ns.prompt("Server to hack", {type: "text"}) as string;
+    prepServersForHack(ns);
 
     while (true) {
         try {
@@ -24,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
 }
 
 async function hackFullCycleEachServer(ns: NS, targetHost: string) {
-    let servers = findAllServerForBatch(ns);
+    let servers = findAllServers(ns, false, true);
 
     if (!servers.length) {
         ns.print("No available servers for batching. Sleeping...");
@@ -77,20 +76,3 @@ function threadsTouse(task: any, threads: any) {
     return threadsToUse
 }
 
-function findAllServerForBatch(ns: NS) {
-    return findAllServers(ns)
-        .filter((server) => server.host.includes("home"))
-        .filter((server) => getAvailableRam(ns, server.host) >= 1.75 * 4)
-        .map((server) => {
-            let files = ["v1/hack.js", "v1/weaken.js", "v1/grow.js"];
-            if (!files.every(file => ns.fileExists(file, server.host))) {
-                ns.scp(files, server.host);
-            }
-            return server;
-        })
-        .sort((a, b) => getAvailiableRam(ns, a.host) - getAvailableRam(ns, b.host));
-}
-
-function getAvailableRam(ns: NS, serverName: string): number {
-    return ns.getServerMaxRam(serverName) - ns.getServerUsedRam(serverName);
-}

@@ -9,5 +9,5 @@ export async function main(ns: NS) {
   await ns.sleep(delay)
   await ns.weaken(hostname, { stock: true })
 
-  // ns.tprint("W")
+  ns.tprint("W")
 }

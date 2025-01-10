@@ -71,7 +71,7 @@ export function createBatch(ns: NS, hostToTarget: string, previousDelay: number)
 }
 
 // Construct a batch of tasks with proper delays
-export function createTasks(ns: NS, hostToTarget: string, delay: number, defaultDelay = 1): Task[] {
+export function createTasks(ns: NS, hostToTarget: string, delay: number, defaultDelay = 50): Task[] {
     const hackTime = ns.getHackTime(hostToTarget)
     const weakenTime = ns.getWeakenTime(hostToTarget)
     const growTime = ns.getGrowTime(hostToTarget)

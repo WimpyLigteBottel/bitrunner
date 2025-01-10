@@ -1,6 +1,12 @@
 import { NS } from "@ns";
 import { createBatch } from "v1/batcher";
-import { findAllServers } from "/util/FindAllServers";
+import { findAllServers, prepServersForHack } from "/util/FindAllServers";
+
+
+/*
+
+This codes performs teh HWGW cycle in batches... So far its the only one kinda working
+*/
 
 
 export async function main(ns: NS): Promise<void> {
@@ -9,8 +15,10 @@ export async function main(ns: NS): Promise<void> {
     ns.tail()
     const targetHost: string = ns.args[0] as string
 
+    prepServersForHack(ns)
+
     while (true) {
-        let servers = findAllServerForBatch(ns) ?? []
+        let servers = findAllServers(ns) ?? []
 
         if (servers.length == 0) {
             ns.print("Sleeping because no servers are availaible....")
@@ -21,9 +29,9 @@ export async function main(ns: NS): Promise<void> {
         let previousDelay = 0
         for (const server of servers) {
             let threads = getThreadsPossible(ns, server.host)
+            if (threads == 0)
+                continue
             let batch = createBatch(ns, targetHost, previousDelay)
-            ns.print(`${server.host} - ${threads}`)
-
             for (const task of batch.tasks) {
                 ns.exec(task.script, server.host, { threads: threads }, targetHost, task.delay, threads)
                 await ns.sleep(50)
@@ -38,22 +46,6 @@ export async function main(ns: NS): Promise<void> {
 function getThreadsPossible(ns: NS, host: string) {
     let availRam = Math.floor(getAvailiableRam(ns, host))
     return Math.floor(availRam / getScriptTotalCost(ns))
-}
-
-function findAllServerForBatch(ns: NS) {
-    let servers = findAllServers(ns)
-        .filter((x) => ns.hasRootAccess(x.host))
-        .filter((x) => getAvailiableRam(ns, x.host) > getScriptTotalCost(ns))
-        .map(x => {
-            ns.scp(["v1/hack.js", "v1/weaken.js", "v1/grow.js"], x.host)
-            let temp = x
-            temp.parent = undefined
-            return temp
-        }) ?? []
-
-    ns.print(JSON.stringify(servers, null, 1))
-
-    return servers
 }
 
 

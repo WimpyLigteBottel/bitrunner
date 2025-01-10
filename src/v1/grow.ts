@@ -9,5 +9,5 @@ export async function main(ns: NS) {
   await ns.sleep(delay)
   await ns.grow(hostname, { stock: true })
 
-  // ns.tprint("G")
+  ns.tprint("G")
 }

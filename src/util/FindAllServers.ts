@@ -6,7 +6,7 @@ interface HostObj {
     parent?: HostObj
 }
 
-export function findAllServers(ns: NS, withParent: boolean = true) {
+function findAllServersWithParent(ns: NS, withParent: boolean = true) {
     const servers: HostObj[] = [];
     const visited = new Set<string>();
     const queue: HostObj[] = [{ host: "home", depth: 0 }];
@@ -32,4 +32,26 @@ export function findAllServers(ns: NS, withParent: boolean = true) {
     }
 
     return Array.from(servers).sort((a, b) => a!.depth - b!.depth).sort((a, b) => a!.host.localeCompare(b.host));
+}
+
+
+export function findAllServers(ns: NS, withParent: boolean = false, homeServersOnly: boolean = true) {
+
+    let servers = findAllServersWithParent(ns, withParent)
+    if (homeServersOnly) {
+        return servers.filter(x => x.host.includes("home"))
+    }
+
+    return servers
+}
+
+export function prepServersForHack(ns: NS) {
+    findAllServers(ns, false, false)
+        .map((server) => {
+            let files = ["v1/hack.js", "v1/weaken.js", "v1/grow.js"];
+            if (!files.every(file => ns.fileExists(file, server.host))) {
+                ns.scp(files, server.host);
+            }
+            return server;
+        })
 }

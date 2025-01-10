@@ -10,5 +10,5 @@ export async function main(ns: NS) {
   await ns.sleep(delay)
   await ns.hack(hostname, { stock: true })
 
-  // ns.tprint("H")
+  ns.tprint("H")
 }
