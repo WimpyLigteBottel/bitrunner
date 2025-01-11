@@ -1,6 +1,8 @@
 import { NS } from "@ns";
 import { createBatch } from "v2/batcher";
-import { findAllServers, prepServersForHack } from "/util/FindAllServers";
+import { prepServersForHack } from "/util/FindAllServers";
+import { getAvailiableRam } from "/util/HackThreadUtil";
+import { BATCH_DELAY } from "/util/HackConstants";
 /*
 This codes performs teh HWGW cycle in batches... So far its the only one kinda working
 */
@@ -16,21 +18,28 @@ export async function main(ns: NS): Promise<void> {
 
 
     ns.killall("home", true)
-    let port = ns.exec("util/PortListener.js", "home", 1, targetHost)
+    // let port = ns.exec("util/PortListener.js", "home", 1, targetHost)
 
-    let previousDelay = 50
-    for (let x = 0; x < 100; x++) {
-        let batch = createBatch(ns, targetHost, previousDelay, "home")
-        const tasks = batch?.tasks!
-        for (const task of tasks) {
-            if (task.threads != 0){
-                ns.exec(task.script, batch.server, { threads: task.threads }, targetHost, task.delay, task.threads)
+    let previousDelay = BATCH_DELAY
+    while (true) {
+        previousDelay = BATCH_DELAY
+        let max = calculateMaxBatches(ns, targetHost, "home")
+        ns.print(`max = ${max}`)
+
+        for (let x = 0; x < max; x++) {
+            let batch = createBatch(ns, targetHost, previousDelay, "home")
+            const tasks = batch?.tasks!
+            for (const task of tasks) {
+                if (task.threads != 0) {
+                    ns.exec(task.script, batch.server, { threads: task.threads }, targetHost, task.delay, task.threads)
+                }
             }
+            previousDelay += BATCH_DELAY * (batch.tasks.length + 1)
         }
-        previousDelay += 50 * (batch.tasks.length + 1)
+
+        await ns.sleep(previousDelay + ns.getHackTime(targetHost))
     }
 
-    await ns.sleep(100000)
 }
 
 
@@ -40,15 +49,14 @@ export async function main(ns: NS): Promise<void> {
  *
  * @param {NS} ns - The Netscript environment object.
  * @param {string} target - The target server's name (e.g., "joesguns").
- * @param {number} batchDelay - Delay between the start of each batch (default 50 ms).
  * @returns {number} Maximum number of batches that can fit.
  */
-export function calculateMaxBatches(ns: NS, target: string, batchDelay = 50) {
-    // Calculate batch duration (from the start of hack to the end of weaken)
-    const batchDuration = ns.getWeakenTime(target) + 50; // Weaken finishes last
-    const gapBetweenBatches = batchDelay; // Time between consecutive batches
+export function calculateMaxBatches(ns: NS, target: string, currentServer: string) {
+    let batch = createBatch(ns, target, 0, "home")
 
 
+    let totalCost = batch.tasks.map(x => x.threads * ns.getScriptRam(x.script)).reduce((acc, value) => acc + value)
 
-    return Math.floor(batchDuration / gapBetweenBatches);
+
+    return Math.floor((getAvailiableRam(ns, currentServer, 10)) / totalCost);
 }

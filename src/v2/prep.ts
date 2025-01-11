@@ -6,9 +6,6 @@ export async function main(ns: NS): Promise<void> {
     ns.disableLog("ALL");
     ns.tail();
 
-    // Copy necessary scripts to all servers
-    const allServers = findAllServers(ns, false, true);
-
     prepServersForHack(ns)
 
     let servers = findAllServers(ns, false, false).filter(x => !x.host.includes("home")).filter(x => ns.hasRootAccess(x.host)).sort((b, a) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host));
@@ -41,7 +38,13 @@ export async function main(ns: NS): Promise<void> {
         // Exit if the server is fully prepped
         if (availableMoney === maxMoney && currentSecurity === minSecurity) {
             ns.tprint(`Server is fully prepped! ${targetHost}`);
-            targetHost = servers.pop()!.host
+            targetHost = servers.pop()?.host ?? ""
+
+            if (targetHost == "")
+                break
+
+
+
 
             homeServers.forEach(x => ns.killall(x.host, true))
             ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)

@@ -44,7 +44,7 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
 
     // Calculate hack threads needed to steal the desired fraction of money
     const hackAmount = maxMoney * stealFraction;
-    const hackThreads = Math.ceil(ns.hackAnalyzeThreads(server, hackAmount));
+    const hackThreads = Math.floor(ns.hackAnalyzeThreads(server, hackAmount));
 
     // Exit if hackThreads is invalid or too small
     if (hackThreads < 1 || hackThreads === Infinity) {
@@ -65,7 +65,7 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
     const weakenTime = ns.getWeakenTime(server);
 
     // Full cycle time is the longest of all operations
-    const fullCycleTime = Math.max(hackTime, growTime, weakenTime);
+    const fullCycleTime = Math.max(hackTime, growTime, weakenTime) + 50;
 
     // Calculate money generated per cycle and per second
     const moneyPerCycle = hackAmount * hackChance; // Adjust for success probability

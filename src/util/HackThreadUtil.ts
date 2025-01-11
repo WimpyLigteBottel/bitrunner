@@ -1,12 +1,6 @@
 import { NS } from "@ns";
 import { growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
 
-
-const hackScript = "../v1/hack.js";
-const weakenScript = "../v1/weaken.js";
-const growScript = "../v1/grow.js";
-
-
 /** 
  * Calculates the required threads for hacking, weakening, and growing a server to max money 
  * while keeping security at its base level.
@@ -72,7 +66,7 @@ export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun:
     // 1. Calculate Hack Threads
     const hackAmount = maxMoney * hackPercent; // Amount to hack (10% of max money)
     const hackThreads = Math.min(
-        Math.ceil(ns.hackAnalyzeThreads(target, hackAmount)), 
+        Math.ceil(ns.hackAnalyzeThreads(target, hackAmount)),
         Math.floor(maxMoney / 2) // Prevent excessive thread allocation
     );
 
@@ -86,9 +80,9 @@ export function calculateFullCycleThreadsV2(ns: NS, target: string, serverToRun:
     const totalSecurityIncrease = hackThreads * hackSecurityIncrease + growThreads * growSecurityIncrease;
     const weakenThreads = Math.ceil(totalSecurityIncrease / weakenEffect);
 
-    let totalCost = getTotalCost(ns, hackThreads, hackScript) +
-        getTotalCost(ns, weakenThreads, weakenScript) +
-        getTotalCost(ns, growThreads, growScript)
+    let totalCost = getTotalCost(ns, hackThreads, hackScriptName) +
+        getTotalCost(ns, weakenThreads, weakenScriptName) +
+        getTotalCost(ns, growThreads, growScriptName)
 
 
     if (getAvailiableRam(ns, serverToRun) > totalCost) {
@@ -117,6 +111,6 @@ export function getTotalCostThreads(ns: NS, hackThreads: number, weakenThreads: 
     return hackCost + growCost + weakenCost
 }
 
-export function getAvailiableRam(ns: NS, serverName: string): number {
-    return ns.getServerMaxRam(serverName) - ns.getServerUsedRam(serverName)
+export function getAvailiableRam(ns: NS, serverName: string, reserve: number = 10): number {
+    return ns.getServerMaxRam(serverName) - ns.getServerUsedRam(serverName) - reserve
 }

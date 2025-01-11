@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
+import { ALL_SCRIPTS_TO_COPY, growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
 
 interface HostObj {
     host: string,
@@ -46,11 +46,11 @@ export function findAllServers(ns: NS, withParent: boolean = false, homeServersO
 export function prepServersForHack(ns: NS) {
     findAllServers(ns, false, false)
         .forEach((server) => {
-            ns.scp([hackScriptName, weakenScriptName, growScriptName], server.host, "home");
+            ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home");
         })
 
     findAllServers(ns, false, true)
         .forEach((server) => {
-            ns.scp([hackScriptName, weakenScriptName, growScriptName], server.host, "home");
+            ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home");
         })
 }
