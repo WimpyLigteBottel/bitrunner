@@ -8,6 +8,6 @@ export async function main(ns: NS) {
   await ns.weaken(hostname, { stock: true })
 
   
-  const message = `W - ${ns.getHostname()}\n`;
+  const message = `W`;
   ns.writePort(9999, message);
 }

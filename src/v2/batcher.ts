@@ -54,9 +54,7 @@ export function calculateFullCycleThreads(ns: NS, target: string, hackPercent: n
         scriptName: string
     }
 } {
-    const availMoney = ns.getServerMoneyAvailable(target)
-
-    let hackAmount = availMoney * hackPercent; // Amount to hack (10% of max money)
+    let hackAmount = ns.getServerMaxMoney(target) * hackPercent; // Amount to hack (10% of max money)
     hackAmount = Math.floor(hackAmount);
 
     let hackThreads = Math.min(10, Math.floor(ns.hackAnalyzeThreads(target, hackAmount)));
@@ -115,7 +113,7 @@ export function calculateGrowAndWeakenThreads(ns: NS, target: string, hackPercen
 
 export function createBatch(ns: NS, hostToTarget: string, previousDelay: number, server: string = "home"): Batch {
     let batch: Batch = {
-        tasks: createTasks(ns, hostToTarget, previousDelay, 0, server),
+        tasks: createTasks(ns, hostToTarget, previousDelay, 50, server),
         delay: previousDelay + delay,
         server: server
     };
@@ -129,13 +127,13 @@ export function createTasks(ns: NS, hostToTarget: string, delay: number, default
     const weakenTime = ns.getWeakenTime(hostToTarget)
     const growTime = ns.getGrowTime(hostToTarget)
 
-    let threads = calculateFullCycleThreads(ns, hostToTarget, 0.5, server)
+    let threads = calculateFullCycleThreads(ns, hostToTarget, 0.10, server)
 
 
     let hack = {
         time: hackTime,
         script: hackScriptName,
-        delay: weakenTime - hackTime + delay - defaultDelay - defaultDelay,
+        delay: weakenTime - hackTime + delay - defaultDelay * 2,
         name: TASK_NAME.h,
         threads: threads.hack.threads
     } as Task
