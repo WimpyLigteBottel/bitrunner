@@ -1,4 +1,5 @@
 import { NS } from "@ns";
+
 import { findAllServers, HostObj } from "./FindAllServers";
 
 export async function main(ns: NS) {

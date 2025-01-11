@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { KILL_ALL, PREP_MANAGER } from "./HackConstants"
+import { KILL_ALL, PREP_HOME_ONLY, PREP_MANAGER } from "./HackConstants"
 
 
 export async function main(ns: NS) {
@@ -10,6 +10,7 @@ export async function main(ns: NS) {
 
   if (await ns.prompt("Should kill all tasks?", { type: "boolean" })) {
     ns.exec(KILL_ALL, "home", 1)
+    ns.exit()
   }
 
   if (await ns.prompt("Want to backdoor systems?", { type: "boolean" })) {
@@ -27,9 +28,8 @@ export async function main(ns: NS) {
     ns.closeTail(pid)
   }
 
-  if (await ns.prompt("Want to hack servers (ratio-split)?", { type: "boolean" })) {
-    let pid = ns.exec("scripts/smart/ratio-split.js", "home", 1, " ")
-    ns.closeTail(pid)
+  if (await ns.prompt("Want to prep servers using home?", { type: "boolean" })) {
+    ns.exec(PREP_HOME_ONLY, "home", 1)
   }
 
 }

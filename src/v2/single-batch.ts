@@ -18,9 +18,7 @@ export async function main(ns: NS): Promise<void> {
     while (true) {
         let previousDelay = BATCH_DELAY
         let max = calculateMaxBatches(ns, targetHost, ns.getHostname())
-        ns.print(`max = ${max}`)
-        ns.print(`BATCH_DELAY ${BATCH_DELAY}`)
-        ns.print(`HACK_PERCENTAGE ${HACK_PERCENTAGE}`)
+
 
         let maxWait = 0
 
@@ -55,5 +53,14 @@ export function calculateMaxBatches(ns: NS, target: string, currentServer: strin
 
     let totalCost = batch.tasks.map(x => x.threads * ns.getScriptRam(x.script)).reduce((acc, value) => acc + value)
 
-    return Math.min(10, Math.floor((getAvailiableRam(ns, currentServer, 1)) / totalCost));
+    let possibleBatches = Math.floor((getAvailiableRam(ns, currentServer, 1)) / totalCost)
+    let maxBatches = Math.floor(ns.getHackTime(target) / BATCH_DELAY)
+
+
+    const max = Math.min(possibleBatches, maxBatches);
+
+    ns.print(`max = ${possibleBatches} /  ${maxBatches}`)
+    ns.print(`BATCH_DELAY ${BATCH_DELAY}`)
+    ns.print(`HACK_PERCENTAGE ${HACK_PERCENTAGE}`)
+    return max;
 }

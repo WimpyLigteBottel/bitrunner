@@ -11,7 +11,7 @@ export async function main(ns: NS): Promise<void> {
     prepServersForHack(ns)
 
     let servers = findAllServers(ns, false, false).filter(x => !x.host.includes("home")).filter(x => ns.hasRootAccess(x.host)).sort((b, a) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host));
-    let homeServers = findAllServers(ns, false, true);
+    let homeServers = findAllServers(ns, false, true).filter(x => x.host == "home");
 
     if (servers.length === 0) {
         ns.print("No servers with root access available. Sleeping...");
@@ -58,7 +58,7 @@ export async function main(ns: NS): Promise<void> {
                 const scriptRam = ns.getScriptRam("/v1/weak.js");
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam / 2));
 
-                if(threads == 1)
+                if (threads == 1)
                     continue
 
                 ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, BATCH_DELAY);
@@ -73,7 +73,7 @@ export async function main(ns: NS): Promise<void> {
                 const scriptRam = ns.getScriptRam("/v1/weak.js");
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam));
 
-                if(threads == 1)
+                if (threads == 1)
                     continue
 
                 ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, 0);

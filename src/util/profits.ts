@@ -3,10 +3,7 @@ import { findAllServers } from "./FindAllServers";
 import { HACK_PERCENTAGE } from "./HackConstants";
 
 export async function main(ns: NS) {
-    ns.tail()
     let servers = findAllServers(ns, false, false)
-
-
     let stats = []
 
     for (const server of servers) {

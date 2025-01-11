@@ -20,6 +20,11 @@ export async function main(ns: NS): Promise<void> {
         let serverToRunOn = homeServers.pop()?.host as string
         let target = targets.pop()?.host as string
 
-        ns.exec(singleBatcherName, serverToRunOn, 1, target, 0)
+        try {
+            ns.print(`Running batches ${serverToRunOn}`)
+            ns.exec(singleBatcherName, serverToRunOn, 1, target, 0)
+        } catch (error) {
+            ns.print(error)
+         }
     }
 }

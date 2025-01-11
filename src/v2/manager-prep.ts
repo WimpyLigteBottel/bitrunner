@@ -25,7 +25,5 @@ export async function main(ns: NS): Promise<void> {
         let target = targets.pop()?.host as string
 
         ns.exec(singlePrepName, serverToRunOn, 1, target, 0)
-
-        await ns.sleep(1000)
     }
 }

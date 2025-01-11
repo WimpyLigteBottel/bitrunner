@@ -9,20 +9,17 @@ export async function main(ns: NS) {
 
 
   let hostname = ns.args[0] as string ?? "home"
-  let ram = ns.args[1] ?? 524288
-
-  ns.print("Going to purchase new PC")
-
-  let homes = ns.scan("home").filter((x) => x.includes(hostname))
-
-  for (let x = ns.getPurchasedServerLimit(); x > homes.length; x--) {
-    ns.purchaseServer(hostname, 64)
-  }
 
   while (true) {
+    let homes = ns.scan("home").filter((x) => x.includes(hostname))
+
+    let newServer = ns.purchaseServer(hostname, 32)
+    if (newServer != "") {
+      ns.print(newServer)
+    }
     purchaseHacks(ns)
     upgradeRam(ns, homes)
-    await ns.sleep(1000)
+    await ns.sleep(100)
   }
 
 }

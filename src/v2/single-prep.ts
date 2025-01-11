@@ -36,8 +36,8 @@ export async function main(ns: NS): Promise<void> {
             if (threads == 1)
                 continue
 
-            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, BATCH_DELAY);
-            ns.exec("/v1/grow.js", ns.getHostname(), threads, targetHost, 0);
+            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, BATCH_DELAY, threads);
+            ns.exec("/v1/grow.js", ns.getHostname(), threads, targetHost, 0, threads);
         } else {
             const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
             const scriptRam = ns.getScriptRam("/v1/weak.js");
@@ -46,9 +46,12 @@ export async function main(ns: NS): Promise<void> {
             if (threads == 1)
                 continue
 
-            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, 0);
+            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, 0, threads);
         }
     }
 
-    ns.spawn(singleBatcherName, {spawnDelay: 0, }, targetHost)
+
+    ns.killall(ns.getHostname(), true)
+
+    ns.spawn(singleBatcherName, { spawnDelay: 0, }, targetHost)
 }
