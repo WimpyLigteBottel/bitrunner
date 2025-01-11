@@ -1,5 +1,7 @@
 import { NS } from "@ns";
 import { findAllServers, prepServersForHack } from "/util/FindAllServers";
+import { getAvailiableRam } from "/util/HackThreadUtil";
+import { BATCH_DELAY } from "/util/HackConstants";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
@@ -20,7 +22,7 @@ export async function main(ns: NS): Promise<void> {
     let targetHost = servers.pop()!.host
     ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
 
-    let currentFindPid = ns.exec("test.js", "home", 1, targetHost)
+    // let currentFindPid = ns.exec("test.js", "home", 1, targetHost)
 
     // Prep the target server
     while (true) {
@@ -44,24 +46,22 @@ export async function main(ns: NS): Promise<void> {
                 break
 
 
-
-
             homeServers.forEach(x => ns.killall(x.host, true))
             ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
-            currentFindPid = ns.exec("test.js", "home", 1, targetHost)
-
-
             continue;
         }
 
         // Weaken first if security is above minimum
         if (availableMoney < maxMoney) {
             for (const homeServer of homeServers) {
-                const availableRam = getAvailableRam(ns, homeServer.host);
+                const availableRam = getAvailiableRam(ns, homeServer.host, 10);
                 const scriptRam = ns.getScriptRam("/v1/weak.js");
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam / 2));
 
-                ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, 100);
+                if(threads == 1)
+                    continue
+
+                ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, BATCH_DELAY);
                 ns.exec("/v1/grow.js", homeServer.host, threads, targetHost, 0);
             }
         }
@@ -69,20 +69,18 @@ export async function main(ns: NS): Promise<void> {
         // Weaken first if security is above minimum
         if (currentSecurity > minSecurity && availableMoney == maxMoney) {
             for (const homeServer of homeServers) {
-                const availableRam = getAvailableRam(ns, homeServer.host);
+                const availableRam = getAvailiableRam(ns, homeServer.host, 10);
                 const scriptRam = ns.getScriptRam("/v1/weak.js");
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam));
+
+                if(threads == 1)
+                    continue
 
                 ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, 0);
             }
         }
 
         // Short delay to prevent excessive CPU usage
-        await ns.sleep(50);
+        await ns.sleep(BATCH_DELAY);
     }
-}
-
-// Helper function: Get available RAM on a server
-function getAvailableRam(ns: NS, serverName: string): number {
-    return ns.getServerMaxRam(serverName) - ns.getServerUsedRam(serverName);
 }

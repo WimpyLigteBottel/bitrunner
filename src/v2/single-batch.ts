@@ -14,20 +14,13 @@ export async function main(ns: NS): Promise<void> {
     ns.tail()
     const targetHost: string = ns.args[0] as string
 
-    prepServersForHack(ns)
-
-
-    ns.killall("home", true)
-    // let port = ns.exec("util/PortListener.js", "home", 1, targetHost)
-
-    let previousDelay = BATCH_DELAY
     while (true) {
-        previousDelay = BATCH_DELAY
-        let max = calculateMaxBatches(ns, targetHost, "home")
+        let previousDelay = BATCH_DELAY
+        let max = calculateMaxBatches(ns, targetHost, ns.getHostname())
         ns.print(`max = ${max}`)
 
         for (let x = 0; x < max; x++) {
-            let batch = createBatch(ns, targetHost, previousDelay, "home")
+            let batch = createBatch(ns, targetHost, previousDelay, ns.getHostname())
             const tasks = batch?.tasks!
             for (const task of tasks) {
                 if (task.threads != 0) {
@@ -54,9 +47,7 @@ export async function main(ns: NS): Promise<void> {
 export function calculateMaxBatches(ns: NS, target: string, currentServer: string) {
     let batch = createBatch(ns, target, 0, "home")
 
-
     let totalCost = batch.tasks.map(x => x.threads * ns.getScriptRam(x.script)).reduce((acc, value) => acc + value)
-
 
     return Math.floor((getAvailiableRam(ns, currentServer, 10)) / totalCost);
 }

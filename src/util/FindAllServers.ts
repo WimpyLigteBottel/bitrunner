@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { ALL_SCRIPTS_TO_COPY, growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
+import { ALL_SCRIPTS_TO_COPY } from "./HackConstants";
 
 interface HostObj {
     host: string,

@@ -6,11 +6,10 @@ export const growScriptName = "../v1/grow.js"
 
 export const singleBatcherName = "../v2/single-batch.js"
 export const batcherName = "../v2/batcher.js"
-export const FindAllServersName = "..//util/FindAllServers.js"
+export const FindAllServersName = "../util/FindAllServers.js"
 export const HackThreadUtilName = "../util/HackThreadUtil.js"
 export const HackConstantsName = "../util/HackConstants.js"
-
-
+export const singlePrepName = "../v2/single-prep.js"
 
 
 export const ALL_SCRIPTS_TO_COPY = [
@@ -21,7 +20,8 @@ export const ALL_SCRIPTS_TO_COPY = [
     batcherName,
     FindAllServersName,
     HackThreadUtilName,
-    HackConstantsName
+    HackConstantsName,
+    singlePrepName,
 ]
 
 

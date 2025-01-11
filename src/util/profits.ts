@@ -1,5 +1,6 @@
 import { NS } from "@ns";
 import { findAllServers } from "./FindAllServers";
+import { getAvailiableRam } from "./HackThreadUtil";
 
 export async function main(ns: NS) {
     ns.tail()
@@ -28,6 +29,7 @@ export async function main(ns: NS) {
         ns.tprint(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
         ns.tprint(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
         ns.tprint(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
+        ns.tprint(`Is prepped: ${stat.prepped}`);
         ns.tprint("----------")
     }
 }
@@ -71,6 +73,8 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
     const moneyPerCycle = hackAmount * hackChance; // Adjust for success probability
     const moneyPerSecond = moneyPerCycle / (fullCycleTime / 1000); // Convert ms to seconds
 
+    const prepped = maxMoney == ns.getServerMoneyAvailable(server) && ns.getServerMinSecurityLevel(server) == ns.getServerSecurityLevel(server)
+
     return {
         server,
         hackThreads,
@@ -80,6 +84,7 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
         fullCycleTime,
         moneyPerCycle,
         moneyPerSecond,
+        prepped
     };
 
 }
