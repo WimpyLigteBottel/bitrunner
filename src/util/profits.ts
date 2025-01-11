@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { findAllServers } from "./FindAllServers";
-import { getAvailiableRam } from "./HackThreadUtil";
+import { HACK_PERCENTAGE } from "./HackConstants";
 
 export async function main(ns: NS) {
     ns.tail()
@@ -35,7 +35,7 @@ export async function main(ns: NS) {
 }
 
 /** @param {NS} ns **/
-export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFraction: number = 0.1) {
+export function calculateFullCycleMoneyPerSecond(ns: NS, server: string) {
     const maxMoney = ns.getServerMaxMoney(server);
     const hackChance = ns.hackAnalyzeChance(server);
 
@@ -45,7 +45,7 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
     }
 
     // Calculate hack threads needed to steal the desired fraction of money
-    const hackAmount = maxMoney * stealFraction;
+    const hackAmount = maxMoney * HACK_PERCENTAGE;
     const hackThreads = Math.floor(ns.hackAnalyzeThreads(server, hackAmount));
 
     // Exit if hackThreads is invalid or too small

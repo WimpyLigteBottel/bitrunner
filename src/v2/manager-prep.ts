@@ -16,7 +16,7 @@ export async function main(ns: NS): Promise<void> {
         .filter(x => ns.getServerMaxRam(x.host) > 0)
         .filter(x => !ns.getServer(x.host).purchasedByPlayer)
 
-    let homeServers = findAllServers(ns, false, true)
+    let homeServers = findAllServers(ns, false, true).sort((a, b) => a.host.localeCompare(b.host))
 
     prepServersForHack(ns)
 
@@ -26,6 +26,6 @@ export async function main(ns: NS): Promise<void> {
 
         ns.exec(singlePrepName, serverToRunOn, 1, target, 0)
 
-        await ns.sleep(100)
+        await ns.sleep(1000)
     }
 }

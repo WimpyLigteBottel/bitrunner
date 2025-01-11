@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { BATCH_DELAY, growScriptName, hackScriptName, weakenScriptName } from "/util/HackConstants";
+import { BATCH_DELAY, growScriptName, HACK_PERCENTAGE, hackScriptName, weakenScriptName } from "/util/HackConstants";
 
 const delay: number = 50 // milisecond delay to avoid problems
 
@@ -34,7 +34,7 @@ interface Batch {
  * @param hackPercent - Percentage of max money to hack.
  * @returns Object containing thread counts for hack, weaken1, grow, and weaken2.
  */
-export function calculateFullCycleThreads(ns: NS, target: string, hackPercent: number): {
+export function calculateFullCycleThreads(ns: NS, target: string,): {
     hack: {
         threads: number
         scriptName: string
@@ -52,12 +52,12 @@ export function calculateFullCycleThreads(ns: NS, target: string, hackPercent: n
         scriptName: string
     }
 } {
-    let hackAmount = ns.getServerMaxMoney(target) * hackPercent; // Amount to hack (10% of max money)
+    let hackAmount = ns.getServerMaxMoney(target) * HACK_PERCENTAGE; // Amount to hack (10% of max money)
     let hackThreads = Math.max(1, Math.floor(ns.hackAnalyzeThreads(target, hackAmount)));
     hackThreads = Math.abs(hackThreads)
 
 
-    const wgthreads = calculateGrowAndWeakenThreads(ns, target, hackPercent)
+    const wgthreads = calculateGrowAndWeakenThreads(ns, target)
 
     return {
         hack: {
@@ -87,9 +87,9 @@ export function calculateFullCycleThreads(ns: NS, target: string, hackPercent: n
  * @param {number} hackPercent - The percentage of max money to hack (e.g., 0.5 for 50%).
  * @returns {Object} Threads needed for grow and weaken operations.
  */
-export function calculateGrowAndWeakenThreads(ns: NS, target: string, hackPercent: number) {
+export function calculateGrowAndWeakenThreads(ns: NS, target: string) {
     const maxMoney = ns.getServerMaxMoney(target);
-    const availableMoney = maxMoney * (1 - hackPercent); // Money left after hacking
+    const availableMoney = maxMoney * (1 - HACK_PERCENTAGE); // Money left after hacking
 
     // Growth Multiplier
     const growthMultiplier = maxMoney / availableMoney;
@@ -123,7 +123,7 @@ export function createTasks(ns: NS, hostToTarget: string, delay: number, default
     const weakenTime = ns.getWeakenTime(hostToTarget)
     const growTime = ns.getGrowTime(hostToTarget)
 
-    let threads = calculateFullCycleThreads(ns, hostToTarget, 0.10)
+    let threads = calculateFullCycleThreads(ns, hostToTarget)
 
 
     let hack = {
@@ -159,43 +159,6 @@ export function createTasks(ns: NS, hostToTarget: string, delay: number, default
     } as Task
 
     return [hack, weaken1, grow, weaken2];
-}
-
-
-// Construct a batch of tasks with proper delays
-export function createTasksHGW(ns: NS, hostToTarget: string, defaultDelay = 50): {
-    hack: Task,
-    weaken: Task,
-    grow: Task
-} {
-    const hackTime = ns.getHackTime(hostToTarget)
-    const weakenTime = ns.getWeakenTime(hostToTarget)
-    const growTime = ns.getGrowTime(hostToTarget)
-
-
-    let hack = {
-        time: hackTime,
-        script: hackScriptName,
-        delay: weakenTime - hackTime - defaultDelay,
-        name: TASK_NAME.h,
-    } as Task
-
-    let grow = {
-        time: growTime,
-        script: growScriptName,
-        delay: weakenTime - growTime,
-        name: TASK_NAME.g,
-    } as Task
-
-    let weaken = {
-        time: weakenTime,
-        script: weakenScriptName,
-        delay: defaultDelay + defaultDelay,
-        name: TASK_NAME.W,
-    } as Task
-
-
-    return { hack, grow, weaken };
 }
 /*
 

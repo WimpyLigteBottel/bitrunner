@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 import { ALL_SCRIPTS_TO_COPY } from "./HackConstants";
 
-interface HostObj {
+export interface HostObj {
     host: string,
     depth: number,
     parent?: HostObj

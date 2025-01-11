@@ -5,7 +5,7 @@ import { BATCH_DELAY, singleBatcherName } from "/util/HackConstants";
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
     ns.disableLog("ALL");
-    ns.tail();
+    // ns.tail();
 
     const targetHost: string = ns.args[0] as string
 
@@ -23,7 +23,7 @@ export async function main(ns: NS): Promise<void> {
 
         // Exit if the server is fully prepped
         if (availableMoney === maxMoney && currentSecurity === minSecurity) {
-            ns.tprint(`Server is fully prepped! ${targetHost}`);
+            ns.tprint(`Server is fully prepped! ${targetHost} by ${ns.getHostname()}`);
             break;
         }
 
@@ -50,5 +50,5 @@ export async function main(ns: NS): Promise<void> {
         }
     }
 
-    ns.spawn(singleBatcherName, 1, targetHost)
+    ns.spawn(singleBatcherName, {spawnDelay: 0, }, targetHost)
 }

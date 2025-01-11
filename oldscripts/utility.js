@@ -1,8 +1,6 @@
 /** @param {NS} ns */
 export async function main(ns) {
   ns.tail();
-
-
   let servers = findAllServersR(ns, "home")
 
   while (true) {
