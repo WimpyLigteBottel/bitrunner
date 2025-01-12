@@ -6,11 +6,12 @@ export async function main(ns: NS) {
   ns.disableLog("ALL")
   ns.clearLog()
 
-  renameServersCorrectly(ns)
+
 
 
   while (true) {
     purchaseServers(ns)
+    renameServersCorrectly(ns)
     upgradeRam(ns)
     await ns.sleep(100)
   }
@@ -43,7 +44,7 @@ function purchaseServers(ns: NS) {
 
 /** @param {NS} ns */
 function upgradeRam(ns: NS) {
-  let servers = ns.scan("home").filter((x) => x.includes("home")) as Array<string>
+  let servers = ns.scan("home").filter((x) => x.includes("home")).sort((a, b) => ns.getServerMaxRam(a) - ns.getServerMaxRam(b)) as Array<string>
   for (let home of servers) {
     let upgrade = ns.getServerMaxRam(home) * 2
     let response = ns.upgradePurchasedServer(home, upgrade)

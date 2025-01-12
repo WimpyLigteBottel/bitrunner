@@ -16,8 +16,7 @@ export async function main(ns: NS): Promise<void> {
 
         let previousDelay = BATCH_DELAY
         let max = calculateMaxBatches(ns, targetHost, ns.getHostname())
-
-
+        
         let maxWait = 0
         for (let x = 0; x < max; x++) {
             let batch = createBatch(ns, targetHost, previousDelay, ns.getHostname())

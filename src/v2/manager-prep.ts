@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { findAllServers, prepServersForHack } from "/util/FindAllServers";
 import { singlePrepName } from "/util/HackConstants";
+import { getHighestMoneyPerSecondDesc } from "/util/profits";
 /*
 This codes performs teh HWGW cycle in batches... So far its the only one kinda working
 */

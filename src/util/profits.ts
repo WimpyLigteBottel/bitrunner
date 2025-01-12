@@ -3,11 +3,59 @@ import { findAllServers, HostObj } from "./FindAllServers";
 import { getTotalCostThreads } from "./HackThreadUtil";
 import { BATCH_DELAY } from "./HackConstants";
 
+
+export interface ServerMoneyStats {
+    server: string;
+    hackThreads: number;
+    growThreads: number;
+    weakenThreads1: number;
+    weakenThreads2: number;
+    fullCycleTime: number;
+    moneyPerCycle: number;
+    moneyPerSecond: number;
+    prepped: boolean;
+    totalRamCost: number;
+    percentage: number;
+}
+
+
 export async function main(ns: NS) {
     let servers = findAllServers(ns, false, false)
-    let stats = []
+
+    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns, true)
+
+    let counter = 1
+    for (let stat of stats) {
+        // Logging for debugging
+        ns.tprint(`Server ${counter++}: ${stat.server}`);
+        ns.tprint(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
+        ns.tprint(`Total RAM Cost: ${stat.totalRamCost}`);
+        ns.tprint(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
+        ns.tprint(`Prepped: ${stat.prepped}`);
+        ns.tprint(`hack constant: ${stat.percentage}`);
+        ns.tprint(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
+        ns.tprint(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
+        ns.tprint("----------")
+    }
+
+
+    let totalMoneyPerSecond = ns.formatNumber(stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v), 0)
+    ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
+    ns.tprint("Make sure your hackconstant is percentage = " + findBestHackConstantToGenerateMoney(ns, servers))
+}
+
+
+export async function getHighestMoneyPerSecondDesc(ns: NS, lowestValue: boolean) {
+    let servers = findAllServers(ns, false, false)
+    let stats: ServerMoneyStats[] = []
 
     let highestPercentage = findBestHackConstantToGenerateMoney(ns, servers)
+
+    if (lowestValue) {
+        highestPercentage = 0.01
+    } else {
+        highestPercentage = findBestHackConstantToGenerateMoney(ns, servers)
+    }
 
     for (const server of servers) {
         const first = calculateFullCycleMoneyPerSecond(ns, server.host, highestPercentage);
@@ -20,22 +68,7 @@ export async function main(ns: NS) {
     }
 
     stats = stats.sort((a, b) => a.moneyPerSecond - b.moneyPerSecond)
-
-    for (let stat of stats) {
-        // Logging for debugging
-        ns.tprint(`Server: ${stat.server}`);
-        ns.tprint(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
-        ns.tprint(`Total RAM Cost: ${stat.totalRamCost}`);
-        ns.tprint(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
-        ns.tprint(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
-        ns.tprint(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
-        ns.tprint(`Is prepped: ${stat.prepped}`);
-        ns.tprint("----------")
-    }
-
-    let totalMoneyPerSecond = ns.formatNumber(stats.map(x => x.moneyPerSecond).reduce((a, v) => a + v))
-    ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
-    ns.tprint("Make sure your hackconstant is percentage = " + highestPercentage)
+    return stats
 }
 
 
@@ -56,28 +89,28 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
     let highestPercentage = 0
     let lowestRam = homeServerWithLowestRam(ns)
 
-
-
     outer:
-    for (let x = 1; x < 100; x++) {
+    for (let x = 1; x < 1000; x++) {
         let stats = []
-        let percentage = x / 100
+        let percentage = x / 1000
         for (const server of servers) {
-            const first = calculateFullCycleMoneyPerSecond(ns, server.host, percentage);
-
+            let first = calculateFullCycleMoneyPerSecond(ns, server.host, percentage);
             if (first == undefined) {
                 continue;
             }
             if (first.totalRamCost > lowestRam) {
-                ns.tprint(`needs ram server:  ${first.totalRamCost}`)
+                // ns.tprint(`needs ram server:  ${first.totalRamCost}`)
                 continue outer;
             }
-
 
             stats.push(first)
         }
 
-        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v)
+        if (stats.length < 24) {
+            continue
+        }
+
+        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v, 0)
         if (totalMoneyPerSecond > highestPaid) {
             highestPaid = totalMoneyPerSecond
             highestPercentage = percentage
@@ -88,7 +121,7 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
 }
 
 /** @param {NS} ns **/
-function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageConstant: number) {
+function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageConstant: number): ServerMoneyStats | undefined {
     const maxMoney = ns.getServerMaxMoney(server);
     const hackChance = ns.hackAnalyzeChance(server);
 
@@ -123,7 +156,7 @@ function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageCons
     const moneyPerCycle = hackAmount * hackChance; // Adjust for success probability
     const moneyPerSecond = moneyPerCycle / (fullCycleTime / 1000); // Convert ms to seconds
 
-    const prepped = maxMoney == ns.getServerMoneyAvailable(server) && ns.getServerMinSecurityLevel(server) == ns.getServerSecurityLevel(server)
+    const prepped = isPrepped(ns, server)
 
     return {
         server,
@@ -135,9 +168,17 @@ function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageCons
         moneyPerCycle,
         moneyPerSecond,
         prepped,
-        totalRamCost: getTotalCostThreads(ns, hackThreads, weakenThreads1 + weakenThreads2, growThreads)
-    };
+        totalRamCost: getTotalCostThreads(ns, hackThreads, weakenThreads1 + weakenThreads2, growThreads),
+        percentage: percentageConstant
+    } as ServerMoneyStats;
 
 }
 
 
+/*
+Check if the server is prepped
+*/
+export function isPrepped(ns: NS, server: string): boolean {
+    const maxMoney = ns.getServerMaxMoney(server);
+    return maxMoney == ns.getServerMoneyAvailable(server) && ns.getServerMinSecurityLevel(server) == ns.getServerSecurityLevel(server)
+}

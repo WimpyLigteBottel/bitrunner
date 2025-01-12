@@ -11,7 +11,7 @@ export async function main(ns: NS): Promise<void> {
     prepServersForHack(ns)
 
     let servers = findAllServers(ns, false, false).filter(x => !x.host.includes("home")).filter(x => ns.hasRootAccess(x.host)).sort((b, a) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host));
-    let homeServers = findAllServers(ns, false, true).filter(x => x.host == "home");
+    let homeServers = findAllServers(ns, false, true).filter(x => x.host == ns.getHostname());
 
     if (servers.length === 0) {
         ns.print("No servers with root access available. Sleeping...");
@@ -22,6 +22,7 @@ export async function main(ns: NS): Promise<void> {
     let targetHost = servers.pop()!.host
     ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
 
+    let counter = 0
     // Prep the target server
     while (true) {
         if (targetHost == undefined) {
@@ -36,15 +37,15 @@ export async function main(ns: NS): Promise<void> {
 
         // Exit if the server is fully prepped
         if (availableMoney === maxMoney && currentSecurity === minSecurity) {
-            ns.tprint(`Server is fully prepped! ${targetHost}`);
+            ns.tprint(`Server is fully prepped! ${targetHost} `);
             targetHost = servers.pop()?.host ?? ""
 
             if (targetHost == "")
                 break
 
 
-            homeServers.forEach(x => ns.killall(x.host, true))
-            ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
+            homeServers.forEach(x => ns.killall(x.host, true)) // only kiling on home remaining weaken scripts
+            ns.print(`WeakenTime ${ns.tFormat(ns.getWeakenTime(targetHost))} -> ${targetHost}-${counter++}`)
             continue;
         }
 
