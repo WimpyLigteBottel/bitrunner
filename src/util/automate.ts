@@ -5,7 +5,7 @@ import { CONNECT, KILL_ALL, PREP_HOME_ONLY, PREP_MANAGER, UPGRADE } from "./Hack
 export async function main(ns: NS) {
   ns.closeTail()
 
-  ns.exec(CONNECT, "home", 1, "I.I.I.I", "CSEC", "run4theh111z", "avmnite-02h")
+  ns.exec(CONNECT, "home", 1, "CSEC", "I.I.I.I", "avmnite-02h", "run4theh111z", "The-Cave")
 
   if (await ns.prompt("Should kill all tasks?", { type: "boolean" })) {
     ns.exec(KILL_ALL, "home", 1)

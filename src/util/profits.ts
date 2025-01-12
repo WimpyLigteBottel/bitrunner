@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { findAllServers, HostObj } from "./FindAllServers";
 import { getTotalCostThreads } from "./HackThreadUtil";
+import { BATCH_DELAY } from "./HackConstants";
 
 export async function main(ns: NS) {
     let servers = findAllServers(ns, false, false)
@@ -15,8 +16,7 @@ export async function main(ns: NS) {
             continue;
         }
 
-        if (first.moneyPerSecond != 0)
-            stats.push(first)
+        stats.push(first)
     }
 
     stats = stats.sort((a, b) => a.moneyPerSecond - b.moneyPerSecond)
@@ -32,7 +32,10 @@ export async function main(ns: NS) {
         ns.tprint(`Is prepped: ${stat.prepped}`);
         ns.tprint("----------")
     }
-    ns.tprint("Make sure your hackconstant is percentage= " + highestPercentage)
+
+    let totalMoneyPerSecond = ns.formatNumber(stats.map(x => x.moneyPerSecond).reduce((a, v) => a + v))
+    ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
+    ns.tprint("Make sure your hackconstant is percentage = " + highestPercentage)
 }
 
 
@@ -54,7 +57,6 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
     let lowestRam = homeServerWithLowestRam(ns)
 
 
-    ns.tprint(lowestRam)
 
     outer:
     for (let x = 1; x < 100; x++) {
@@ -67,7 +69,7 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
                 continue;
             }
             if (first.totalRamCost > lowestRam) {
-                ns.tprint("Breaking to outer loop")
+                ns.tprint(`needs ram server:  ${first.totalRamCost}`)
                 continue outer;
             }
 
@@ -75,7 +77,7 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
             stats.push(first)
         }
 
-        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond).reduce((a, v) => a + v)
+        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v)
         if (totalMoneyPerSecond > highestPaid) {
             highestPaid = totalMoneyPerSecond
             highestPercentage = percentage
@@ -113,12 +115,9 @@ function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageCons
     const weakenThreads2 = Math.ceil(ns.weakenAnalyze(1) * growThreads); // Offset grow security increase
 
     // Calculate operation times
-    const hackTime = ns.getHackTime(server);
-    const growTime = ns.getGrowTime(server);
     const weakenTime = ns.getWeakenTime(server);
 
-    // Full cycle time is the longest of all operations
-    const fullCycleTime = Math.max(hackTime, growTime, weakenTime) + 50;
+    const fullCycleTime = weakenTime + BATCH_DELAY * 4;
 
     // Calculate money generated per cycle and per second
     const moneyPerCycle = hackAmount * hackChance; // Adjust for success probability

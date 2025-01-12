@@ -35,7 +35,7 @@ function findAllServersWithParent(ns: NS, withParent: boolean = true) {
 
 
 export function findAllServers(ns: NS, withParent: boolean = false, homeServersOnly: boolean = true) {
-    let servers = findAllServersWithParent(ns, withParent)
+    let servers = findAllServersWithParent(ns, withParent).sort((a, b) => a.host.localeCompare(b.host))
     if (homeServersOnly) {
         return servers.filter(x => x.host.includes("home"))
     }
