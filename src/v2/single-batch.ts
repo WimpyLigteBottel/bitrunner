@@ -3,15 +3,10 @@ import { createBatch } from "v2/batcher";
 import { getAvailiableRam } from "/util/HackThreadUtil";
 import { BATCH_DELAY, HACK_PERCENTAGE } from "/util/HackConstants";
 import { prepServersForHack } from "/util/FindAllServers";
-/*
-This codes performs teh HWGW cycle in batches... So far its the only one kinda working
-*/
-
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
     ns.disableLog("ALL")
-    // ns.tail()
     const targetHost: string = ns.args[0] as string
 
     prepServersForHack(ns)
@@ -34,7 +29,7 @@ export async function main(ns: NS): Promise<void> {
             previousDelay += BATCH_DELAY * (batch.tasks.length + 1)
         }
 
-        await ns.sleep(maxWait)
+        await ns.sleep(maxWait + ns.getWeakenTime(targetHost))
     }
 
 }
@@ -59,8 +54,10 @@ export function calculateMaxBatches(ns: NS, target: string, currentServer: strin
 
     const max = Math.min(possibleBatches, maxBatches);
 
-    ns.print(`max = ${possibleBatches} /  ${maxBatches}`)
+    ns.print(`baches = ${possibleBatches}`)
+    ns.print(`Max possible batches = ${maxBatches}`)
     ns.print(`BATCH_DELAY ${BATCH_DELAY}`)
     ns.print(`HACK_PERCENTAGE ${HACK_PERCENTAGE}`)
+    
     return max;
 }

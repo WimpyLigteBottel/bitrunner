@@ -1,19 +1,15 @@
 import { NS } from "@ns";
 import { getAvailiableRam } from "/util/HackThreadUtil";
-import { BATCH_DELAY, singleBatcherName } from "/util/HackConstants";
+import { BATCH_DELAY, growScriptName, singleBatcherName, weakenScriptName } from "/util/HackConstants";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
     ns.disableLog("ALL");
-    // ns.tail();
-
     const targetHost: string = ns.args[0] as string
 
     ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
 
-    // let currentFindPid = ns.exec("test.js", "home", 1, targetHost)
 
-    // Prep the target server
     while (true) {
         await ns.sleep(1000);
         const availableMoney = ns.getServerMoneyAvailable(targetHost); // Current money
@@ -30,28 +26,27 @@ export async function main(ns: NS): Promise<void> {
         // Weaken first if security is above minimum
         if (availableMoney < maxMoney) {
             const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
-            const scriptRam = ns.getScriptRam("/v1/weak.js");
+            const scriptRam = ns.getScriptRam(weakenScriptName);
             const threads = Math.max(1, Math.floor(availableRam / scriptRam / 2));
 
             if (threads == 1)
                 continue
 
-            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, BATCH_DELAY, threads);
-            ns.exec("/v1/grow.js", ns.getHostname(), threads, targetHost, 0, threads);
+            ns.exec(weakenScriptName, ns.getHostname(), threads, targetHost, BATCH_DELAY, threads);
+            ns.exec(growScriptName, ns.getHostname(), threads, targetHost, 0, threads);
         } else {
             const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
-            const scriptRam = ns.getScriptRam("/v1/weak.js");
+            const scriptRam = ns.getScriptRam(weakenScriptName);
             const threads = Math.max(1, Math.floor(availableRam / scriptRam));
 
             if (threads == 1)
                 continue
-
-            ns.exec("/v1/weak.js", ns.getHostname(), threads, targetHost, 0, threads);
+            weakenScriptName
+            ns.exec(weakenScriptName, ns.getHostname(), threads, targetHost, 0, threads);
         }
     }
 
 
     ns.killall(ns.getHostname(), true)
-
     ns.spawn(singleBatcherName, { spawnDelay: 0, }, targetHost)
 }

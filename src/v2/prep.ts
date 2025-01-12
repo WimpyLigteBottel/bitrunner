@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 import { findAllServers, prepServersForHack } from "/util/FindAllServers";
 import { getAvailiableRam } from "/util/HackThreadUtil";
-import { BATCH_DELAY } from "/util/HackConstants";
+import { BATCH_DELAY, growScriptName, weakenScriptName } from "/util/HackConstants";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
@@ -22,15 +22,12 @@ export async function main(ns: NS): Promise<void> {
     let targetHost = servers.pop()!.host
     ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
 
-    // let currentFindPid = ns.exec("test.js", "home", 1, targetHost)
-
     // Prep the target server
     while (true) {
         if (targetHost == undefined) {
             ns.print("All servers prepped!")
             break
         }
-
 
         const availableMoney = ns.getServerMoneyAvailable(targetHost); // Current money
         const maxMoney = ns.getServerMaxMoney(targetHost); // Max money
@@ -55,14 +52,14 @@ export async function main(ns: NS): Promise<void> {
         if (availableMoney < maxMoney) {
             for (const homeServer of homeServers) {
                 const availableRam = getAvailiableRam(ns, homeServer.host, 10);
-                const scriptRam = ns.getScriptRam("/v1/weak.js");
+                const scriptRam = ns.getScriptRam(weakenScriptName);
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam / 2));
 
                 if (threads == 1)
                     continue
 
-                ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, BATCH_DELAY);
-                ns.exec("/v1/grow.js", homeServer.host, threads, targetHost, 0);
+                ns.exec(weakenScriptName, homeServer.host, threads, targetHost, BATCH_DELAY, threads);
+                ns.exec(growScriptName, homeServer.host, threads, targetHost, 0, threads);
             }
         }
 
@@ -70,13 +67,13 @@ export async function main(ns: NS): Promise<void> {
         if (currentSecurity > minSecurity && availableMoney == maxMoney) {
             for (const homeServer of homeServers) {
                 const availableRam = getAvailiableRam(ns, homeServer.host, 10);
-                const scriptRam = ns.getScriptRam("/v1/weak.js");
+                const scriptRam = ns.getScriptRam(weakenScriptName);
                 const threads = Math.max(1, Math.floor(availableRam / scriptRam));
 
                 if (threads == 1)
                     continue
 
-                ns.exec("/v1/weak.js", homeServer.host, threads, targetHost, 0);
+                ns.exec(weakenScriptName, homeServer.host, threads, targetHost, 0, threads);
             }
         }
 

@@ -27,7 +27,7 @@ export async function main(ns) {
 function buildConnectScript(ns, startingHost) {
 
   let servers = recursiveDive(ns, startingHost, startingHost.depth)
-  let string = ""
+  let string = "home;"
 
   while (servers.length > 0) {
     string += `connect ${servers.pop()};`

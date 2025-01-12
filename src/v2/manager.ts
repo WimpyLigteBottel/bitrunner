@@ -14,7 +14,6 @@ export async function main(ns: NS): Promise<void> {
     let targets = findAllServers(ns, false, false).filter(x => ns.hasRootAccess(x.host)).filter(x => ns.getServerMaxRam(x.host) > 0)
     let homeServers = findAllServers(ns, false, true)
 
-
     while (targets.length > 0 && homeServers.length > 0) {
 
         let serverToRunOn = homeServers.pop()?.host as string

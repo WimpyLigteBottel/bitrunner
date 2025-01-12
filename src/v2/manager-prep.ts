@@ -10,7 +10,6 @@ export async function main(ns: NS): Promise<void> {
     ns.disableLog("ALL")
     ns.tail()
 
-
     let targets = findAllServers(ns, false, false)
         .filter(x => ns.hasRootAccess(x.host))
         .filter(x => ns.getServerMaxRam(x.host) > 0)

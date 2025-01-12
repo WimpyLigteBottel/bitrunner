@@ -1,5 +1,4 @@
 import { NS } from "@ns";
-import { HostObj } from "./FindAllServers";
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
@@ -7,18 +6,9 @@ export async function main(ns: NS) {
   ns.disableLog("ALL")
   ns.clearLog()
 
-
-  let hostname = ns.args[0] as string ?? "home"
-
   while (true) {
-    let homes = ns.scan("home").filter((x) => x.includes(hostname))
-
-    let newServer = ns.purchaseServer(hostname, 32)
-    if (newServer != "") {
-      ns.print(newServer)
-    }
-    purchaseHacks(ns)
-    upgradeRam(ns, homes)
+    purchaseServers(ns)
+    upgradeRam(ns)
     await ns.sleep(100)
   }
 
@@ -26,13 +16,16 @@ export async function main(ns: NS) {
 
 
 /** @param {NS} ns */
-function purchaseHacks(ns: NS) {
-
+function purchaseServers(ns: NS) {
+  let newServer = ns.purchaseServer("home", 32)
+  if (newServer != "") {
+    ns.print(newServer)
+  }
 }
 
-
 /** @param {NS} ns */
-function upgradeRam(ns: NS, servers: string[]) {
+function upgradeRam(ns: NS) {
+  let servers = ns.scan("home").filter((x) => x.includes("home")) as Array<string>
   for (let home of servers) {
     let upgrade = ns.getServerMaxRam(home) * 2
     let response = ns.upgradePurchasedServer(home, upgrade)

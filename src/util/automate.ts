@@ -1,12 +1,11 @@
 import { NS } from "@ns"
-import { KILL_ALL, PREP_HOME_ONLY, PREP_MANAGER } from "./HackConstants"
+import { CONNECT, KILL_ALL, PREP_HOME_ONLY, PREP_MANAGER, UPGRADE } from "./HackConstants"
 
 
 export async function main(ns: NS) {
   ns.closeTail()
 
-  ns.exec("scripts/utility/connect.js", "home", 1, "I.I.I.I", "CSEC", "run4theh111z", "avmnite-02h")
-
+  ns.exec(CONNECT, "home", 1, "I.I.I.I", "CSEC", "run4theh111z", "avmnite-02h")
 
   if (await ns.prompt("Should kill all tasks?", { type: "boolean" })) {
     ns.exec(KILL_ALL, "home", 1)
@@ -19,17 +18,18 @@ export async function main(ns: NS) {
   }
 
   if (await ns.prompt("Should prep servers?", { type: "boolean" })) {
-    let pid = ns.exec(PREP_MANAGER, "home", 1)
+    ns.exec(PREP_MANAGER, "home", 1)
+  } else {
+    if (await ns.prompt("Want to prep servers using home?", { type: "boolean" })) {
+      ns.exec(PREP_HOME_ONLY, "home", 1)
+    }
   }
 
 
   if (await ns.prompt("Want to run upgrade scripts?", { type: "boolean" })) {
-    let pid = ns.exec("scripts/smart/upgrade.js", "home", 1)
+    let pid = ns.exec(UPGRADE, "home", 1)
     ns.closeTail(pid)
   }
 
-  if (await ns.prompt("Want to prep servers using home?", { type: "boolean" })) {
-    ns.exec(PREP_HOME_ONLY, "home", 1)
-  }
 
 }
