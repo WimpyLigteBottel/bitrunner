@@ -3,26 +3,34 @@ import { findAllServers, HostObj } from "./FindAllServers";
 
 export async function main(ns: NS) {
     let servers = findAllServers(ns, true, false)
-
     let input = ns.args[0] as string ?? await ns.prompt("What is the server you want to find?", { type: "text" }) as string
 
     ns.tail();
     while (true) {
         await ns.sleep(50)
         ns.clearLog()
-        ns.print(`Found total = ${servers.map(x => x.host)}`)
+        ns.print(`Found = ${servers.map(x => x.host)}`)
         ns.print(`Found total = ${servers.length}`)
         ns.print("------")
 
-        let server = findServer(input, servers)
-
-        if (server != undefined) {
-            server = populate(ns, server, server.host)
-        }
+        let server = findServerStats(ns, input)
 
 
         ns.print("INFO \n", JSON.stringify(server, null, 2))
     }
+}
+
+export function findServerStats(ns: NS, targetServer: string) {
+    let servers = findAllServers(ns, true, false)
+
+    let server = findServer(targetServer, servers)
+
+    if (server != undefined) {
+        server = populate(ns, server, server.host)
+    }
+
+
+    return server
 }
 
 function findServer(name: string, servers: any) {
