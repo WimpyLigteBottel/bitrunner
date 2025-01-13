@@ -4,6 +4,7 @@ import { getAvailiableRam } from "/util/HackThreadUtil";
 import { BATCH_DELAY, HACK_PERCENTAGE, hackScriptName, weakenScriptName } from "/util/HackConstants";
 import { prepServersForHack } from "/util/FindAllServers";
 
+
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
     ns.disableLog("ALL")
@@ -11,15 +12,24 @@ export async function main(ns: NS): Promise<void> {
 
     prepServersForHack(ns)
 
+    let highestPercentage = HACK_PERCENTAGE
+
+
     while (true) {
         await blockTillAllWeakensAreDone(ns) //TODO: to be removed and then replace with sleep time to make sure that batches don't overlap
-
         let previousDelay = BATCH_DELAY
-        let max = calculateMaxBatches(ns, targetHost, ns.getHostname())
-        
+        let max = calculateMaxBatches(ns, targetHost, ns.getHostname(), highestPercentage)
+
+        if (max == 0) {
+            ns.tprint(`ERROR: ${ns.getHostname()} can't handle hack % of ${highestPercentage}`)
+            highestPercentage *= 0.9
+            await ns.sleep(1000)
+            continue;
+        }
+
         let maxWait = 0
         for (let x = 0; x < max; x++) {
-            let batch = createBatch(ns, targetHost, previousDelay, ns.getHostname())
+            let batch = createBatch(ns, targetHost, previousDelay, ns.getHostname(), highestPercentage)
             const tasks = batch?.tasks!
             for (const task of tasks) {
                 if (task.threads != 0) {
@@ -42,7 +52,7 @@ async function blockTillAllWeakensAreDone(ns: NS) {
     while (scripts.length > 0) {
         await ns.sleep(1000)
         scripts = ns.ps(ns.getHostname())
-        .filter(x => x.filename.includes("weak"))
+            .filter(x => x.filename.includes("weak"))
     }
     ns.print("Continuing with run")
 }
@@ -54,8 +64,8 @@ async function blockTillAllWeakensAreDone(ns: NS) {
  * @param {string} target - The target server's name (e.g., "joesguns").
  * @returns {number} Maximum number of batches that can fit.
  */
-export function calculateMaxBatches(ns: NS, target: string, currentServer: string) {
-    let batch = createBatch(ns, target, 0, "home")
+export function calculateMaxBatches(ns: NS, target: string, currentServer: string, highestPercentage: number) {
+    let batch = createBatch(ns, target, 0, currentServer, highestPercentage)
 
     let totalCost = batch.tasks.map(x => x.threads * ns.getScriptRam(x.script)).reduce((acc, value) => acc + value)
 
@@ -69,7 +79,7 @@ export function calculateMaxBatches(ns: NS, target: string, currentServer: strin
     ns.print(`batches = ${possibleBatches}`)
     ns.print(`Max possible batches = ${maxBatches}`)
     ns.print(`BATCH_DELAY ${BATCH_DELAY}`)
-    ns.print(`HACK_PERCENTAGE ${HACK_PERCENTAGE}`)
+    ns.print(`HACK_PERCENTAGE ${highestPercentage}`)
 
     return max;
 }

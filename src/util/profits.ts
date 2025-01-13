@@ -22,7 +22,7 @@ export interface ServerMoneyStats {
 export async function main(ns: NS) {
     let servers = findAllServers(ns, false, false)
 
-    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns, true)
+    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns, false)
 
     let counter = 1
     for (let stat of stats) {
@@ -39,7 +39,8 @@ export async function main(ns: NS) {
     }
 
 
-    let totalMoneyPerSecond = ns.formatNumber(stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v), 0)
+    let totalMoneyPerSecond: string | number = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v, 0)
+    totalMoneyPerSecond = ns.formatNumber(totalMoneyPerSecond)
     ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
     ns.tprint("Make sure your hackconstant is percentage = " + findBestHackConstantToGenerateMoney(ns, servers))
 }
@@ -49,12 +50,10 @@ export async function getHighestMoneyPerSecondDesc(ns: NS, lowestValue: boolean)
     let servers = findAllServers(ns, false, false)
     let stats: ServerMoneyStats[] = []
 
-    let highestPercentage = findBestHackConstantToGenerateMoney(ns, servers)
+    let highestPercentage =  ns.args[0] as number ?? findBestHackConstantToGenerateMoney(ns, servers)
 
     if (lowestValue) {
         highestPercentage = 0.01
-    } else {
-        highestPercentage = findBestHackConstantToGenerateMoney(ns, servers)
     }
 
     for (const server of servers) {
@@ -106,11 +105,7 @@ function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number
             stats.push(first)
         }
 
-        if (stats.length < 24) {
-            continue
-        }
-
-        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v, 0)
+        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond).reduce(((a, v) => a + v), 0)
         if (totalMoneyPerSecond > highestPaid) {
             highestPaid = totalMoneyPerSecond
             highestPercentage = percentage

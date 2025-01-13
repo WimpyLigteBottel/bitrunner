@@ -1,6 +1,8 @@
 import { NS } from "@ns";
 import { getAvailiableRam } from "/util/HackThreadUtil";
 import { BATCH_DELAY, growScriptName, singleBatcherName, weakenScriptName } from "/util/HackConstants";
+import { findServerStats } from "/util/Find";
+
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
@@ -27,13 +29,15 @@ export async function main(ns: NS): Promise<void> {
         if (availableMoney < maxMoney) {
             const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
             const scriptRam = ns.getScriptRam(weakenScriptName);
-            const threads = Math.max(1, Math.floor(availableRam / scriptRam / 2));
+            const threads = Math.max(1, Math.floor(availableRam / scriptRam));
+            const weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads) / ns.weakenAnalyze(1)) + 1;
 
-            if (threads == 1)
+            if (threads < 2 || weakenThreads < 1)
                 continue
 
-            ns.exec(weakenScriptName, ns.getHostname(), threads, targetHost, BATCH_DELAY, threads);
-            ns.exec(growScriptName, ns.getHostname(), threads, targetHost, 0, threads);
+            ns.exec(weakenScriptName, ns.getHostname(), weakenThreads, targetHost, 0, weakenThreads);
+            let delay = ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost)
+            ns.exec(growScriptName, ns.getHostname(), threads - weakenThreads, targetHost, delay, threads - weakenThreads);
         } else {
             const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
             const scriptRam = ns.getScriptRam(weakenScriptName);
@@ -44,6 +48,9 @@ export async function main(ns: NS): Promise<void> {
             weakenScriptName
             ns.exec(weakenScriptName, ns.getHostname(), threads, targetHost, 0, threads);
         }
+
+        ns.print("INFO \n", JSON.stringify(findServerStats(ns, targetHost), null, 2))
+
     }
 
 

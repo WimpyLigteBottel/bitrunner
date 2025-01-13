@@ -1,10 +1,6 @@
 import { NS } from "@ns";
 import { findAllServers, prepServersForHack } from "/util/FindAllServers";
 import { singlePrepName } from "/util/HackConstants";
-import { getHighestMoneyPerSecondDesc } from "/util/profits";
-/*
-This codes performs teh HWGW cycle in batches... So far its the only one kinda working
-*/
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
@@ -22,10 +18,11 @@ export async function main(ns: NS): Promise<void> {
     prepServersForHack(ns)
 
     while (targets.length > 0 && homeServers.length > 0) {
-        let serverToRunOn = homeServers.shift()?.host as string
-        let target = targets.shift()?.host as string
+        let serverToRunOn = homeServers.shift()
+        let target = targets.shift()
 
-        ns.tprint(`Running ${singlePrepName} on ${serverToRunOn} targeting ${target}`)
-        ns.exec(singlePrepName, serverToRunOn, 1, target, 0)
+        ns.tprint(`Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target?.host!}`)
+        ns.exec(singlePrepName, serverToRunOn?.host!, 1, target?.host!)
+        await ns.sleep(100)
     }
 }

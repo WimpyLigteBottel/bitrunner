@@ -48,9 +48,4 @@ export function prepServersForHack(ns: NS) {
         .forEach((server) => {
             ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home");
         })
-
-    findAllServers(ns, false, true)
-        .forEach((server) => {
-            ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home");
-        })
 }

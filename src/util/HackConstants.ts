@@ -41,4 +41,4 @@ export const ALL_SCRIPTS_TO_COPY = [
 
 
 export const BATCH_DELAY = 300 as number
-export const HACK_PERCENTAGE = 0.01 as number
+export const HACK_PERCENTAGE = 0.123 as number

@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { BATCH_DELAY, growScriptName, HACK_PERCENTAGE, hackScriptName, weakenScriptName } from "/util/HackConstants";
 
+
 const delay: number = 50 // milisecond delay to avoid problems
 
 enum TASK_NAME {
@@ -34,7 +35,7 @@ interface Batch {
  * @param hackPercent - Percentage of max money to hack.
  * @returns Object containing thread counts for hack, weaken1, grow, and weaken2.
  */
-export function calculateFullCycleThreads(ns: NS, target: string,): {
+export function calculateFullCycleThreads(ns: NS, target: string, percentage: number): {
     hack: {
         threads: number
         scriptName: string
@@ -52,7 +53,7 @@ export function calculateFullCycleThreads(ns: NS, target: string,): {
         scriptName: string
     }
 } {
-    let hackAmount = ns.getServerMaxMoney(target) * HACK_PERCENTAGE; // Amount to hack (10% of max money)
+    let hackAmount = ns.getServerMaxMoney(target) * percentage; // Amount to hack (10% of max money)
     let hackThreads = Math.max(1, Math.floor(ns.hackAnalyzeThreads(target, hackAmount)));
     hackThreads = Math.abs(hackThreads)
 
@@ -84,7 +85,6 @@ export function calculateFullCycleThreads(ns: NS, target: string,): {
  *
  * @param {NS} ns - The Netscript environment object.
  * @param {string} target - The target server's name.
- * @param {number} hackPercent - The percentage of max money to hack (e.g., 0.5 for 50%).
  * @returns {Object} Threads needed for grow and weaken operations.
  */
 export function calculateGrowAndWeakenThreads(ns: NS, target: string) {
@@ -107,9 +107,9 @@ export function calculateGrowAndWeakenThreads(ns: NS, target: string) {
     return { growThreads, weakenThreads };
 }
 
-export function createBatch(ns: NS, hostToTarget: string, previousDelay: number, server: string = "home"): Batch {
+export function createBatch(ns: NS, hostToTarget: string, previousDelay: number, server: string = "home", percentage: number = HACK_PERCENTAGE): Batch {
     let batch: Batch = {
-        tasks: createTasks(ns, hostToTarget, previousDelay, BATCH_DELAY),
+        tasks: createTasks(ns, hostToTarget, previousDelay, BATCH_DELAY, percentage),
         delay: previousDelay + delay,
         server: server
     };
@@ -118,12 +118,12 @@ export function createBatch(ns: NS, hostToTarget: string, previousDelay: number,
 }
 
 // Construct a batch of tasks with proper delays
-export function createTasks(ns: NS, hostToTarget: string, delay: number, defaultDelay = BATCH_DELAY): Task[] {
+export function createTasks(ns: NS, hostToTarget: string, delay: number, defaultDelay = BATCH_DELAY, percentage: number): Task[] {
     const hackTime = ns.getHackTime(hostToTarget)
     const weakenTime = ns.getWeakenTime(hostToTarget)
     const growTime = ns.getGrowTime(hostToTarget)
 
-    let threads = calculateFullCycleThreads(ns, hostToTarget)
+    let threads = calculateFullCycleThreads(ns, hostToTarget, percentage)
 
 
     let hack = {

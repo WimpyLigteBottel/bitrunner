@@ -7,8 +7,6 @@ export async function main(ns: NS) {
   ns.clearLog()
 
 
-
-
   while (true) {
     purchaseServers(ns)
     renameServersCorrectly(ns)
@@ -36,7 +34,7 @@ function renameServersCorrectly(ns: NS) {
 
 /** @param {NS} ns */
 function purchaseServers(ns: NS) {
-  let newServer = ns.purchaseServer("home", 128)
+  let newServer = ns.purchaseServer("home", 1024)
   if (newServer != "") {
     ns.print(`Bought new server: ${newServer}`)
   }
