@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { findAllServers, prepServersForHack } from "/util/FindAllServers";
+import { findAllServers } from "/util/FindAllServers";
 import { singlePrepName } from "/util/HackConstants";
 
 export async function main(ns: NS): Promise<void> {
@@ -11,18 +11,21 @@ export async function main(ns: NS): Promise<void> {
         .filter(x => ns.hasRootAccess(x.host))
         .filter(x => ns.getServerMaxMoney(x.host) > 0)
         .filter(x => !ns.getServer(x.host).purchasedByPlayer)
-        .sort((a, b) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host))
+        .sort((b, a) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host))
+        .map(x => x.host)
 
-    let homeServers = findAllServers(ns, false, true)
-
-    prepServersForHack(ns)
+    let homeServers = findAllServers(ns, false, true).sort((a, b) => ns.getServerMaxRam(a.host) - ns.getServerMaxRam(b.host))
 
     while (targets.length > 0 && homeServers.length > 0) {
-        let serverToRunOn = homeServers.shift()
-        let target = targets.shift()
+        let serverToRunOn = homeServers.pop()
+        let target = targets.pop()
 
-        ns.tprint(`Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target?.host!}`)
-        ns.exec(singlePrepName, serverToRunOn?.host!, 1, target?.host!)
+        ns.tprint(`Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
+
+        ns.killall(serverToRunOn?.host!, true)
+        ns.exec(singlePrepName, serverToRunOn?.host!, 1, target!)
         await ns.sleep(100)
     }
+
+    ns.tprint(`No more servers to run ${JSON.stringify(homeServers)} targeting ${JSON.stringify(targets)}`)
 }

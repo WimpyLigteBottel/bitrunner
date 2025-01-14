@@ -11,12 +11,15 @@ export const UPGRADE = "../util/upgrade.js"
 export const FindAllServersName = "../util/FindAllServers.js"
 export const HackThreadUtilName = "../util/HackThreadUtil.js"
 export const HackConstantsName = "../util/HackConstants.js"
+export const BACKDOOR = "../util/backdoor.js"
+export const BACKDOOR_AND_HACK = "../util/backdoor-and-hack.js"
 
 export const singleBatcherName = "../v2/single-batch.js"
 export const batcherName = "../v2/batcher.js"
 export const singlePrepName = "../v2/single-prep.js"
 export const PREP_MANAGER = "../v2/manager-prep.js"
-export const PREP_HOME_ONLY = "../v2/prep.js"
+export const MASS_PREP = "../v2/mass-prep.js"
+export const PREP = "../v2/prep.js"
 
 
 
@@ -32,13 +35,14 @@ export const ALL_SCRIPTS_TO_COPY = [
     singlePrepName,
     PREP_MANAGER,
     KILL_ALL,
-    PREP_HOME_ONLY,
+    PREP,
     PROFITS,
     FIND,
     CONNECT,
-    UPGRADE
+    UPGRADE,
+    MASS_PREP,
+    BACKDOOR,
+    BACKDOOR_AND_HACK
 ]
 
-
-export const BATCH_DELAY = 300 as number
-export const HACK_PERCENTAGE = 0.123 as number
+export const BATCH_DELAY = 200 as number

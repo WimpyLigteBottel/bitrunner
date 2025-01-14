@@ -2,6 +2,7 @@ import { NS } from "@ns";
 
 export async function main(ns: NS): Promise<void> {
     ns.disableLog("sleep")
+    ns.clearLog()
     ns.tail()
     while (true) {
         let line = await ns.readPort(9999)

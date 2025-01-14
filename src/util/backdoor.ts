@@ -10,7 +10,7 @@ export async function main(ns: NS) {
         try {
             await hackServer(ns, server.host)
         } catch (err) {
-            ns.print(`${err}`);
+            ns.print(`ERROR ${err}`);
         }
     }
 
@@ -30,6 +30,10 @@ export async function hackServer(ns: NS, hostname: string) {
     // below can be commented out to save memory
     if (ns.getServerRequiredHackingLevel(hostname) > playerHackingLevel) {
         throw Error("Player level too low for " + hostname)
+    }
+
+    if(ns.hasRootAccess(hostname)){
+        return;
     }
 
     if (ns.fileExists("FTPCrack.exe", "home")) {
@@ -54,6 +58,7 @@ export async function hackServer(ns: NS, hostname: string) {
 
     try {
         ns.nuke(hostname);
+        ns.tprint(`Has nuked ${hostname}`)
     } catch (err) {
         throw Error(`Failed to nuke server ${hostname}`)
     }

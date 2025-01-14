@@ -6,10 +6,10 @@ export async function main(ns: NS) {
   ns.disableLog("ALL")
   ns.clearLog()
 
+  renameServersCorrectly(ns)
 
   while (true) {
     purchaseServers(ns)
-    renameServersCorrectly(ns)
     upgradeRam(ns)
     await ns.sleep(100)
   }
@@ -26,7 +26,7 @@ function renameServersCorrectly(ns: NS) {
 
   names = names.sort((a, b) => a.localeCompare(b))
   for (const server of servers) {
-    ns.renamePurchasedServer(server, names.pop()!)
+    ns.renamePurchasedServer(server, names.shift()!)
   }
 }
 

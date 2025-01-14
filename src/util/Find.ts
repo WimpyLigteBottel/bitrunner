@@ -20,7 +20,7 @@ export async function main(ns: NS) {
     }
 }
 
-export function findServerStats(ns: NS, targetServer: string) {
+export function findServerStats(ns: NS, targetServer: string): HostObj {
     let servers = findAllServers(ns, true, false)
 
     let server = findServer(targetServer, servers)

@@ -1,6 +1,6 @@
 import { NS } from "@ns";
-import { findAllServers, HostObj } from "./FindAllServers";
-import { getTotalCostThreads } from "./HackThreadUtil";
+import { findAllServers, findAllServersHome, HostObj } from "./FindAllServers";
+import { getAvailiableRam, getTotalCostThreads } from "./HackThreadUtil";
 import { BATCH_DELAY } from "./HackConstants";
 
 
@@ -20,9 +20,7 @@ export interface ServerMoneyStats {
 
 
 export async function main(ns: NS) {
-    let servers = findAllServers(ns, false, false)
-
-    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns, false)
+    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns)
 
     let counter = 1
     for (let stat of stats) {
@@ -42,24 +40,23 @@ export async function main(ns: NS) {
     let totalMoneyPerSecond: string | number = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v, 0)
     totalMoneyPerSecond = ns.formatNumber(totalMoneyPerSecond)
     ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
-    ns.tprint("Make sure your hackconstant is percentage = " + findBestHackConstantToGenerateMoney(ns, servers))
 }
 
 
-export async function getHighestMoneyPerSecondDesc(ns: NS, lowestValue: boolean) {
+export async function getHighestMoneyPerSecondDesc(ns: NS) {
     let servers = findAllServers(ns, false, false)
     let stats: ServerMoneyStats[] = []
-
-    let highestPercentage =  ns.args[0] as number ?? findBestHackConstantToGenerateMoney(ns, servers)
-
-    if (lowestValue) {
-        highestPercentage = 0.01
-    }
+    let currentHost = ns.getHostname()
 
     for (const server of servers) {
+        const highestPercentage = findBestHackConstantToGenerateMoney(ns, server, currentHost)
         const first = calculateFullCycleMoneyPerSecond(ns, server.host, highestPercentage);
 
         if (first == undefined) {
+            continue;
+        }
+
+        if (first.totalRamCost > homeServerWithLowestRam(ns)) {
             continue;
         }
 
@@ -74,7 +71,7 @@ export async function getHighestMoneyPerSecondDesc(ns: NS, lowestValue: boolean)
 function homeServerWithLowestRam(ns: NS): number {
     let lowestRam = Number.MAX_VALUE
 
-    for (const server of findAllServers(ns, false, true)) {
+    for (const server of findAllServersHome(ns)) {
         let ram = ns.getServerMaxRam(server.host)
         lowestRam = Math.min(ram, lowestRam)
     }
@@ -83,34 +80,31 @@ function homeServerWithLowestRam(ns: NS): number {
 }
 
 
-function findBestHackConstantToGenerateMoney(ns: NS, servers: HostObj[]): number {
+export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: HostObj, host: string): number {
     let highestPaid = 0
-    let highestPercentage = 0
-    let lowestRam = homeServerWithLowestRam(ns)
+    let highestPercentage = 0.01
+    const possibleRam = getAvailiableRam(ns, host, 1);
 
-    outer:
-    for (let x = 1; x < 1000; x++) {
-        let stats = []
-        let percentage = x / 1000
-        for (const server of servers) {
-            let first = calculateFullCycleMoneyPerSecond(ns, server.host, percentage);
-            if (first == undefined) {
-                continue;
-            }
-            if (first.totalRamCost > lowestRam) {
-                // ns.tprint(`needs ram server:  ${first.totalRamCost}`)
-                continue outer;
-            }
+    for (let x = 1; x < 10; x++) {
+        let first = calculateFullCycleMoneyPerSecond(ns, hackTarget.host, x / 10);
 
-            stats.push(first)
+        if (first == undefined) {
+            continue;
+        }
+        if (first.totalRamCost > possibleRam) {
+            continue;
         }
 
-        const totalMoneyPerSecond = stats.map(x => x.moneyPerSecond).reduce(((a, v) => a + v), 0)
-        if (totalMoneyPerSecond > highestPaid) {
-            highestPaid = totalMoneyPerSecond
-            highestPercentage = percentage
+        if (first.moneyPerSecond >= highestPaid) {
+            highestPaid = first.moneyPerSecond
+            highestPercentage = x / 10
         }
     }
+
+    highestPercentage = Math.floor(highestPercentage * 100)
+
+    highestPercentage = highestPercentage / 100
+
 
     return highestPercentage
 }

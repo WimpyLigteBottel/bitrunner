@@ -34,6 +34,12 @@ function findAllServersWithParent(ns: NS, withParent: boolean = true) {
 }
 
 
+/** 
+ * @param ns 
+ * @param withParent 
+ * @param homeServersOnly 
+ * @returns 
+ */
 export function findAllServers(ns: NS, withParent: boolean = false, homeServersOnly: boolean = true) {
     let servers = findAllServersWithParent(ns, withParent).sort((a, b) => a.host.localeCompare(b.host))
     if (homeServersOnly) {
@@ -43,9 +49,19 @@ export function findAllServers(ns: NS, withParent: boolean = false, homeServersO
     return servers
 }
 
+export function findAllServersHome(ns: NS) {
+    return findAllServers(ns, false, true)
+}
+
 export function prepServersForHack(ns: NS) {
+    let currentHost = ns.getHostname()
+
     findAllServers(ns, false, false)
+        .filter(x => x.host! + currentHost)
         .forEach((server) => {
-            ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home");
+            let copy = ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home")
+            if (!copy) {
+                ns.tprint("FAILED " + server.host)
+            };
         })
 }

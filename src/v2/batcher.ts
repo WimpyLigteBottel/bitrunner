@@ -1,10 +1,9 @@
 import { NS } from "@ns";
-import { BATCH_DELAY, growScriptName, HACK_PERCENTAGE, hackScriptName, weakenScriptName } from "/util/HackConstants";
+import { growScriptName, hackScriptName, weakenScriptName } from "/util/HackConstants";
 
 
-const delay: number = 50 // milisecond delay to avoid problems
 
-enum TASK_NAME {
+export enum TASK_NAME {
     w = "w",
     W = "W",
     h = "h",
@@ -12,7 +11,7 @@ enum TASK_NAME {
     o = "-"
 }
 
-interface Task {
+export interface Task {
     time: number, // timeIt will take to execute
     delay: number, // that start delay of thread
     name: TASK_NAME, // Name of thread
@@ -20,10 +19,10 @@ interface Task {
     threads: number
 };
 
-interface Batch {
+export interface Batch {
     tasks: Task[]
-    delay: number;
-    server: string
+    server: string;
+    totalCost: number
 }
 
 
@@ -57,8 +56,7 @@ export function calculateFullCycleThreads(ns: NS, target: string, percentage: nu
     let hackThreads = Math.max(1, Math.floor(ns.hackAnalyzeThreads(target, hackAmount)));
     hackThreads = Math.abs(hackThreads)
 
-
-    const wgthreads = calculateGrowAndWeakenThreads(ns, target)
+    const wgthreads = calculateGrowAndWeakenThreads(ns, target, percentage)
 
     return {
         hack: {
@@ -66,7 +64,7 @@ export function calculateFullCycleThreads(ns: NS, target: string, percentage: nu
             scriptName: hackScriptName
         },
         weaken1: {
-            threads: wgthreads.weakenThreads,
+            threads: calculateHackWeakenThreads(ns, hackThreads),
             scriptName: weakenScriptName
         },
         grow: {
@@ -87,9 +85,9 @@ export function calculateFullCycleThreads(ns: NS, target: string, percentage: nu
  * @param {string} target - The target server's name.
  * @returns {Object} Threads needed for grow and weaken operations.
  */
-export function calculateGrowAndWeakenThreads(ns: NS, target: string) {
+export function calculateGrowAndWeakenThreads(ns: NS, target: string, percentage: number) {
     const maxMoney = ns.getServerMaxMoney(target);
-    const availableMoney = maxMoney * (1 - HACK_PERCENTAGE); // Money left after hacking
+    const availableMoney = maxMoney * (1 - percentage); // Money left after hacking
 
     // Growth Multiplier
     const growthMultiplier = maxMoney / availableMoney;
@@ -107,59 +105,25 @@ export function calculateGrowAndWeakenThreads(ns: NS, target: string) {
     return { growThreads, weakenThreads };
 }
 
-export function createBatch(ns: NS, hostToTarget: string, previousDelay: number, server: string = "home", percentage: number = HACK_PERCENTAGE): Batch {
-    let batch: Batch = {
-        tasks: createTasks(ns, hostToTarget, previousDelay, BATCH_DELAY, percentage),
-        delay: previousDelay + delay,
-        server: server
-    };
 
-    return batch
+/**
+ * Calculates the grow threads and weaken threads required after hacking.
+ *
+ * @param {NS} ns - The Netscript environment object.
+ * @param {string} target - The target server's name.
+ * @returns {Object} Threads needed for grow and weaken operations.
+ */
+export function calculateHackWeakenThreads(ns: NS, threads: number) {
+    const weakenEffect = ns.weakenAnalyze(1);
+
+    // Weaken Threads (to offset grow security increase)
+    const weakenThreads = Math.ceil(ns.hackAnalyzeSecurity(threads) / weakenEffect);
+
+    return weakenThreads;
 }
 
-// Construct a batch of tasks with proper delays
-export function createTasks(ns: NS, hostToTarget: string, delay: number, defaultDelay = BATCH_DELAY, percentage: number): Task[] {
-    const hackTime = ns.getHackTime(hostToTarget)
-    const weakenTime = ns.getWeakenTime(hostToTarget)
-    const growTime = ns.getGrowTime(hostToTarget)
-
-    let threads = calculateFullCycleThreads(ns, hostToTarget, percentage)
 
 
-    let hack = {
-        time: hackTime,
-        script: hackScriptName,
-        delay: weakenTime - hackTime + delay - defaultDelay * 2,
-        name: TASK_NAME.h,
-        threads: threads.hack.threads
-    } as Task
-
-    let weaken1 = {
-        time: weakenTime,
-        script: weakenScriptName,
-        delay: delay - defaultDelay,
-        name: TASK_NAME.w,
-        threads: threads.weaken1.threads
-    } as Task
-
-    let weaken2 = {
-        time: weakenTime,
-        script: weakenScriptName,
-        delay: delay + defaultDelay,
-        name: TASK_NAME.W,
-        threads: threads.weaken2.threads
-    } as Task
-
-    let grow = {
-        time: growTime,
-        script: growScriptName,
-        delay: weakenTime - growTime + delay,
-        name: TASK_NAME.g,
-        threads: threads.grow.threads
-    } as Task
-
-    return [hack, weaken1, grow, weaken2];
-}
 /*
 
 It should generate as follows

@@ -1,5 +1,5 @@
 import { NS } from "@ns"
-import { CONNECT, KILL_ALL, PREP_HOME_ONLY, PREP_MANAGER, UPGRADE } from "./HackConstants"
+import { BACKDOOR, CONNECT, KILL_ALL, PREP, PREP_MANAGER, UPGRADE } from "./HackConstants"
 
 
 export async function main(ns: NS) {
@@ -13,23 +13,20 @@ export async function main(ns: NS) {
   }
 
   if (await ns.prompt("Want to backdoor systems?", { type: "boolean" })) {
-    let pid = ns.exec("scripts/general/backdoor.js", "home", 1)
-    ns.closeTail(pid)
+    ns.exec(BACKDOOR, "home", 1)
   }
 
   if (await ns.prompt("Should prep servers?", { type: "boolean" })) {
     ns.exec(PREP_MANAGER, "home", 1)
   } else {
     if (await ns.prompt("Want to prep servers using home?", { type: "boolean" })) {
-      ns.exec(PREP_HOME_ONLY, "home", 1)
+      ns.exec(PREP, "home", 1)
     }
   }
-
 
   if (await ns.prompt("Want to run upgrade scripts?", { type: "boolean" })) {
     let pid = ns.exec(UPGRADE, "home", 1)
     ns.closeTail(pid)
   }
-
 
 }

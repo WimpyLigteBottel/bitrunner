@@ -1,59 +1,115 @@
 import { NS } from "@ns";
 import { getAvailiableRam } from "/util/HackThreadUtil";
-import { BATCH_DELAY, growScriptName, singleBatcherName, weakenScriptName } from "/util/HackConstants";
+import { growScriptName, singleBatcherName, weakenScriptName } from "/util/HackConstants";
 import { findServerStats } from "/util/Find";
+
+
+export type PrepServerModel = {
+    availableMoney: number;
+    maxMoney: number;
+    currentSecurity: number;
+    minSecurity: number;
+    growThreads: number,
+    weakenThreads: number
+}
 
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog();
     ns.disableLog("ALL");
     const targetHost: string = ns.args[0] as string
-
-    ns.print(`WeakenTime ${ns.getWeakenTime(targetHost)} -> ${targetHost}`)
-
+    const currentHost = ns.getHostname();
 
     while (true) {
-        await ns.sleep(1000);
-        const availableMoney = ns.getServerMoneyAvailable(targetHost); // Current money
-        const maxMoney = ns.getServerMaxMoney(targetHost); // Max money
-        const currentSecurity = ns.getServerSecurityLevel(targetHost); // Current security level
-        const minSecurity = ns.getServerMinSecurityLevel(targetHost); // Min security level
-
-        // Exit if the server is fully prepped
-        if (availableMoney === maxMoney && currentSecurity === minSecurity) {
-            ns.tprint(`Server is fully prepped! ${targetHost} by ${ns.getHostname()}`);
-            break;
-        }
-
-        // Weaken first if security is above minimum
-        if (availableMoney < maxMoney) {
-            const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
-            const scriptRam = ns.getScriptRam(weakenScriptName);
-            const threads = Math.max(1, Math.floor(availableRam / scriptRam));
-            const weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads) / ns.weakenAnalyze(1)) + 1;
-
-            if (threads < 2 || weakenThreads < 1)
-                continue
-
-            ns.exec(weakenScriptName, ns.getHostname(), weakenThreads, targetHost, 0, weakenThreads);
-            let delay = ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost)
-            ns.exec(growScriptName, ns.getHostname(), threads - weakenThreads, targetHost, delay, threads - weakenThreads);
-        } else {
-            const availableRam = getAvailiableRam(ns, ns.getHostname(), 1);
-            const scriptRam = ns.getScriptRam(weakenScriptName);
-            const threads = Math.max(1, Math.floor(availableRam / scriptRam));
-
-            if (threads == 1)
-                continue
-            weakenScriptName
-            ns.exec(weakenScriptName, ns.getHostname(), threads, targetHost, 0, threads);
+        if (await prepServer(ns, targetHost, currentHost)) {
+            break
         }
 
         ns.print("INFO \n", JSON.stringify(findServerStats(ns, targetHost), null, 2))
-
     }
 
 
-    ns.killall(ns.getHostname(), true)
+    ns.killall(currentHost, true)
     ns.spawn(singleBatcherName, { spawnDelay: 0, }, targetHost)
+}
+
+export async function prepServer(ns: NS, targetHost: string, currentHost: string) {
+    await blockTillAllWeakensAreDone(ns, currentHost)
+
+    const model = getServerPrepModel(ns, targetHost)
+
+    if (isPrepped(model)) {
+        ns.tprint(`Server is fully prepped! ${targetHost} by ${ns.getHostname()}`);
+        return true
+    }
+
+    if (!isMoneyPrepped(model)) {
+        let delay = ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost)
+
+        ns.exec(growScriptName, ns.getHostname(), model.growThreads, targetHost, delay, model.growThreads);
+
+    }
+
+    if (!isSecurityPrepped(model)) {
+        ns.exec(weakenScriptName, ns.getHostname(), model.weakenThreads, targetHost, 0, model.weakenThreads);
+    }
+
+    return false;
+}
+
+
+export function getServerPrepModel(ns: NS, target: string, host: string = ns.getHostname()): PrepServerModel {
+    const availableMoney = ns.getServerMoneyAvailable(target); // Current money
+    const maxMoney = ns.getServerMaxMoney(target); // Max money
+    const currentSecurity = ns.getServerSecurityLevel(target); // Current security level
+    const minSecurity = ns.getServerMinSecurityLevel(target); // Min security level
+
+
+    const availableRam = getAvailiableRam(ns, host, 1);
+    const scriptRam = ns.getScriptRam(weakenScriptName);
+    const threads = Math.floor(availableRam / scriptRam) || 2;
+    let weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads) / ns.weakenAnalyze(1)) || 1;
+    let growThreads = (threads - weakenThreads) || 2
+
+    if (growThreads < 1) {
+        ns.tprint(`ERROR growThreads is broken ${growThreads} | host: ${host} | target: ${target}`)
+    }
+
+    if (weakenThreads < 1) {
+        weakenThreads = 1
+        ns.tprint(`ERROR weakenThreads is broken ${weakenThreads} | host: ${host}  | target: ${target}`)
+    }
+
+    return {
+        availableMoney,
+        maxMoney,
+        currentSecurity,
+        minSecurity,
+        growThreads: growThreads,
+        weakenThreads: weakenThreads
+    }
+}
+
+export function isPrepped(model: PrepServerModel) {
+    return isMoneyPrepped(model) && isSecurityPrepped(model)
+}
+
+export function isMoneyPrepped(model: PrepServerModel) {
+    return model.availableMoney === model.maxMoney;
+}
+
+export function isSecurityPrepped(model: PrepServerModel) {
+    return model.currentSecurity === model.minSecurity;
+}
+
+export async function blockTillAllWeakensAreDone(ns: NS, currentHost: string) {
+    let scripts = ns.ps(currentHost)
+        .filter(x => x.filename.includes("weak"))
+
+    while (scripts.length > 0) {
+        await ns.sleep(1000)
+        scripts = ns.ps(currentHost)
+            .filter(x => x.filename.includes("weak"))
+    }
+    ns.print("Continuing with run")
 }
