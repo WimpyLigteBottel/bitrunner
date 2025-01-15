@@ -18,13 +18,13 @@ export async function main(ns: NS) {
 }
 
 /** @param {NS} ns */
-function buildConnectScript(startingHost: HostObj) {
-
-    let servers = recursiveDive(startingHost, startingHost.depth)
+export function buildConnectScript(startingHost: HostObj) {
+    let servers = recursiveDive(startingHost) ?? []
     let string = "home;"
 
     while (servers.length > 0) {
-        string += `connect ${servers.pop()};`
+        let serverName= servers.pop() ?? ""
+        string += `connect ${serverName};`
     }
 
     string += `backdoor`
@@ -32,11 +32,10 @@ function buildConnectScript(startingHost: HostObj) {
     return string
 }
 
-function recursiveDive(server: HostObj | undefined, depth: number): any {
+function recursiveDive(server: HostObj | undefined): any {
     if (server?.depth == 1) {
-        return server.host
+        return [server.host]
     }
-    // ns.print(JSON.stringify(server, null, 1))
 
-    return [server?.host].concat(recursiveDive(server?.parent, server!.depth))
+    return [server?.host].concat(recursiveDive(server?.parent))
 }

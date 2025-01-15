@@ -21,6 +21,7 @@ export async function main(ns: NS): Promise<void> {
     const currentHost = ns.getHostname();
 
     while (true) {
+        await blockTillAllWeakensAreDone(ns, currentHost)
         if (await prepServer(ns, targetHost, currentHost)) {
             break
         }
@@ -30,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
 
 
     ns.killall(currentHost, true)
-    ns.spawn(singleBatcherName, { spawnDelay: 0, }, targetHost)
+    ns.spawn(singleBatcherName, { spawnDelay: 1000, }, targetHost)
 }
 
 export async function prepServer(ns: NS, targetHost: string, currentHost: string) {
@@ -68,7 +69,7 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
     const availableRam = getAvailiableRam(ns, host, 1);
     const scriptRam = ns.getScriptRam(weakenScriptName);
     const threads = Math.floor(availableRam / scriptRam) || 2;
-    let weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads) / ns.weakenAnalyze(1)) || 1;
+    let weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads, target) / ns.weakenAnalyze(1)) || 0;
     let growThreads = (threads - weakenThreads) || 2
 
     if (growThreads < 1) {
@@ -76,7 +77,10 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
     }
 
     if (weakenThreads < 1) {
-        weakenThreads = 1
+        weakenThreads = Math.ceil((currentSecurity) / ns.weakenAnalyze(1)) || threads
+    }
+
+    if (weakenThreads < 1) {
         ns.tprint(`ERROR weakenThreads is broken ${weakenThreads} | host: ${host}  | target: ${target}`)
     }
 
@@ -103,13 +107,10 @@ export function isSecurityPrepped(model: PrepServerModel) {
 }
 
 export async function blockTillAllWeakensAreDone(ns: NS, currentHost: string) {
-    let scripts = ns.ps(currentHost)
-        .filter(x => x.filename.includes("weak"))
-
+    let scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
     while (scripts.length > 0) {
         await ns.sleep(1000)
-        scripts = ns.ps(currentHost)
-            .filter(x => x.filename.includes("weak"))
+        scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
     }
     ns.print("Continuing with run")
 }

@@ -7,6 +7,7 @@ export const KILL_ALL = "../util/killall.js"
 export const PROFITS = "../util/profits.js"
 export const FIND = "../util/Find.js"
 export const CONNECT = "../util/connect.js"
+export const CONTRACTS = "../util/contracts.js"
 export const UPGRADE = "../util/upgrade.js"
 export const FindAllServersName = "../util/FindAllServers.js"
 export const HackThreadUtilName = "../util/HackThreadUtil.js"
@@ -20,7 +21,6 @@ export const singlePrepName = "../v2/single-prep.js"
 export const PREP_MANAGER = "../v2/manager-prep.js"
 export const MASS_PREP = "../v2/mass-prep.js"
 export const PREP = "../v2/prep.js"
-
 
 
 export const ALL_SCRIPTS_TO_COPY = [
@@ -42,7 +42,8 @@ export const ALL_SCRIPTS_TO_COPY = [
     UPGRADE,
     MASS_PREP,
     BACKDOOR,
-    BACKDOOR_AND_HACK
+    BACKDOOR_AND_HACK,
+    CONTRACTS
 ]
 
 export const BATCH_DELAY = 200 as number

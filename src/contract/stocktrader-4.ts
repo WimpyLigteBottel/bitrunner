@@ -1,24 +1,46 @@
-/*
-Algorithmic Stock Trader II
-You are attempting to solve a Coding Contract. You have 10 tries remaining, after which the contract will self-destruct.
-
-
-You are given the following array of stock prices (which are numbers) where the i-th element represents the stock price on day i:
-
-172,156,74,56,132,15,155,187,8,161,178,17,86,89,21,190,48,107,18,84,48,89,1,60,9,65,167,128,159,185,55,88,43,73,40,128,10,160,23,154,147,14,141,8
-
-Determine the maximum possible profit you can earn using as many transactions as you'd like. A transaction is defined as buying and then selling one share of the stock. Note that you cannot engage in multiple transactions at once. In other words, you must sell the stock before you buy it again.
-
-If no profit can be made, then the answer should be 0.
-
-
-If your solution is an empty string, you must leave the text box empty. Do not use "", '', or ``.
-*/
-
 import { NS } from "@ns"
 
+function createStockTraderAlgo(ns: NS) {
+    let contractsToCreate = ["Algorithmic Stock Trader I", "Algorithmic Stock Trader II", "Algorithmic Stock Trader III", "Algorithmic Stock Trader IV"]
+    let contracts: string[] = []
 
-function maxProfitWithKTransactions(k: number, prices: number[]): number {
+    contractsToCreate.forEach((x: string) => {
+        contracts.push(ns.codingcontract.createDummyContract(x))
+    })
+
+    ns.print(contracts)
+
+    for (const contract of contracts) {
+        solveStockTrader(ns, contract)
+    }
+}
+
+export function solveStockTrader(ns: NS, fileName: string) {
+    let contractType = ns.codingcontract.getContractType(fileName)
+    let data = ns.codingcontract.getData(fileName)
+
+    switch (contractType) {
+        case "Algorithmic Stock Trader I":
+            ns.codingcontract.attempt(maxProfitWithKTransactions(1, data), fileName)
+            break;
+        case "Algorithmic Stock Trader II":
+            ns.codingcontract.attempt(maxProfitWithKTransactions(data.length, data), fileName)
+            break;
+        case "Algorithmic Stock Trader III":
+            ns.codingcontract.attempt(maxProfitWithKTransactions(2, data), fileName)
+            break;
+        case "Algorithmic Stock Trader IV":
+            ns.codingcontract.attempt(maxProfitWithKTransactions(data[0], data[1]), fileName)
+            break;
+        default:
+            ns.print("CANT SOLVE")
+            break;
+    }
+}
+
+
+
+export function maxProfitWithKTransactions(k: number, prices: number[]): number {
     const n = prices.length;
     if (n === 0 || k === 0) return 0;
 
@@ -47,16 +69,10 @@ function maxProfitWithKTransactions(k: number, prices: number[]): number {
     return dp[k][n - 1];
 }
 
-// Example usage:
-const k = 3;
-const prices = [166, 180, 36, 64, 33];
-
-
 
 export async function main(ns: NS): Promise<void> {
-    ns.tprint(solve())
-}
-
-function solve() {
-    return maxProfitWithKTransactions(3, [166, 180, 36, 64, 33])
+    let numbers = (await ns.prompt("numbers", { "type": "text" })).toString().split(",").map(x=>Number.parseInt(x))
+    numbers = numbers
+    let kTransactions = await ns.prompt("amount of transactions", { "type": "text" })
+    ns.tprint(maxProfitWithKTransactions(3, [166, 180, 36, 64, 33]))
 }

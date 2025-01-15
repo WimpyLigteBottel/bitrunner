@@ -1,12 +1,28 @@
 import { NS } from "@ns";
 
+
+let names: string[] = []
+
 /** @param {NS} ns */
 export async function main(ns: NS) {
   ns.tail();
   ns.disableLog("ALL")
   ns.clearLog()
 
-  renameServersCorrectly(ns)
+  if (names.length == 0) {
+    names = [
+      "home-01", "home-02", "home-03", "home-04", "home-05", "home-06", "home-07", "home-08", "home-09", "home-10",
+      "home-11", "home-12", "home-13", "home-14", "home-15", "home-16", "home-17", "home-18", "home-19", "home-20",
+      "home-21", "home-22", "home-23", "home-24", "home-25"]
+  }
+
+  let purchasedServer = ns.getPurchasedServers()
+  if (purchasedServer.length != 0) {
+    ns.print(names)
+    names = names.filter(x => !purchasedServer.includes(x))
+    ns.print(names)
+  }
+
 
   while (true) {
     purchaseServers(ns)
@@ -15,26 +31,14 @@ export async function main(ns: NS) {
   }
 }
 
-/** @param {NS} ns */
-function renameServersCorrectly(ns: NS) {
-  let servers: Array<string> = ns.scan("home").filter((x) => x.includes("home")).sort((a, b) => a.localeCompare(b))
-
-  let names = [
-    "home-01", "home-02", "home-03", "home-04", "home-05", "home-06", "home-07", "home-08", "home-09", "home-10",
-    "home-11", "home-12", "home-13", "home-14", "home-15", "home-16", "home-17", "home-18", "home-19", "home-20",
-    "home-21", "home-22", "home-23", "home-24", "home-25"]
-
-  names = names.sort((a, b) => a.localeCompare(b))
-  for (const server of servers) {
-    ns.renamePurchasedServer(server, names.shift()!)
-  }
-}
-
-
 
 /** @param {NS} ns */
 function purchaseServers(ns: NS) {
-  let newServer = ns.purchaseServer("home", 1024)
+  if (names.length == 0) {
+    return;
+  }
+
+  let newServer = ns.purchaseServer(names.pop()!, 1024)
   if (newServer != "") {
     ns.print(`Bought new server: ${newServer}`)
   }

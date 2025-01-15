@@ -30,7 +30,7 @@ function findAllServersWithParent(ns: NS, withParent: boolean = true) {
         });
     }
 
-    return Array.from(servers).sort((a, b) => a!.host.localeCompare(b.host)).sort((a, b) => a!.host.length - b!.host.length);
+    return Array.from(servers);
 }
 
 

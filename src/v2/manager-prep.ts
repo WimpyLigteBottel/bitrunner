@@ -14,18 +14,29 @@ export async function main(ns: NS): Promise<void> {
         .sort((b, a) => ns.getWeakenTime(a.host) - ns.getWeakenTime(b.host))
         .map(x => x.host)
 
-    let homeServers = findAllServers(ns, false, true).sort((a, b) => ns.getServerMaxRam(a.host) - ns.getServerMaxRam(b.host))
+    if (targets.length > 25) {
+        targets = targets.sort((a, b) => ns.getWeakenTime(a) - ns.getWeakenTime(b))
+    }
+
+    ns.print(`Shortest ${targets[0]} => ${ns.getWeakenTime(targets[0])}`)
+    ns.print(`Longest ${targets[targets.length - 1]} => ${ns.getWeakenTime(targets[targets.length - 1])}`)
+
+    let homeServers = findAllServers(ns, false, true)
+
+    ns.tprint(`INFO servers to run ${homeServers.map(x => x.host)} targeting ${targets}`)
 
     while (targets.length > 0 && homeServers.length > 0) {
         let serverToRunOn = homeServers.pop()
         let target = targets.pop()
 
-        ns.tprint(`Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
-
         ns.killall(serverToRunOn?.host!, true)
-        ns.exec(singlePrepName, serverToRunOn?.host!, 1, target!)
+        if (ns.exec(singlePrepName, serverToRunOn?.host!, 1, target!)) {
+            ns.tprint(`INFO Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
+        } else {
+            ns.tprint(`ERROR Failed to run ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
+        }
         await ns.sleep(100)
     }
 
-    ns.tprint(`No more servers to run ${JSON.stringify(homeServers)} targeting ${JSON.stringify(targets)}`)
+    ns.tprint(`INFO No more servers to run ${homeServers.map(x => x.host)} targeting ${targets}`)
 }
