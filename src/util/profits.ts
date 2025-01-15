@@ -85,8 +85,8 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: HostObj,
     let highestPercentage = 0.01
     const possibleRam = getAvailiableRam(ns, host, 1);
 
-    for (let x = 1; x < 10; x++) {
-        let first = calculateFullCycleMoneyPerSecond(ns, hackTarget.host, x / 10);
+    for (let x = 1; x < 100; x++) {
+        let first = calculateFullCycleMoneyPerSecond(ns, hackTarget.host, x / 100);
 
         if (first == undefined) {
             continue;
@@ -97,7 +97,7 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: HostObj,
 
         if (first.moneyPerSecond >= highestPaid) {
             highestPaid = first.moneyPerSecond
-            highestPercentage = x / 10
+            highestPercentage = x / 100
         }
     }
 

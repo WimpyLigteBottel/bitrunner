@@ -1,7 +1,6 @@
 import { NS } from "@ns";
-import { findAllServers } from "./FindAllServers";
-import { buildConnectScript } from "./connect";
-import { maxProfitWithKTransactions, solveStockTrader } from "/contract/stocktrader-4";
+import { findAllServers } from "../../util/FindAllServers";
+import { solveStockTrader } from "./stocktrader-4";
 
 export async function main(ns: NS) {
     ns.clearLog();

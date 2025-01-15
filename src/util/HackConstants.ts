@@ -1,6 +1,6 @@
-export const hackScriptName = "../v1/hack.js"
-export const weakenScriptName = "../v1/weak.js"
-export const growScriptName = "../v1/grow.js"
+export const hackScriptName = "../v2/hack.js"
+export const weakenScriptName = "../v2/weak.js"
+export const growScriptName = "../v2/grow.js"
 
 
 export const KILL_ALL = "../util/killall.js"

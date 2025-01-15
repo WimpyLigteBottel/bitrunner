@@ -66,9 +66,14 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
     const minSecurity = ns.getServerMinSecurityLevel(target); // Min security level
 
 
-    const availableRam = getAvailiableRam(ns, host, 1);
-    const scriptRam = ns.getScriptRam(weakenScriptName);
-    const threads = Math.floor(availableRam / scriptRam) || 2;
+    let neededGrowThreads = ns.formulas.hacking.growThreads(ns.getServer(target), ns.getPlayer(), maxMoney, ns.getServer("home").cpuCores)
+
+    let threads = maxPossibleThreads(ns, host);
+
+    if (threads >= neededGrowThreads) {
+        threads = neededGrowThreads
+    }
+
     let weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads, target) / ns.weakenAnalyze(1)) || 0;
     let growThreads = (threads - weakenThreads) || 2
 
@@ -77,18 +82,11 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
     }
 
     if (weakenThreads < 1) {
-        weakenThreads = Math.ceil((currentSecurity) / ns.weakenAnalyze(1))
-        weakenThreads = Math.min(threads, weakenThreads)
-        ns.print(weakenThreads)
+        weakenThreads = Math.ceil((currentSecurity) / ns.weakenAnalyze(1)) || threads
     }
 
     if (weakenThreads < 1) {
         ns.tprint(`ERROR weakenThreads is broken ${weakenThreads} | host: ${host}  | target: ${target}`)
-    }
-
-    if (threads < weakenThreads + growThreads) {
-        weakenThreads = threads - 1
-        growThreads = 1
     }
 
     return {
@@ -99,6 +97,11 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
         growThreads: growThreads,
         weakenThreads: weakenThreads
     }
+}
+
+
+function maxPossibleThreads(ns: NS, host: string) {
+    return Math.floor(getAvailiableRam(ns, host, 1) / ns.getScriptRam(growScriptName))
 }
 
 export function isPrepped(model: PrepServerModel) {

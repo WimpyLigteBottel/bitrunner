@@ -16,6 +16,7 @@ export async function main(ns: NS): Promise<void> {
 
     let highestPercentage = findBestHackConstantToGenerateMoney(ns, targetHost, currentHost)
 
+    
     while (true) {
         await blockTillAllWeakensAreDone(ns, currentHost) //TODO: to be removed and then replace with sleep time to make sure that batches don't overlap
         let max = calculateMaxBatches(ns, targetHost.host, currentHost, highestPercentage)

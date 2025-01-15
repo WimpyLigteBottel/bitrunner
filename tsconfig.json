@@ -18,7 +18,6 @@
     "jsx": "react",
     "paths": {
       "/*": ["*"],
-      "@V1": ["/v1/*"],
       "@ns": ["../NetscriptDefinitions.d.ts"],
       "@react": ["lib/react.ts"]
     }

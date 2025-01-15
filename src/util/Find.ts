@@ -57,12 +57,8 @@ function populate(ns: NS, obj: HostObj, host: string) {
 
     server["moneyToGrowPercentage"] = (ns.getServerMoneyAvailable(host) / ns.getServerMaxMoney(host)) * 100
 
-    let player = { ...ns.getPlayer() }
 
-    server = { ...ns.getServer(host), ...server, "player": player }
-
-
-    delete server["player"]
+    server = { ...ns.getServer(host), ...server}
 
     return server
 }
