@@ -10,7 +10,6 @@ type UPGRADEPLAN = {
   lowestAmount: number;
 }
 
-
 /** @param {NS} ns */
 export async function main(ns: NS) {
   ns.tail();
@@ -27,16 +26,18 @@ export async function main(ns: NS) {
   // Try to buy the max amount of servers
   ns.print(`max node : ${ns.hacknet.maxNumNodes()}`)
 
-
-
   while (true) {
-    await ns.sleep(1000)
+    await ns.sleep(100)
 
-    let totalMoneyMade = getTotalMoneyMade(ns)
+    let production = getTotalProduction(ns)
 
-    if (totalMoneyMade > ns.hacknet.getPurchaseNodeCost()) {
-      let cheapestUpgradePlan = getCheapestUpgradeFromNodes(ns)
+    let cheapestUpgradePlan = getCheapestUpgradeFromNodes(ns)
 
+    if (cheapestUpgradePlan == undefined) {
+      continue
+    }
+
+    if (production > cheapestUpgradePlan!.lowestAmount) {
       switch (cheapestUpgradePlan?.cheapest) {
         case "CORES":
           ns.hacknet.upgradeCore(cheapestUpgradePlan.index, 1)
@@ -59,7 +60,6 @@ export async function main(ns: NS) {
   }
 }
 
-
 function getCheapestUpgradeFromNodes(ns: NS): UPGRADEPLAN | undefined {
   let nodes = getAllHackNodes(ns)
 
@@ -67,7 +67,7 @@ function getCheapestUpgradeFromNodes(ns: NS): UPGRADEPLAN | undefined {
 
   let serverToUpgrade;
 
-  for (let x = 0; nodes.length; x++) {
+  for (let x = 0; x < nodes.length; x++) {
     let plan = getUpgradePlan(ns, x)
     if (cheapest > plan.lowestAmount) {
       cheapest = plan.lowestAmount
@@ -77,8 +77,6 @@ function getCheapestUpgradeFromNodes(ns: NS): UPGRADEPLAN | undefined {
 
   return serverToUpgrade
 }
-
-
 
 function getUpgradePlan(ns: NS, index: number) {
   const coreCost = ns.hacknet.getCoreUpgradeCost(index);
@@ -123,6 +121,10 @@ function getAllHackNodes(ns: NS): NodeStats[] {
 
 function getTotalMoneyMade(ns: NS) {
   return getAllHackNodes(ns).map(x => x.totalProduction).reduce((a, v) => a + v, 0)
+}
+
+function getTotalProduction(ns: NS) {
+  return getAllHackNodes(ns).map(x => x.production).reduce((a, v) => a + v, 0)
 }
 
 
