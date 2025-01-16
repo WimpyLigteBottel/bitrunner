@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { findAllServers, findAllServersHome, HostObj } from "./FindAllServers";
+import { findAllServers, findAllServersHome } from "./FindAllServers";
 import { getAvailiableRam, getTotalCostThreads } from "./HackThreadUtil";
 import { BATCH_DELAY } from "./HackConstants";
 
@@ -19,8 +19,20 @@ export interface ServerMoneyStats {
 }
 
 
+function disableLogs(ns: NS) {
+    ns.disableLog("getServerMaxMoney")
+    ns.disableLog("getServerMaxRam")
+    ns.disableLog("scan")
+    ns.disableLog("getServerUsedRam")
+    ns.disableLog("getServerMoneyAvailable")
+    ns.disableLog("getServerMinSecurityLevel")
+    ns.disableLog("getServerSecurityLevel")
+}
+
 export async function main(ns: NS) {
-    let stats: ServerMoneyStats[] = await getHighestMoneyPerSecondDesc(ns)
+    disableLogs(ns)
+
+    let stats: ServerMoneyStats[] = getHighestMoneyPerSecondDesc(ns)
 
     let counter = 1
     for (let stat of stats) {
@@ -43,20 +55,25 @@ export async function main(ns: NS) {
 }
 
 
-export async function getHighestMoneyPerSecondDesc(ns: NS) {
+export function getHighestMoneyPerSecondDesc(ns: NS) {
     let servers = findAllServers(ns, false, false)
     let stats: ServerMoneyStats[] = []
-    let currentHost = ns.getHostname()
+    let highestPercentage = 0.001
+
+    let currentServer = ns.getHostname()
 
     for (const server of servers) {
-        const highestPercentage = findBestHackConstantToGenerateMoney(ns, server, currentHost)
+        if (ns.args[0] == undefined) {
+            highestPercentage = findBestHackConstantToGenerateMoney(ns, server.host, currentServer, 0.001)
+        }
         const first = calculateFullCycleMoneyPerSecond(ns, server.host, highestPercentage);
 
         if (first == undefined) {
             continue;
         }
 
-        if (first.totalRamCost > homeServerWithLowestRam(ns)) {
+        if (first.totalRamCost > ns.getServerMaxRam(currentServer)) {
+            ns.print(`cost too much ${first.totalRamCost}`)
             continue;
         }
 
@@ -70,40 +87,36 @@ export async function getHighestMoneyPerSecondDesc(ns: NS) {
 
 function homeServerWithLowestRam(ns: NS): number {
     let lowestRam = Number.MAX_VALUE
-
-    for (const server of findAllServersHome(ns)) {
-        let ram = ns.getServerMaxRam(server.host)
-        lowestRam = Math.min(ram, lowestRam)
+    let homeServers = findAllServersHome(ns).filter(x => x.host == "home");
+    for (const server of homeServers) {
+        lowestRam = Math.min(ns.getServerMaxRam(server.host), lowestRam)
     }
 
     return lowestRam
 }
 
 
-export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: HostObj, host: string): number {
+export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: string, host: string | undefined, startingPercentage: number): number {
     let highestPaid = 0
-    let highestPercentage = 0.01
-    const possibleRam = getAvailiableRam(ns, host, 1);
-
-    for (let x = 1; x < 100; x++) {
-        let first = calculateFullCycleMoneyPerSecond(ns, hackTarget.host, x / 100);
-
+    let highestPercentage = startingPercentage
+    for (let x = 1; x < 1000; x++) {
+        let first = calculateFullCycleMoneyPerSecond(ns, hackTarget, x / 1000);
         if (first == undefined) {
             continue;
         }
-        if (first.totalRamCost > possibleRam) {
+        if (host != undefined && first.totalRamCost > getAvailiableRam(ns, host, 1)) {
             continue;
         }
 
         if (first.moneyPerSecond >= highestPaid) {
             highestPaid = first.moneyPerSecond
-            highestPercentage = x / 100
+            highestPercentage = x / 1000
         }
     }
 
-    highestPercentage = Math.floor(highestPercentage * 100)
+    highestPercentage = Math.floor(highestPercentage * 1000)
 
-    highestPercentage = highestPercentage / 100
+    highestPercentage = highestPercentage / 1000
 
 
     return highestPercentage

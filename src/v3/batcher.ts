@@ -102,7 +102,7 @@ function calculateGrowWeakenThreads(ns: NS, growThreads: number) {
 
 
 function calculateHackThreads(ns: NS, target: string, percentage: number) {
-    let hackAmount = ns.getServerMaxMoney(target) * percentage; // Amount to hack (10% of max money)
+    let hackAmount = ns.getServerMaxMoney(target) * percentage;
     let hackThreads = Math.max(1, Math.floor(ns.hackAnalyzeThreads(target, hackAmount)));
     hackThreads = Math.abs(hackThreads)
 

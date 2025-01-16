@@ -21,6 +21,7 @@ export async function main(ns: NS): Promise<void> {
     const currentHost = ns.getHostname();
 
     while (true) {
+        await ns.sleep(100) // safety sleep
         await blockTillAllWeakensAreDone(ns, currentHost)
         if (await prepServer(ns, targetHost, currentHost)) {
             break

@@ -11,29 +11,28 @@ function createStockTraderAlgo(ns: NS) {
     ns.print(contracts)
 
     for (const contract of contracts) {
-        solveStockTrader(ns, contract)
+        solveStockTrader(ns, contract, "home")
     }
 }
 
-export function solveStockTrader(ns: NS, fileName: string) {
-    let contractType = ns.codingcontract.getContractType(fileName)
-    let data = ns.codingcontract.getData(fileName)
+export function solveStockTrader(ns: NS, fileName: string, host: string) {
+    let contractType = ns.codingcontract.getContractType(fileName, host)
+    let data = ns.codingcontract.getData(fileName, host)
 
     switch (contractType) {
         case "Algorithmic Stock Trader I":
-            ns.codingcontract.attempt(maxProfitWithKTransactions(1, data), fileName)
+            ns.codingcontract.attempt(maxProfitWithKTransactions(1, data), fileName, host)
             break;
         case "Algorithmic Stock Trader II":
-            ns.codingcontract.attempt(maxProfitWithKTransactions(data.length, data), fileName)
+            ns.codingcontract.attempt(maxProfitWithKTransactions(data.length, data), fileName, host)
             break;
         case "Algorithmic Stock Trader III":
-            ns.codingcontract.attempt(maxProfitWithKTransactions(2, data), fileName)
+            ns.codingcontract.attempt(maxProfitWithKTransactions(2, data), fileName, host)
             break;
         case "Algorithmic Stock Trader IV":
-            ns.codingcontract.attempt(maxProfitWithKTransactions(data[0], data[1]), fileName)
+            ns.codingcontract.attempt(maxProfitWithKTransactions(data[0], data[1]), fileName, host)
             break;
         default:
-            ns.print("CANT SOLVE")
             break;
     }
 }
@@ -71,7 +70,7 @@ export function maxProfitWithKTransactions(k: number, prices: number[]): number 
 
 
 export async function main(ns: NS): Promise<void> {
-    let numbers = (await ns.prompt("numbers", { "type": "text" })).toString().split(",").map(x=>Number.parseInt(x))
+    let numbers = (await ns.prompt("numbers", { "type": "text" })).toString().split(",").map(x => Number.parseInt(x))
     numbers = numbers
     let kTransactions = await ns.prompt("amount of transactions", { "type": "text" })
     ns.tprint(maxProfitWithKTransactions(3, [166, 180, 36, 64, 33]))

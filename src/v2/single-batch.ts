@@ -14,7 +14,7 @@ export async function main(ns: NS): Promise<void> {
 
     const currentHost = ns.getHostname();
 
-    let highestPercentage = findBestHackConstantToGenerateMoney(ns, targetHost, currentHost)
+    let highestPercentage = findBestHackConstantToGenerateMoney(ns, targetHost.host, currentHost, 0.001)
 
     
     while (true) {

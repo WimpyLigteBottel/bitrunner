@@ -1,74 +1,78 @@
 import { NS } from "@ns";
-function shortestPathInGrid(grid: number[][]): string {
+
+
+export function createShortPathContracts(ns: NS) {
+    let contractsToCreate: string[] = ["Shortest Path in a Grid"]
+    let contracts: string[] = []
+
+    contractsToCreate.forEach((x: string) => {
+        contracts.push(ns.codingcontract.createDummyContract(x))
+    })
+
+    ns.print(contracts)
+
+    for (const contract of contracts) {
+        solveShortParthGrid(ns, contract, "home")
+    }
+}
+
+
+export function solveShortParthGrid(ns: NS, fileName: string, host: string) {
+    let contractType = ns.codingcontract.getContractType(fileName, host)
+    let data = ns.codingcontract.getData(fileName, host)
+
+    switch (contractType) {
+        case "Shortest Path in a Grid":
+            let answer = findShortestPath(data)
+            ns.codingcontract.attempt(answer, fileName, host)
+            break;
+        default:
+            break;
+    }
+}
+
+
+function findShortestPath(grid: number[][]): string {
     const rows = grid.length;
     const cols = grid[0].length;
 
-    // Directions for movement: Up, Down, Left, Right
+    // Direction vectors for Up, Down, Left, Right
     const directions: any = [
         [-1, 0, 'U'], // Up
         [1, 0, 'D'],  // Down
         [0, -1, 'L'], // Left
-        [0, 1, 'R'],  // Right
+        [0, 1, 'R']   // Right
     ];
 
-    // Check if the start or end positions are blocked
-    if (grid[0][0] === 1 || grid[rows - 1][cols - 1] === 1) {
-        return ''; // No path exists
-    }
+    // Check if a cell is within bounds and not blocked
+    const isValid = (x: number, y: number) =>
+        x >= 0 && y >= 0 && x < rows && y < cols && grid[x][y] === 0;
 
-    // BFS queue, storing [row, col, path]
+    // Queue for BFS: [x, y, path]
     const queue: [number, number, string][] = [[0, 0, '']];
-    const visited = new Set<string>();
-    visited.add(`0,0`);
+    const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+    visited[0][0] = true;
 
     while (queue.length > 0) {
-        const [row, col, path] = queue.shift()!;
+        const [x, y, path] = queue.shift()!;
 
-        // Check if we've reached the bottom-right corner
-        if (row === rows - 1 && col === cols - 1) {
-            return path; // Return the path
+        // If we reach the bottom-right corner, return the path
+        if (x === rows - 1 && y === cols - 1) {
+            return path;
         }
 
-        for (const [dr, dc, move] of directions) {
-            const newRow = row + dr;
-            const newCol = col + dc;
+        // Explore all valid neighbors
+        for (const [dx, dy, move] of directions) {
+            const newX = x + dx;
+            const newY = y + dy;
 
-            // Check if the new position is valid
-            if (
-                newRow >= 0 &&
-                newRow < rows &&
-                newCol >= 0 &&
-                newCol < cols &&
-                grid[newRow][newCol] === 0 &&
-                !visited.has(`${newRow},${newCol}`)
-            ) {
-                visited.add(`${newRow},${newCol}`);
-                queue.push([newRow, newCol, path + move]);
+            if (isValid(newX, newY) && !visited[newX][newY]) {
+                visited[newX][newY] = true;
+                queue.push([newX, newY, path + move]);
             }
         }
     }
 
-    return ''; // No path found
-}
-
-
-
-
-export async function main(ns: NS): Promise<void> {
-    ns.tprint(solve(ns))
-}
-
-function solve(ns: NS) {
-    const grid = [
-        [0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 1, 1, 0, 0],
-        [0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
-        [0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-        [0, 1, 1, 0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-    ];
-
-    return shortestPathInGrid(grid);
+    // If no path exists, return an empty string
+    return '';
 }
