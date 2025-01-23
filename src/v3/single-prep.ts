@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { getAvailiableRam } from "/util/HackThreadUtil";
-import { growScriptName, singleBatcherName, weakenScriptName } from "/util/HackConstants";
+import { BATCH_DELAY, growScriptName, HOST_HACK_V3, print, SINGLE_BATCH_V3, singleBatcherName, weakenScriptName } from "/util/HackConstants";
 import { findServerStats } from "/util/Find";
 
 
@@ -9,8 +9,6 @@ export type PrepServerModel = {
     maxMoney: number;
     currentSecurity: number;
     minSecurity: number;
-    growThreads: number,
-    weakenThreads: number
 }
 
 
@@ -22,7 +20,7 @@ export async function main(ns: NS): Promise<void> {
 
     while (true) {
         await ns.sleep(100) // safety sleep
-        await blockTillAllWeakensAreDone(ns, currentHost)
+        await blockTillAllWeakensAreDonePrep(ns, currentHost, targetHost)
         if (await prepServer(ns, targetHost, currentHost)) {
             break
         }
@@ -31,30 +29,40 @@ export async function main(ns: NS): Promise<void> {
     }
 
 
+    await ns.sleep(5000)
     ns.killall(currentHost, true)
-    ns.spawn(singleBatcherName, { spawnDelay: 1000, }, targetHost)
+
+    if (currentHost == "home") {
+        ns.exec(HOST_HACK_V3, currentHost, 1)
+    }
+    ns.spawn(SINGLE_BATCH_V3, { spawnDelay: 1000, }, targetHost)
 }
 
 export async function prepServer(ns: NS, targetHost: string, currentHost: string) {
-    await blockTillAllWeakensAreDone(ns, currentHost)
+    await blockTillAllWeakensAreDonePrep(ns, currentHost, targetHost)
 
     const model = getServerPrepModel(ns, targetHost)
 
     if (isPrepped(model)) {
-        ns.tprint(`Server is fully prepped! ${targetHost} by ${ns.getHostname()}`);
+        ns.print(`Server is fully prepped! ${targetHost} by ${ns.getHostname()}`);
         return true
     }
 
-    if (!isMoneyPrepped(model)) {
-        let delay = ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost)
+    let host = ns.getHostname()
 
-        ns.exec(growScriptName, ns.getHostname(), model.growThreads, targetHost, delay, model.growThreads);
-
-    }
 
     if (!isSecurityPrepped(model)) {
-        ns.exec(weakenScriptName, ns.getHostname(), model.weakenThreads, targetHost, 0, model.weakenThreads);
+        let threads = maxPossibleThreads(ns, host);
+        threads = Math.min(threads, Math.ceil((ns.getServerSecurityLevel(targetHost)) / ns.weakenAnalyze(1))) || 1
+        ns.exec(weakenScriptName, host, threads, targetHost, 0, threads);
     }
+
+    if (!isMoneyPrepped(model)) {
+        let delay = 0
+        const threads = maxPossibleThreads(ns, host) || 1;
+        ns.exec(growScriptName, host, threads, targetHost, delay, threads);
+    }
+
 
     return false;
 }
@@ -67,27 +75,24 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
     const minSecurity = ns.getServerMinSecurityLevel(target); // Min security level
 
 
-    let neededGrowThreads = ns.formulas.hacking.growThreads(ns.getServer(target), ns.getPlayer(), maxMoney, ns.getServer("home").cpuCores)
-
+    let neededGrowThreads = ns.formulas.hacking.growThreads(ns.getServer(target), ns.getPlayer(), maxMoney, ns.getServer(host).cpuCores)
     let threads = maxPossibleThreads(ns, host);
 
-    if (threads >= neededGrowThreads) {
-        threads = neededGrowThreads
-    }
 
     let weakenThreads = Math.floor(ns.growthAnalyzeSecurity(threads, target) / ns.weakenAnalyze(1)) || 0;
-    let growThreads = (threads - weakenThreads) || 2
+    let growThreads = Math.min(neededGrowThreads, threads) || 1
 
     if (growThreads < 1) {
-        ns.tprint(`ERROR growThreads is broken ${growThreads} | host: ${host} | target: ${target}`)
+        // ns.tprint(`ERROR growThreads is broken ${growThreads} | host: ${host} | target: ${target}`)
+    }
+
+    if (weakenThreads < 1 || growThreads < 1) {
+        weakenThreads = Math.min(threads, Math.ceil((currentSecurity) / ns.weakenAnalyze(1))) || 1
     }
 
     if (weakenThreads < 1) {
-        weakenThreads = Math.ceil((currentSecurity) / ns.weakenAnalyze(1)) || threads
-    }
-
-    if (weakenThreads < 1) {
-        ns.tprint(`ERROR weakenThreads is broken ${weakenThreads} | host: ${host}  | target: ${target}`)
+        weakenThreads = 1
+        // ns.tprint(`ERROR weakenThreads is broken ${weakenThreads} | host: ${host}  | target: ${target}`)
     }
 
     return {
@@ -95,14 +100,12 @@ export function getServerPrepModel(ns: NS, target: string, host: string = ns.get
         maxMoney,
         currentSecurity,
         minSecurity,
-        growThreads: growThreads,
-        weakenThreads: weakenThreads
     }
 }
 
 
 function maxPossibleThreads(ns: NS, host: string) {
-    return Math.floor(getAvailiableRam(ns, host, 1) / ns.getScriptRam(growScriptName))
+    return Math.floor(getAvailiableRam(ns, host, 1) / ns.getScriptRam(weakenScriptName))
 }
 
 export function isPrepped(model: PrepServerModel) {
@@ -120,7 +123,20 @@ export function isSecurityPrepped(model: PrepServerModel) {
 export async function blockTillAllWeakensAreDone(ns: NS, currentHost: string) {
     let scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
     while (scripts.length > 0) {
-        await ns.sleep(1000)
+        await ns.sleep(500)
+        scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
+    }
+    ns.print("Continuing with run")
+}
+
+export async function blockTillAllWeakensAreDonePrep(ns: NS, currentHost: string, targetHost: string) {
+    let scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
+    while (scripts.length > 0) {
+        if (isPrepped(getServerPrepModel(ns, targetHost, currentHost))) {
+            break;
+        }
+
+        await ns.sleep(500)
         scripts = ns.ps(currentHost).filter(x => x.filename.includes("weak") || x.filename.includes("grow"))
     }
     ns.print("Continuing with run")

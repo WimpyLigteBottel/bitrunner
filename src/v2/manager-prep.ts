@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { findAllServers } from "/util/FindAllServers";
-import { singlePrepName } from "/util/HackConstants";
+import { SINGLE_PREP_V2 } from "/util/HackConstants";
 
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
@@ -30,10 +30,10 @@ export async function main(ns: NS): Promise<void> {
         let target = targets.pop()
 
         ns.killall(serverToRunOn?.host!, true)
-        if (ns.exec(singlePrepName, serverToRunOn?.host!, 1, target!)) {
-            ns.tprint(`INFO Running ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
+        if (ns.exec(SINGLE_PREP_V2, serverToRunOn?.host!, 1, target!)) {
+            ns.tprint(`INFO Running ${SINGLE_PREP_V2} on ${serverToRunOn?.host} targeting ${target!}`)
         } else {
-            ns.tprint(`ERROR Failed to run ${singlePrepName} on ${serverToRunOn?.host} targeting ${target!}`)
+            ns.tprint(`ERROR Failed to run ${SINGLE_PREP_V2} on ${serverToRunOn?.host} targeting ${target!}`)
         }
         await ns.sleep(100)
     }

@@ -2,13 +2,10 @@ import { NS } from "@ns";
 import { findAllServers } from "../../util/FindAllServers";
 import { solveStockTrader } from "./stocktrader-4";
 import { buildConnectScript } from "/util/connect";
-import { createSumSubArrayContracts, solveSubArraySum } from "./subarraysum";
-import { createShortPathContracts, solveShortParthGrid } from "./shortestPathGrid";
+import { solveShortParthGrid } from "./shortestPathGrid";
 
 export async function main(ns: NS) {
     ns.clearLog();
-    ns.tail();
-
     const servers = findAllServers(ns, true, false)
     const contracts = servers.flatMap((server) => {
         let files = ns.ls(server.host)
@@ -18,15 +15,16 @@ export async function main(ns: NS) {
             return {
                 file: file,
                 host: server.host,
-                connect: buildConnectScript(server)
+                connect: buildConnectScript(server) + ";./"+file,
+                contractType: ns.codingcontract.getContractType(file, server.host)
             }
         })
     });
 
     contracts.forEach(x => {
         solveStockTrader(ns, x.file, x.host)
-        solveSubArraySum(ns, x.file, x.host)
-        solveShortParthGrid(ns, x.file, x.host)
+        // solveSubArraySum(ns, x.file, x.host)
+        // solveShortParthGrid(ns, x.file, x.host)
     })
 
     // ns.print(ns.codingcontract.getContractTypes())

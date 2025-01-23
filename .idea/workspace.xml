@@ -5,8 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ebaa6bbf-9fba-421a-a122-2dd7e78411a5" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/contract.js" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/contract.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/crime/v1/crime.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/crime/v1/crime.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/FindAllServers.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/FindAllServers.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/HackConstants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/HackConstants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/HackThreadUtil.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/HackThreadUtil.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/automate.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/automate.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/backdoor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/backdoor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/hacknodes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/hacknodes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/profits.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/profits.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v2/contract/contracts.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2/contract/contracts.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v2/manager-prep.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2/manager-prep.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v2/mass-prep.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2/mass-prep.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v2/single-batch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v2/single-batch.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v3/batcher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v3/batcher.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v3/manager-prep.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v3/manager-prep.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v3/single-batch.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v3/single-batch.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/v3/single-prep.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/v3/single-prep.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +79,11 @@
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "com.github.serverfrog.bitburnerplugin.config.BitburnerSettings"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "JavaScript"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">

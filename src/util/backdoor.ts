@@ -25,13 +25,6 @@ export async function main(ns: NS) {
  */
 export async function hackServer(ns: NS, hostname: string) {
 
-    let playerHackingLevel = ns.getHackingLevel()
-
-    // below can be commented out to save memory
-    if (ns.getServerRequiredHackingLevel(hostname) > playerHackingLevel) {
-        throw Error("Player level too low for " + hostname)
-    }
-
     if(ns.hasRootAccess(hostname)){
         return;
     }

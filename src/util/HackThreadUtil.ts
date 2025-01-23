@@ -2,7 +2,7 @@ import { NS } from "@ns";
 import { growScriptName, hackScriptName, weakenScriptName } from "./HackConstants";
 
 export function getTotalCost(ns: NS, thread: number, script: string): number {
-    return ns.getScriptRam(script) * Math.abs(thread)
+    return Math.abs(ns.getScriptRam(script) * thread)
 }
 
 export function getTotalCostThreads(ns: NS, hackThreads: number, weakenThreads: number, growThreads: number,): number {
@@ -14,5 +14,5 @@ export function getTotalCostThreads(ns: NS, hackThreads: number, weakenThreads: 
 }
 
 export function getAvailiableRam(ns: NS, serverName: string, reserve: number = 10): number {
-    return ns.getServerMaxRam(serverName) - reserve - ns.getServerUsedRam(serverName)
+    return ns.getServerMaxRam(serverName) - (ns.getServerUsedRam(serverName) + reserve)
 }

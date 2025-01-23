@@ -23,9 +23,12 @@ export async function main(ns: NS) {
     ns.print(names)
   }
 
+  while (names.length != 0) {
+    await ns.sleep(100)
+    purchaseServers(ns)
+  }
 
   while (true) {
-    purchaseServers(ns)
     upgradeRam(ns)
     await ns.sleep(100)
   }
@@ -38,7 +41,13 @@ function purchaseServers(ns: NS) {
     return;
   }
 
-  let newServer = ns.purchaseServer(names.pop()!, 1024)
+  let cost = ns.getPurchasedServerCost(512)
+  let playermoney = ns.getServerMoneyAvailable("home")
+  if (playermoney < cost) {
+    return;
+  }
+
+  let newServer = ns.purchaseServer(names.pop()!, 512)
   if (newServer != "") {
     ns.print(`Bought new server: ${newServer}`)
   }

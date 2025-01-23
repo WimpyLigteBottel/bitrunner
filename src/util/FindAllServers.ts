@@ -54,14 +54,31 @@ export function findAllServersHome(ns: NS) {
 }
 
 export function prepServersForHack(ns: NS) {
-    let currentHost = ns.getHostname()
-
     findAllServers(ns, false, false)
-        .filter(x => x.host! + currentHost)
+        .filter(x => ns.hasRootAccess(x.host) && !x.host.includes("home"))
         .forEach((server) => {
             let copy = ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home")
             if (!copy) {
-                ns.tprint("FAILED " + server.host)
+                ns.tprint(`FAILED to copy all to ${server.host}`)
             };
         })
+
+    findAllServers(ns, false, false)
+        .filter(x => x.host.includes("home"))
+        .forEach((server) => {
+            let copy = ns.scp(ALL_SCRIPTS_TO_COPY, server.host, "home")
+            if (!copy) {
+                ns.tprint(`FAILED to copy all to ${server.host}`)
+            };
+        })
+}
+
+
+function debugCopy(ns: NS, serverHost: string) {
+    ALL_SCRIPTS_TO_COPY.forEach(x => {
+        let copy = ns.scp(x, serverHost, "home")
+        if (!copy) {
+            ns.tprint(`FAILED to copy ${x} to ${serverHost}`)
+        };
+    })
 }
