@@ -36,36 +36,48 @@ export async function main(ns: NS) {
 
     let counter = 1
     for (let stat of stats) {
-
-        let preAppender = (stat: ServerMoneyStats) => {
-            switch (stat.prepped) {
-                case false:
-                    return "ERROR"
-                default:
-                    return ""
-            }
-
-            return ""
+        if (ns.args.includes("--minimal")) {
+            minimalPrint(ns, counter++, stat)
+        } else {
+            printNormal(ns, counter++, stat)
         }
-
-        let COLOR = preAppender(stat)
-
-        // Logging for debugging
-        ns.tprint(`${COLOR} Server ${counter++}: ${stat.server}`);
-        ns.tprint(`${COLOR} Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
-        ns.tprint(`${COLOR} Total RAM Cost: ${stat.totalRamCost}`);
-        ns.tprint(`${COLOR} Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
-        ns.tprint(`${COLOR} Prepped: ${stat.prepped}`);
-        ns.tprint(`${COLOR} hack constant: ${stat.percentage}`);
-        ns.tprint(`${COLOR} Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
-        ns.tprint(`${COLOR} Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
-        ns.tprint("----------")
+        ns.tprint("--------------")
     }
-
 
     let totalMoneyPerSecond: string | number = stats.map(x => x.moneyPerSecond ?? 0).reduce((a, v) => a + v, 0)
     totalMoneyPerSecond = ns.formatNumber(totalMoneyPerSecond)
     ns.tprint("Total profit per second (without multiple batches) = " + totalMoneyPerSecond)
+}
+
+let preAppender = (stat: ServerMoneyStats) => {
+    switch (stat.prepped) {
+        case false:
+            return "ERROR"
+        default:
+            return ""
+    }
+    return ""
+}
+
+function minimalPrint(ns: NS, counter: number, stat: ServerMoneyStats) {
+    let COLOR = preAppender(stat)
+    ns.tprint(`${COLOR} Server ${counter}: ${stat.server}`);
+    ns.tprint(`${COLOR} Total RAM Cost: ${stat.totalRamCost}`);
+    ns.tprint(`${COLOR} Prepped: ${stat.prepped}`);
+    ns.tprint(`${COLOR} Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
+}
+
+function printNormal(ns: NS, counter: number, stat: ServerMoneyStats) {
+    let COLOR = preAppender(stat)
+
+    ns.tprint(`${COLOR} Server ${counter}: ${stat.server}`);
+    ns.tprint(`${COLOR} Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
+    ns.tprint(`${COLOR} Total RAM Cost: ${stat.totalRamCost}`);
+    ns.tprint(`${COLOR} Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
+    ns.tprint(`${COLOR} Prepped: ${stat.prepped}`);
+    ns.tprint(`${COLOR} hack constant: ${stat.percentage}`);
+    ns.tprint(`${COLOR} Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
+    ns.tprint(`${COLOR} Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
 }
 
 
@@ -73,20 +85,21 @@ export function getHighestMoneyPerSecondDesc(ns: NS) {
     let servers = findAllServers(ns, false, false)
     let stats: ServerMoneyStats[] = []
     let highestPercentage = 0.001
-
     let currentServer = ns.getHostname()
+    let currentServerAvail = getAvailiableRam(ns, currentServer, 0)
 
     for (const server of servers) {
-        highestPercentage = findBestHackConstantToGenerateMoney(ns, server.host, currentServer, 0.001, getAvailiableRam(ns, currentServer, 0))
+        highestPercentage = findBestHackConstantToGenerateMoney(ns, server.host, currentServer, 0.001, currentServerAvail)
 
         const first = calculateFullCycleMoneyPerSecond(ns, server.host, highestPercentage);
 
         if (first == undefined) {
+            print(ns, `Skipping ${server.host}`, false)
             continue;
         }
-
-        if (first.totalRamCost > getAvailiableRam(ns, currentServer, 2)) {
-            ns.print(`cost too much ${first.totalRamCost}`)
+        
+        if (first.totalRamCost > currentServerAvail) {
+            print(ns, `cost too much ${first.totalRamCost}`, false)
             continue;
         }
 
@@ -101,8 +114,9 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: string, 
     let highestPaid = 0
     let highestPercentage = startingPercentage + 0
     let lastRatio = null
+    let divideNumber = 100
     for (let x = 1; x < 6; x++) {
-        highestPercentage = x / 100
+        highestPercentage = x / divideNumber
         print(ns, `0 highestPercentage: ${highestPercentage}`, true)
         let first = calculateFullCycleMoneyPerSecond(ns, hackTarget, highestPercentage);
         if (first == undefined) {
@@ -112,7 +126,7 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: string, 
         if (first.totalRamCost >= ramLimit) {
             print(ns, `ERROR ${first.totalRamCost} cost too much: ${highestPercentage} for ${ramLimit}`, true)
             x--;
-            highestPercentage = x / 100
+            highestPercentage = x / divideNumber
             print(ns, `INFO startingPercentage changed  ${highestPercentage} `, true)
             break;
         }
@@ -124,7 +138,7 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: string, 
         }
     }
 
-    highestPercentage = Math.floor(highestPercentage * 100) / 100
+    highestPercentage = Math.floor(highestPercentage * divideNumber) / divideNumber
     print(ns, `1 highestPercentage: ${highestPercentage}`, true)
 
     return highestPercentage
