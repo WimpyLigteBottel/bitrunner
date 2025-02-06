@@ -33,6 +33,12 @@ export const PREP_MANAGER_V3 = "../v3/manager-prep.js"
 export const MASS_PREP_V3 = "../v3/mass-prep.js"
 export const CLIENT_HACK = "../v3/client-hack-request.js"
 export const HOST_HACK_V3 = "../v3/host-hacking-calculator.js"
+export const HWG_CALC = "../v3/hwg-caluclator.js"
+
+
+export const CRIME_V1 = "../crime/v1/crime.js"
+
+export const HACKNODES_V1 = "../hacknode/v1/hacknodes.js"
 
 export const ALL_SCRIPTS_TO_COPY = [
     hackScriptName,
@@ -62,7 +68,10 @@ export const ALL_SCRIPTS_TO_COPY = [
     PREP_V3,
     CLIENT_HACK,
     HOST_HACK_V3,
-    MASS_PREP_V3
+    MASS_PREP_V3,
+    CRIME_V1,
+    HACKNODES_V1,
+    HWG_CALC
 ]
 
 export const BATCH_DELAY = 300 as number

@@ -5,8 +5,6 @@ import { blockTillAllWeakensAreDone } from "./single-prep";
 import { print } from "/util/HackConstants";
 import { findServerStats } from "/util/Find";
 
-const BATCH_DELAY = 100
-
 export async function main(ns: NS): Promise<void> {
     ns.clearLog()
     ns.disableLog("ALL")
@@ -30,7 +28,7 @@ export async function main(ns: NS): Promise<void> {
         print(ns, JSON.stringify(message, undefined, 1), false)
 
         let previousDelay = 0
-        for (let x = 0; x < possibleBatches; x++) {
+        for (let x = 0; x < Math.min(100, possibleBatches); x++) {
             response.tasks
                 .filter(x => x.threads != 0) // Not empty threads
                 .forEach(x => ns.exec(
@@ -42,7 +40,7 @@ export async function main(ns: NS): Promise<void> {
                     x.threads
                 )) // execute
 
-            previousDelay += BATCH_DELAY * 4
+            previousDelay += 100 * (response.tasks.length + 1)
         }
     }
 

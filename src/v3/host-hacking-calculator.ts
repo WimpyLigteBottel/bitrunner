@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 import { calculateFullCycleThreads, Task } from "./batcher";
-import { BATCH_DELAY, print } from "/util/HackConstants";
-import { findBestHackConstantToGenerateMoney } from "/util/profits";
+import { print } from "/util/HackConstants";
+import { findBestHackConstantToGenerateMoney } from "./hwg-caluclator";
 
 export class HackWeakGrowTask {
     target: string = "";
@@ -67,10 +67,10 @@ export function shiftTaskToBackOfQueue(ns: NS) {
 }
 
 function respond(ns: NS, task: HackWeakGrowTask) {
-    let highestPercentage = findBestHackConstantToGenerateMoney(ns, task.target, task.host, 0.001, task.ramLimit)
-    let threads = calculateFullCycleThreads(ns, task.target, highestPercentage, BATCH_DELAY, 0)
+    let highestPercentage = findBestHackConstantToGenerateMoney(ns, task.target, task.host)
+    let threads = calculateFullCycleThreads(ns, task.target, highestPercentage)
 
-    let tasks = [threads.hack, threads.weaken1, threads.grow, threads.weaken2]
+    let tasks = [threads.hack, threads.grow, threads.weaken]
     const totalCost = totalRamCost(ns, tasks)
 
     let response = {

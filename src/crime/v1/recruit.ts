@@ -1,14 +1,12 @@
 import { NS } from "@ns";
 import { print } from "/util/HackConstants";
 
-
-
-function recruitMembers(ns: NS) {
+export function recruitMembers(ns: NS) {
     while (ns.gang.canRecruitMember()) {
-        let myuuid = crypto.randomUUID();
+        let myuuid = crypto.randomUUID().slice(0, 8);
         let result = ns.gang.recruitMember(myuuid)
         if (result) {
-            print(ns, `Recruited ${myuuid}`)
+            print(ns, `Recruited ${myuuid}`, true)
         }
     }
 }

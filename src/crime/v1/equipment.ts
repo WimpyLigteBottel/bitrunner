@@ -1,11 +1,26 @@
 import { EquipmentStats, NS } from "@ns"
+import { print } from "/util/HackConstants"
 
 export type Equipment = {
     cost: number
     name: string
 } & EquipmentStats
 
-export function getAllEquipment(ns: NS): Equipment[] {
+
+export function upgradeMembers(ns: NS) {
+    let equipments: Equipment[] = getAllEquipment(ns)
+    equipments.forEach((equipment: Equipment) => {
+        for (const name of ns.gang.getMemberNames()) {
+            let result = ns.gang.purchaseEquipment(name, equipment.name)
+
+            if (result) {
+                print(ns, `UPGRADED!: ${JSON.stringify({ memberName: name, equipName: equipment.name })}`, true)
+            }
+        }
+    });
+}
+
+function getAllEquipment(ns: NS): Equipment[] {
     let equipments: Equipment[] = []
 
     for (const equipName of ns.gang.getEquipmentNames()) {

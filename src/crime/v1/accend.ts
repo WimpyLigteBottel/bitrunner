@@ -5,7 +5,6 @@ import { print } from "/util/HackConstants"
 
 export function accendMembersAndTrain(ns: NS) {
     for (const name of ns.gang.getMemberNames()) {
-        let member = ns.gang.getMemberInformation(name)
         if (isGangMemberAccessionWorthIt(ns, name)) {
             if (ns.gang.ascendMember(name)) {
                 print(ns, `MEMBER HAS ACCENDED!!! ${name}`)
@@ -15,7 +14,7 @@ export function accendMembersAndTrain(ns: NS) {
     }
 }
 
-export function isGangMemberAccessionWorthIt(ns: NS, name: string) {
+function isGangMemberAccessionWorthIt(ns: NS, name: string) {
     let acsResult = ns.gang.getAscensionResult(name)
 
     let shouldUpgrade: boolean[] = []

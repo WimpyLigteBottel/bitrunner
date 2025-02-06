@@ -115,7 +115,7 @@ export function findBestHackConstantToGenerateMoney(ns: NS, hackTarget: string, 
     let highestPercentage = startingPercentage + 0
     let lastRatio = null
     let divideNumber = 100
-    for (let x = 1; x < 6; x++) {
+    for (let x = 1; x < 99; x++) {
         highestPercentage = x / divideNumber
         print(ns, `0 highestPercentage: ${highestPercentage}`, true)
         let first = calculateFullCycleMoneyPerSecond(ns, hackTarget, highestPercentage);
@@ -157,12 +157,13 @@ function calculateFullCycleMoneyPerSecond(ns: NS, server: string, percentageCons
 
     // Exit if the server cannot generate money or hacking chance is too low
     if (maxMoney === 0 || hackChance === 0) {
+        print(ns,`max money is ${maxMoney} or hackchance is 0 ${hackChance}`)
         return undefined;
     }
 
     // Calculate hack threads needed to steal the desired fraction of money
     const hackAmount = maxMoney * percentageConstant;
-    const hackThreads = Math.floor(ns.hackAnalyzeThreads(server, hackAmount));
+    const hackThreads = Math.ceil(ns.hackAnalyzeThreads(server, hackAmount));
 
     // Exit if hackThreads is invalid or too small
     if (hackThreads < 1 || hackThreads === Infinity) {

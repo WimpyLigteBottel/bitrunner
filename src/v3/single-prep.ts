@@ -49,17 +49,22 @@ export async function prepServer(ns: NS, targetHost: string, currentHost: string
     }
 
     let host = ns.getHostname()
+    let targetServer = ns.getServer(targetHost)
 
 
     if (!isSecurityPrepped(model)) {
-        let threads = maxPossibleThreads(ns, host);
-        threads = Math.min(threads, Math.ceil((ns.getServerSecurityLevel(targetHost)) / ns.weakenAnalyze(1))) || 1
+        let weakenThreads = (targetServer.hackDifficulty! - targetServer.minDifficulty!) / ns.weakenAnalyze(1)
+        let threads = Math.min(weakenThreads, maxPossibleThreads(ns, host))
+        threads = Math.ceil(threads)
+
         ns.exec(weakenScriptName, host, threads, targetHost, 0, threads);
     }
 
     if (!isMoneyPrepped(model)) {
         let delay = 0
-        const threads = maxPossibleThreads(ns, host) || 1;
+        let growThreads = ns.formulas.hacking.growThreads(ns.getServer(targetHost), ns.getPlayer(), targetServer.moneyMax!)
+
+        const threads = Math.min(growThreads, maxPossibleThreads(ns, host)) || 1;
         ns.exec(growScriptName, host, threads, targetHost, delay, threads);
     }
 
