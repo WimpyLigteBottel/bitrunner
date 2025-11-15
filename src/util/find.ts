@@ -14,12 +14,13 @@ export async function main(ns: NS): Promise<void> {
 
     let targetHost = ns.args[0] as string
 
+    // prints list of known servers
+    knownServers.keys().forEach(x => ns.tprint(x))
 
     let tofind = knownServers.get(targetHost)!
-    let text = connectString(tofind, "")
+    let text = connectString(tofind, "backdoor;")
 
-
-    knownServers.keys().forEach(x => ns.print(x))
+    // print out full connect string
     ns.tprint(text)
 }
 
