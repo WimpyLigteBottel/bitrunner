@@ -1,34 +1,25 @@
 import { NS } from "@ns";
+import { createBatchOptimal } from "./batcher";
 
 
-let hackCost = 1.7
-let weakenCost = 1.75
-let growCost = 1.75
+
 
 export async function main(ns: NS): Promise<void> {
-  let host = ns.args[0] as string
+  let targetHost = ns.args[0] as string
+  let availiableRam = remainingServerRam(ns, ns.getHostname())
 
-  let G = ns.getGrowTime(host)
-  let W = ns.getWeakenTime(host)
-  let H = ns.getHackTime(host)
-  let buffer = 100
+  let batch = createBatchOptimal(ns, targetHost, availiableRam)
 
 
-  // Delay calculations
-  const growTime = 0;            // grow is the baseline
-  const weakenTime = G - W - buffer;
-  const hackTime = G - H - buffer - buffer;
+  
+  batch.tasks.forEach(task => {
+    ns.run(task.script, task.threads, batch.server, task.delay)
+  });
+
+  ns.print(JSON.stringify(batch, null, 2))
+}
 
 
-  let totalCost = hackCost + weakenCost + growCost
-
-  let remainingRam = ns.getServerMaxRam(ns.getHostname()) - ns.getScriptRam("hgw.js")
-
-
-  let countToExecute = Math.floor(remainingRam / totalCost) -1 
-
-
-  await ns.run("./hack.js", countToExecute, host, hackTime)
-  await ns.run("./weaken.js", countToExecute, host, weakenTime)
-  await ns.run("./grow.js", countToExecute, host, growTime)
+function remainingServerRam(ns: NS, host: string): number {
+  return ns.getServerMaxRam(host) - ns.getServerUsedRam(host)
 }

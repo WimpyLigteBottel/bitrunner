@@ -5,9 +5,7 @@ export async function main(ns: NS): Promise<void> {
     ns.nuke(host)
 
 
-
-    copyScripts(ns,host)
-
+    copyScripts(ns, host)
 }
 
 
@@ -22,5 +20,6 @@ const filesToCopy = [
     "base/hack.js",
     "base/weaken.js",
     "base/hgw.js",
-     "setup/setup.js",
+    "setup/setup.js",
+    "setup/prep.js",
 ]
