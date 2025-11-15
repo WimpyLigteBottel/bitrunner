@@ -23,35 +23,31 @@ export interface Batch {
     percentage: number;
 }
 
-export function createBatchOptimal(ns: NS, targetHost: string, availiableRam: number): Batch {
+export function createBatchOptimal(ns: NS, targetHost: string, availableRam: number): Batch {
 
-    let optimalPercentage = 0.99999;
+    let low = 0;     // definitely fits
+    let high = 1;    // probably too big, but serves as the upper bound
 
-    let batch = createBatch(ns, targetHost, optimalPercentage)
-    let bestBatch = batch;
+    let bestBatch = createBatch(ns, targetHost, 0);
+    let bestPercentage = 0;
 
-    let counter = 100
-    // reduce till that half point
-    while (counter > 0 && batch.totalCost > availiableRam) {
-        optimalPercentage = optimalPercentage / 2
-        batch = createBatch(ns, targetHost, optimalPercentage)
-        counter--;
-    }
+    // 20–30 iterations = enough precision
+    for (let i = 0; i < 30; i++) {
+        const mid = (low + high) / 2;
+        const batch = createBatch(ns, targetHost, mid);
 
-    bestBatch = batch
-
-    // increase slightly
-    while (counter > 0 && batch.totalCost < availiableRam) {
-        optimalPercentage = optimalPercentage + 0.01
-        let tempBatch = createBatch(ns, targetHost, optimalPercentage)
-        if (tempBatch.totalCost < availiableRam) {
-            ns.print(`new best batch ${bestBatch.percentage}`)
-            bestBatch = tempBatch
+        if (batch.totalCost <= availableRam) {
+            // mid fits -> try higher
+            bestPercentage = mid;
+            bestBatch = batch;
+            low = mid;
+        } else {
+            // mid too big -> reduce
+            high = mid;
         }
-        counter--;
     }
 
-    return { ...bestBatch, percentage: optimalPercentage }
+    return bestBatch;
 }
 
 

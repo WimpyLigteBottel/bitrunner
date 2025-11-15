@@ -13,5 +13,6 @@ export function disableLogs(ns: NS){
     ns.disableLog("getServerMaxRam")
     ns.disableLog("getServerUsedRam")
     ns.disableLog("getServerMaxMoney")
+    ns.disableLog("run")
     ns.clearLog()
 }
