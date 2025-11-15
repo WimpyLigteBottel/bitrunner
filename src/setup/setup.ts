@@ -1,25 +1,28 @@
 import { NS } from "@ns";
+import { getKnownServers } from "../util/find"
 
 export async function main(ns: NS): Promise<void> {
-    let host = ns.args[0] as string
-    ns.nuke(host)
+    ns.disableLog('scp')
+    ns.disableLog('scan')
+    ns.clearLog()
 
 
-    copyScripts(ns, host)
+    forwardScripts(ns)
+}
+
+function forwardScripts(ns: NS) {
+    function copyToAllScripts(ns: NS, targetLocation: string) {
+        let files = ns.ls("home").filter(x => x.includes(".js"))
+
+        ns.scp(files, targetLocation)
+    }
+
+    getKnownServers(ns)
+        .keys()
+        .map(x=> x.toString())
+        .forEach(x => copyToAllScripts(ns, x))
+        
+    ns.tprint('Copied scripts to all servers')
 }
 
 
-
-
-function copyScripts(ns: NS, targetLocation: string) {
-    ns.scp(filesToCopy, targetLocation)
-}
-
-const filesToCopy = [
-    "base/grow.js",
-    "base/hack.js",
-    "base/weaken.js",
-    "base/hgw.js",
-    "setup/setup.js",
-    "setup/prep.js",
-]
