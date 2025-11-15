@@ -1,0 +1,9 @@
+import { NS } from "@ns";
+
+export async function main(ns: NS): Promise<void> {
+  let host = ns.args[0] as string
+  let sleepDuration = ns.args[1] as number
+
+  await ns.sleep(sleepDuration)
+  await ns.hack(host)
+}
