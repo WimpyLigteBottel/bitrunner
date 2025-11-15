@@ -25,21 +25,33 @@ export interface Batch {
 
 export function createBatchOptimal(ns: NS, targetHost: string, availiableRam: number): Batch {
 
-    let optimalPercentage = 0.99;
+    let optimalPercentage = 0.99999;
 
     let batch = createBatch(ns, targetHost, optimalPercentage)
+    let bestBatch = batch;
 
     let counter = 100
-    while (counter > 0 && batch.totalCost >= availiableRam) {
-        // half hack amount
+    // reduce till that half point
+    while (counter > 0 && batch.totalCost > availiableRam) {
         optimalPercentage = optimalPercentage / 2
-
         batch = createBatch(ns, targetHost, optimalPercentage)
         counter--;
     }
 
+    bestBatch = batch
 
-    return { ...batch, percentage: optimalPercentage }
+    // increase slightly
+    while (counter > 0 && batch.totalCost < availiableRam) {
+        optimalPercentage = optimalPercentage + 0.01
+        let tempBatch = createBatch(ns, targetHost, optimalPercentage)
+        if (tempBatch.totalCost < availiableRam) {
+            ns.print(`new best batch ${bestBatch.percentage}`)
+            bestBatch = tempBatch
+        }
+        counter--;
+    }
+
+    return { ...bestBatch, percentage: optimalPercentage }
 }
 
 
