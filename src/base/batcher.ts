@@ -1,19 +1,20 @@
 import { NS } from "@ns";
-import { Batch, Task, TASK_NAME } from "/models/Models";
+import { Batch, RequestType, Task, TASK_NAME } from "/models/Models";
+import { getAvailableRam } from "/util/availableram";
 
 
-export function createBatchOptimal(ns: NS, targetHost: string, availableRam: number): Batch {
+export function createBatchOptimal(ns: NS, targetHost: string, availableRam: number, requestType: RequestType): Batch {
 
     let low = 0;     // definitely fits
     let high = 1;    // probably too big, but serves as the upper bound
 
-    let bestBatch = createBatch(ns, targetHost, 0);
+    let bestBatch = createBatch(ns, targetHost, 0, availableRam, requestType);
     let bestPercentage = 0;
 
     // 20–30 iterations = enough precision
     for (let i = 0; i < 30; i++) {
         const mid = (low + high) / 2;
-        const batch = createBatch(ns, targetHost, mid);
+        const batch = createBatch(ns, targetHost, mid, availableRam, requestType);
 
         if (batch.totalCost <= availableRam) {
             // mid fits -> try higher
@@ -30,7 +31,71 @@ export function createBatchOptimal(ns: NS, targetHost: string, availableRam: num
 }
 
 
-export function createBatch(ns: NS, targetHost: string, targetPercentage: number): Batch {
+export function createBatch(ns: NS, targetHost: string, targetPercentage: number, availableRam: number, requestType: RequestType): Batch {
+    if (requestType == `HACK`) {
+        return createBatchHGW(ns, targetHost, targetPercentage)
+    }
+
+    return createPrepBatch(ns, targetHost, availableRam)
+}
+
+export function createPrepBatch(ns: NS, targetHost: string, availableRam: number): Batch {
+
+    if (ns.getServerSecurityLevel(targetHost) != ns.getServerMinSecurityLevel(targetHost)) {
+        let totalThreads = Math.floor(availableRam / ns.getScriptRam("base/weaken.js"))
+
+        let weakenTask = {
+            time: ns.getWeakenTime(targetHost),
+            delay: 0,
+            name: TASK_NAME.w,
+            script: "base/weaken.js",
+            threads: totalThreads,
+            cost: totalThreads * ns.getScriptRam("base/weaken.js"),
+        } as Task
+
+        return {
+            tasks: [weakenTask],
+            server: targetHost,
+            totalCost: weakenTask.cost,
+            percentage: -1
+        }
+    } else {
+
+        let totalThreads = Math.max(2, Math.floor(availableRam / ns.getScriptRam("base/weaken.js")))
+
+        let halfThreads = Math.floor(totalThreads / 2)
+
+        let weakenTask = {
+            time: ns.getWeakenTime(targetHost),
+            delay: 0,
+            name: TASK_NAME.w,
+            script: "base/weaken.js",
+            threads: halfThreads,
+            cost: halfThreads * ns.getScriptRam("base/weaken.js"),
+        } as Task
+
+
+        let growTask = {
+            time: ns.getGrowTime(targetHost), // timeIt will take to execute
+            delay: ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost) - 100, // that start delay of thread
+            name: TASK_NAME.g, // Name of thread
+            script: "base/grow.js",
+            threads: halfThreads,
+            cost: halfThreads * ns.getScriptRam("base/grow.js"),
+        } as Task
+
+        return {
+            tasks: [weakenTask, growTask],
+            server: targetHost,
+            totalCost: weakenTask.cost + growTask.cost,
+            percentage: -1
+        }
+    }
+}
+
+
+
+function createBatchHGW(ns: NS, targetHost: string, targetPercentage: number): Batch {
     let hackTask = createHackThreads(ns, targetHost, targetPercentage)
     let growTask = createGrowThreads(ns, targetHost, targetPercentage)
 
@@ -71,7 +136,7 @@ export function createGrowThreads(ns: NS, targetHost: string, targetPercentage: 
     const growThreads = Math.ceil(ns.growthAnalyze(targetHost, growthMultiplier))
 
     return {
-        time: ns.getHackTime(targetHost), // timeIt will take to execute
+        time: ns.getGrowTime(targetHost), // timeIt will take to execute
         delay: ns.getWeakenTime(targetHost) - ns.getGrowTime(targetHost) - 100, // that start delay of thread
         name: TASK_NAME.g, // Name of thread
         script: "base/grow.js",

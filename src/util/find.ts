@@ -1,5 +1,5 @@
 import { NS, Server } from "@ns";
-import { CustomServer} from 'models/Models'
+import { CustomServer } from 'models/Models'
 
 
 export async function main(ns: NS): Promise<void> {
