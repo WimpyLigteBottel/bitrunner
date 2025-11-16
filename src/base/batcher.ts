@@ -1,27 +1,6 @@
 import { NS } from "@ns";
+import { Batch, Task, TASK_NAME } from "/models/Models";
 
-
-export enum TASK_NAME {
-    w = "w",
-    h = "h",
-    g = "g",
-}
-
-export interface Task {
-    time: number, // timeIt will take to execute
-    delay: number, // that start delay of thread
-    name: TASK_NAME, // Name of thread
-    script: string,
-    threads: number
-    cost: number
-};
-
-export interface Batch {
-    tasks: Task[]
-    server: string;
-    totalCost: number;
-    percentage: number;
-}
 
 export function createBatchOptimal(ns: NS, targetHost: string, availableRam: number): Batch {
 

@@ -1,15 +1,12 @@
 import { NS, Server } from "@ns";
+import { CustomServer} from 'models/Models'
 
-
-type CustomServer = {
-    parent: CustomServer | undefined
-} & Server
 
 export async function main(ns: NS): Promise<void> {
 
     ns.disableLog('scan')
     ns.clearLog()
-    ns.ui.openTail()
+    // ns.ui.openTail()
     let knownServers = getKnownServers(ns)
 
 
