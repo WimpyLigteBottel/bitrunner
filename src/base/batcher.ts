@@ -51,7 +51,7 @@ export function createBatchOptimal(ns: NS, targetHost: string, availableRam: num
 }
 
 
-function createBatch(ns: NS, targetHost: string, targetPercentage: number): Batch {
+export function createBatch(ns: NS, targetHost: string, targetPercentage: number): Batch {
     let hackTask = createHackThreads(ns, targetHost, targetPercentage)
     let growTask = createGrowThreads(ns, targetHost, targetPercentage)
 
@@ -82,7 +82,7 @@ function createHackThreads(ns: NS, targetHost: string, targetPercentage: number)
     } as Task
 }
 
-function createGrowThreads(ns: NS, targetHost: string, targetPercentage: number) {
+export function createGrowThreads(ns: NS, targetHost: string, targetPercentage: number) {
     const maxMoney = ns.getServerMaxMoney(targetHost);
     const availableMoney = maxMoney * (1 - targetPercentage); // Money left after hacking
 
@@ -101,7 +101,7 @@ function createGrowThreads(ns: NS, targetHost: string, targetPercentage: number)
     } as Task
 }
 
-function creatWeakenThreads(ns: NS, targetHost: string, growthThreads: number, hackThreads: number) {
+export function creatWeakenThreads(ns: NS, targetHost: string, growthThreads: number, hackThreads: number) {
     let hackIncrease = ns.hackAnalyzeSecurity(hackThreads);
     let growIncrease = ns.growthAnalyzeSecurity(growthThreads);
 

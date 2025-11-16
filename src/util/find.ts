@@ -9,13 +9,15 @@ export async function main(ns: NS): Promise<void> {
 
     ns.disableLog('scan')
     ns.clearLog()
+    ns.ui.openTail()
     let knownServers = getKnownServers(ns)
 
 
     let targetHost = ns.args[0] as string
+    targetHost = targetHost || 'home'
 
     // prints list of known servers
-    knownServers.keys().forEach(x => ns.tprint(x))
+    knownServers.keys().forEach(x => ns.print(x))
 
     let tofind = knownServers.get(targetHost)!
     let text = connectString(tofind, "backdoor;")
@@ -32,7 +34,7 @@ function connectString(server: CustomServer, currentString: String) {
     return connectString(server.parent, `connect ${server.hostname};` + currentString)
 }
 
-export function getKnownServers(ns: NS) {
+export function getKnownServers(ns: NS, hackedServersOnly: boolean = false) {
     let home: CustomServer = { ...ns.getServer(), parent: undefined }
 
     let knownServers = new Map<String, CustomServer>()
@@ -53,6 +55,19 @@ export function getKnownServers(ns: NS) {
 
         knownServers.set(server?.hostname!, server)
     }
+
+
+    if (hackedServersOnly) {
+        let keys = knownServers.keys()
+
+        keys.map(x => ns.getServer(x.toString()))
+            .forEach(x => {
+                if (!x.hasAdminRights) {
+                    knownServers.delete(x.hostname)
+                }
+            })
+    }
+
 
 
     return knownServers

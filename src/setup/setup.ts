@@ -18,7 +18,7 @@ function nukeAll(ns: NS) {
         .map(x => x.toString())
         .forEach(x => {
             try {
-                for(let i = 0; i < 5;i++){
+                for (let i = 0; i < 5; i++) {
                     openPorts(ns, x)
                 }
             } catch (e) {
@@ -27,9 +27,6 @@ function nukeAll(ns: NS) {
 }
 
 function openPorts(ns: NS, targetHost: string) {
-    if (ns.fileExists("NUKE.exe", "home")) {
-        ns.nuke(targetHost)
-    }
 
     if (ns.fileExists("SQLInject.exe", "home")) {
         ns.sqlinject(targetHost)
@@ -49,6 +46,10 @@ function openPorts(ns: NS, targetHost: string) {
 
     if (ns.fileExists("relaySMTP.exe", "home")) {
         ns.relaysmtp(targetHost)
+    }
+
+    if (ns.fileExists("NUKE.exe", "home")) {
+        ns.nuke(targetHost)
     }
 
 }
