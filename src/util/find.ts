@@ -1,8 +1,8 @@
 import { NS } from "@ns";
-import { CustomServer } from 'models/Models'
-import { getAvailableRam } from "./availableram";
+import { CustomServerV2, CustomServer } from 'models/Models'
 import { calculateFullCycleMoneyPerSecond } from "./profits";
 import { ALL_SERVERS } from "/models/Servers";
+import { getCustomServer } from "./serverCustomStats";
 
 
 export async function main(ns: NS): Promise<void> {
@@ -38,13 +38,13 @@ function connectString(server: CustomServer, currentString: String) {
     return connectString(server.parent, `connect ${server.hostname};` + currentString)
 }
 
-export function findBestMoneyPerSecondServer(ns: NS): CustomServer {
+export function findBestMoneyPerSecondServer(ns: NS): CustomServerV2 {
 
     let stats = []
     for (const server of ALL_SERVERS) {
         const first = calculateFullCycleMoneyPerSecond(ns, server, 0.1);
 
-        if (first == undefined) {
+        if (first == undefined || getCustomServer(ns, server).hackChance < 90) {
             continue;
         }
 
@@ -53,34 +53,12 @@ export function findBestMoneyPerSecondServer(ns: NS): CustomServer {
     }
 
     if (stats.length == 0) {
-        return { ...ns.getServer('n00dles'), parent: undefined }
+        return getCustomServer(ns, 'n00dles')
     }
 
     stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
 
-    let servers = getKnownServers(ns, false)
-        .filter(server => server.hostname == stats[0].server)
-
-    return servers.pop()!
-}
-
-export function findPreppedServers(ns: NS): CustomServer[] {
-    return getKnownServers(ns, false)
-        .filter(server => server.minDifficulty == server.hackDifficulty)
-        .filter(server => server.moneyMax == server.moneyAvailable)
-}
-
-export function findServersToPrep(ns: NS): CustomServer[] {
-    return getKnownServers(ns, false)
-        .filter(server => server.hasAdminRights == true)
-        .filter(server => server.minDifficulty != server.hackDifficulty && server.moneyMax != server.moneyAvailable)
-        .toSorted((b, a) => (a.requiredHackingSkill || 0) - (b.requiredHackingSkill || 0))
-}
-
-export function findServersThatCanBeUsed(ns: NS): CustomServer[] {
-    return getKnownServers(ns, true)
-        .filter(server => server.hasAdminRights)
-        .filter(server => getAvailableRam(ns, server.hostname) > 5.20)
+    return getCustomServer(ns, stats.pop()!.server)
 }
 
 export function getKnownServers(ns: NS, hackedServersOnly: boolean = false): CustomServer[] {

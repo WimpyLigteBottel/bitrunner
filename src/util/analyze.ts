@@ -1,5 +1,8 @@
 import { NS } from "@ns";
 import { disableLogs } from "/base/debug";
+import { findBestMoneyPerSecondServer } from "./find";
+import { getCustomServer } from "./serverCustomStats";
+import { preppedServers } from "./preppedServers";
 
 
 export async function main(ns: NS): Promise<void> {
@@ -11,50 +14,33 @@ export async function main(ns: NS): Promise<void> {
 
 
 async function analyze(ns: NS) {
-    let hostname = ns.args[0] as string | undefined
-    if (hostname == undefined || hostname == "") {
-        hostname = await ns.prompt('What server would you like to analyze?', {
-            type: 'text'
-        }) as string
+    let hostname = await ns.prompt('What server would you like to analyze?', {
+        type: 'text'
+    }) as any
+
+    if (hostname == '') {
+        hostname = findBestMoneyPerSecondServer(ns).hostname
+        ns.print(hostname)
     }
 
     while (true) {
         ns.clearLog()
-        let s = serverCustomStats(ns, hostname)
+
+        ns.print(" ----------- ")
+
+        let servers = preppedServers(ns).map((x) => {
+            let newMap = { name: x.hostname, money: x.moneyMax }
+            return newMap;
+        }
+        )
+
+        ns.print(JSON.stringify(servers, null, 2))
+        ns.print(" ----------- ")
+
+
+        let s = getCustomServer(ns, hostname)
 
         ns.print(JSON.stringify(s, null, 2))
         await ns.sleep(50)
     }
 }
-
-
-function serverCustomStats(ns: NS, hostname: string) {
-    let s = ns.getServer(hostname)
-    let player = ns.getPlayer()
-
-
-    return {
-        hostname: s.hostname,
-
-        // Ram
-        availableRam: s.maxRam - s.ramUsed,
-        ramUsed: s.ramUsed,
-        // Money Available
-        maxRam: s.maxRam,
-        moneyAvailable: ns.formatNumber(s.moneyAvailable || 0),
-        moneyMax: ns.formatNumber(s.moneyMax || 0),
-
-        // security
-        currentSecurity: s.hackDifficulty,
-        minSecurity: s.minDifficulty,
-
-        // hacking
-        backdoored: s.backdoorInstalled,
-        canHack: player.skills.hacking >= (s.requiredHackingSkill || 999999),
-        canExecuteScripts: s.hasAdminRights,
-        hackChance: ns.formulas.hacking.hackChance(s, player) * 100 + '%',
-        hacktime: ns.getHackTime(s.hostname),
-        growTime: ns.getGrowTime(s.hostname),
-        weakTime: ns.getWeakenTime(s.hostname),
-    }
-} 

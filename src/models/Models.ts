@@ -46,3 +46,29 @@ export function buildBatch(tasks: Task[], server: string, percentage: number): B
 export type CustomServer = {
     parent: CustomServer | undefined
 } & Server
+
+export type CustomServerV2 = {
+    hostname: string;
+
+    // Ram
+    availableRam: number;
+    ramUsed: number;
+    // Money Available
+    maxRam: number;
+    moneyAvailable: string;
+    moneyMax: string;
+
+    // security
+    currentSecurity: number
+    minSecurity: number;
+
+    // hacking
+    backdoored: boolean;
+    canHack: boolean;
+    canExecuteScripts: boolean;
+    hackChance: number;
+    hacktime: number;
+    growTime: number;
+    weakTime: number;
+    maxBatches: number;
+}

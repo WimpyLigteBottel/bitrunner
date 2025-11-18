@@ -12,7 +12,7 @@ export async function main(ns: NS): Promise<void> {
     let stats = []
 
     for (const server of servers) {
-        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.2);
+        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.1);
 
         if (first == undefined) {
             continue;

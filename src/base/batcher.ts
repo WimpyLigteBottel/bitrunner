@@ -43,6 +43,8 @@ export function createBatchOptimal(
 
 function getBatchType(ns: NS, targetHost: string): RequestType {
 
+    return 'PREP'
+
     let server = ns.getServer(targetHost)
 
     if (server.hackDifficulty! > server.minDifficulty!) {
