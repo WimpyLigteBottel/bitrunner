@@ -5,7 +5,7 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
     let s = ns.getServer(hostname);
     let player = ns.getPlayer();
 
-    let maxBatches = Math.floor(ns.getWeakenTime(s.hostname) / 50)
+    let maxBatches = Math.floor(ns.getWeakenTime(s.hostname) / 100)
 
 
     return {

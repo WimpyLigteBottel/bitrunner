@@ -39,7 +39,6 @@ function connectString(server: CustomServer, currentString: String) {
 }
 
 export function findBestMoneyPerSecondServer(ns: NS): CustomServerV2 {
-
     let stats = []
     for (const server of ALL_SERVERS) {
         const first = calculateFullCycleMoneyPerSecond(ns, server, 0.1);

@@ -3,7 +3,7 @@ import { TASK_NAME, Task } from "/models/Models";
 
 
 export function createGrowThreads(ns: NS, targetHost: string, targetPercentage: number) {
-    const buffer = 50; // ms safety margin
+    const buffer = 100; // ms safety margin
 
     const maxMoney = ns.getServerMaxMoney(targetHost);
     const availableMoney = maxMoney * (1 - targetPercentage);

@@ -9,7 +9,7 @@ export function createBatchOptimal(
     availableRam: number
 ): Batch {
 
-    let requestType = getBatchType(ns,targetHost)
+    let requestType = getBatchType(ns, targetHost)
 
     let low = 0;
     let high = 1;  // guarantee upper bound exceeds feasible size
@@ -17,20 +17,12 @@ export function createBatchOptimal(
     // Start with the smallest possible batch (0)
     let bestBatch = createBatch(ns, targetHost, 0.001, availableRam, requestType);
 
-    let lastk = 0
     try {
-        for (let i = 0; i < 30; i++) {
-            const mid = (low + high) / 2;
-
-            lastk = mid
-            const batch = createBatch(ns, targetHost, mid, availableRam, requestType);
+        for (let i = 1; i < 1000; i++) {
+            const batch = createBatch(ns, targetHost, i / 1000, availableRam, requestType);
 
             if (batch.totalCost < availableRam) {
                 bestBatch = batch;  // mid fits
-                low = mid;
-
-            } else {
-                high = mid;         // too large, shrink
             }
         }
     } catch (e) {
@@ -43,7 +35,7 @@ export function createBatchOptimal(
 
 function getBatchType(ns: NS, targetHost: string): RequestType {
 
-    return 'PREP'
+    // return 'PREP'
 
     let server = ns.getServer(targetHost)
 

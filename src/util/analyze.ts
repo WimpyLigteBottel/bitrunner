@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { disableLogs } from "/base/debug";
-import { findBestMoneyPerSecondServer } from "./find";
+import { findBestMoneyPerSecondServer, getKnownServers } from "./find";
 import { getCustomServer } from "./serverCustomStats";
 import { preppedServers } from "./preppedServers";
 

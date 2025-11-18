@@ -1,11 +1,11 @@
-export let DEBUG = false
+export let DEBUG = true
 import { NS } from "@ns";
 
 
 
-export function printDone(ns: NS, name: string) {
+export function printDone(ns: NS, name: string, target: string) {
     if (DEBUG) {
-        ns.tprint(`${name} - ${new Date().toISOString()}`)
+        ns.tprint(`${name} - ${new Date().toISOString()} - ${target}`)
     }
 }
 

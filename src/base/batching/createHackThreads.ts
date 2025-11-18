@@ -2,7 +2,7 @@ import { NS } from "@ns";
 import { Task, TASK_NAME } from "/models/Models";
 
 export function createHackThreads(ns: NS, targetHost: string, targetPercentage: number): Task {
-    const buffer = 50;
+    const buffer = 100;
 
     const tHack = ns.getHackTime(targetHost);
     const tWeaken = ns.getWeakenTime(targetHost);

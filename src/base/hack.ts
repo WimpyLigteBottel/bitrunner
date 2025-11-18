@@ -8,5 +8,5 @@ export async function main(ns: NS): Promise<void> {
   await ns.sleep(sleepDuration)
   await ns.hack(host)
 
-  printDone(ns, '    hack')
+  printDone(ns, '    hack', host)
 }

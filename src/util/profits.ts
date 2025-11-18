@@ -28,7 +28,7 @@ export async function main(ns: NS): Promise<void> {
     for (let stat of stats) {
         // Logging for debugging
         ns.print(`Server: ${stat.server}`);
-        ns.print(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
+        ns.print(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.totalWeakenThreads}`);
         ns.print(`Total ram cost: ${stat.totalRamCost}`);
         ns.print(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
         ns.print(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
@@ -45,50 +45,48 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
     const maxMoney = ns.getServerMaxMoney(server);
     const hackChance = ns.hackAnalyzeChance(server);
 
-    // Exit if the server cannot generate money or hacking chance is too low
-    if (maxMoney === 0 || hackChance === 0) {
-        return undefined;
-    }
+    if (maxMoney === 0 || hackChance === 0) return undefined;
 
-    // Calculate hack threads needed to steal the desired fraction of money
+    // Hack threads
     const hackAmount = maxMoney * stealFraction;
-    const hackThreads = Math.floor(ns.hackAnalyzeThreads(server, hackAmount));
+    let hackThreads = ns.hackAnalyzeThreads(server, hackAmount);
+    if (!isFinite(hackThreads) || hackThreads < 1) return undefined;
+    hackThreads = Math.ceil(hackThreads);
 
-    // Exit if hackThreads is invalid or too small
-    if (hackThreads < 1 || hackThreads === Infinity) {
-        return undefined;
-    }
-
-    // Calculate grow threads needed to regrow the stolen money
-    const growMultiplier = maxMoney / (maxMoney - hackAmount); // Restore the stolen amount
+    // Grow threads
+    const growMultiplier = maxMoney / (maxMoney - hackAmount);
     const growThreads = Math.ceil(ns.growthAnalyze(server, growMultiplier));
 
-    // Calculate weaken threads to offset security increases
-    const weakenThreads1 = Math.ceil(ns.weakenAnalyze(1) * hackThreads); // Offset hack security increase
-    const weakenThreads2 = Math.ceil(ns.weakenAnalyze(1) * growThreads); // Offset grow security increase
+    // Weaken threads
+    const weakenThreadsHack = Math.ceil((hackThreads * 0.002) / 0.05);
+    const weakenThreadsGrow = Math.ceil((growThreads * 0.004) / 0.05);
+    const totalWeakenThreads = weakenThreadsHack + weakenThreadsGrow;
 
-    // Calculate operation times
+    // Operation times
     const hackTime = ns.getHackTime(server);
     const growTime = ns.getGrowTime(server);
     const weakenTime = ns.getWeakenTime(server);
 
-    // Full cycle time is the longest of all operations
-    const fullCycleTime = Math.max(hackTime, growTime, weakenTime) + 50;
+    // Correct full cycle time (weaken finishes last)
+    const buffer = 50;
+    const fullCycleTime = weakenTime + buffer;
 
-    // Calculate money generated per cycle and per second
-    const moneyPerCycle = hackAmount * hackChance; // Adjust for success probability
-    const moneyPerSecond = moneyPerCycle / (fullCycleTime / 1000); // Convert ms to seconds
+    // Expected money per cycle
+    const moneyPerCycle = hackAmount * hackChance;
+
+    // Correct money per second
+    const moneyPerSecond = moneyPerCycle / (fullCycleTime / 1000);
 
     return {
         server,
         hackThreads,
         growThreads,
-        weakenThreads1,
-        weakenThreads2,
+        weakenThreadsHack,
+        weakenThreadsGrow,
+        totalWeakenThreads,
         fullCycleTime,
         moneyPerCycle,
         moneyPerSecond,
-        totalRamCost: (hackThreads + growThreads + weakenThreads1 + weakenThreads2) * 1.75
+        totalRamCost: (hackThreads + growThreads + totalWeakenThreads) * 1.75
     };
-
 }
