@@ -1,14 +1,15 @@
 import { NS } from "@ns"
 import { disableLogs } from "/base/debug"
-import { ALL_SERVERS } from "/models/Servers"
+import { getKnownServers } from "./find"
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
     ns.clearLog()
     // ns.ui.openTail()
 
-    ALL_SERVERS.forEach(x => {
-        ns.print(`'${x.toString()}',`)
-        ns.killall(x.toString())
-    })
+    getKnownServers(ns)
+        .filter(x => x.hostname != 'home')
+        .forEach(x => {
+            ns.killall(x.hostname)
+        })
 }
