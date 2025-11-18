@@ -1,23 +1,18 @@
-import { NS, Server } from "@ns";
-import { getKnownServers } from "./find";
+import { NS } from "@ns";
+import { ALL_SERVERS } from "/models/Servers";
 
 
 export async function main(ns: NS): Promise<void> {
-
-    ns.clearLog()
     ns.disableLog('getServerMaxMoney')
     ns.disableLog('scan')
+    ns.clearLog()
     ns.ui.openTail()
-    let servers = getKnownServers(ns)
-        .keys()
-        .map(x => x.toString())
-        .filter(x => !x.includes("home"))
-
+    let servers = ALL_SERVERS
 
     let stats = []
 
     for (const server of servers) {
-        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.1);
+        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.2);
 
         if (first == undefined) {
             continue;
@@ -27,26 +22,26 @@ export async function main(ns: NS): Promise<void> {
             stats.push(first)
     }
 
-    stats = stats.sort((a, b) => a.moneyPerSecond - b.moneyPerSecond)
+    stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
+    // stats = stats.slice(0, 5)
 
     for (let stat of stats) {
         // Logging for debugging
-        ns.tprint(`Server: ${stat.server}`);
-        ns.tprint(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
-        ns.tprint(`Total ram cost: ${stat.totalRamCost}`);
-        ns.tprint(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
-        ns.tprint(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
-        ns.tprint(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
-        ns.tprint("----------")
+        ns.print(`Server: ${stat.server}`);
+        ns.print(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.weakenThreads1 + stat.weakenThreads2}`);
+        ns.print(`Total ram cost: ${stat.totalRamCost}`);
+        ns.print(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
+        ns.print(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
+        ns.print(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
+        ns.print("----------")
     }
 
 
 }
 
 
-
 /** @param {NS} ns **/
-export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFraction: number = 0.1) {
+export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFraction: number) {
     const maxMoney = ns.getServerMaxMoney(server);
     const hackChance = ns.hackAnalyzeChance(server);
 

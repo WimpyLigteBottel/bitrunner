@@ -1,7 +1,7 @@
 import { Server } from "@ns";
 
 
-export type RequestType = "HACK" | "PREP"
+export type RequestType = "HACK" | "PREP" | "WEAKEN"
 
 
 export type HackRequest = {
@@ -32,6 +32,15 @@ export interface Batch {
     server: string;
     totalCost: number;
     percentage: number;
+}
+
+export function buildBatch(tasks: Task[], server: string, percentage: number): Batch {
+    return {
+        tasks: tasks,
+        server: server,
+        percentage: percentage,
+        totalCost: tasks.map(x => x.cost).reduce((acc, x) => acc + x)
+    }
 }
 
 export type CustomServer = {
