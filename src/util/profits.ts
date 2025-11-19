@@ -1,5 +1,6 @@
 import { NS } from "@ns";
 import { ALL_SERVERS } from "/models/Servers";
+import { BUFFER } from "/models/Models";
 
 
 export async function main(ns: NS): Promise<void> {
@@ -12,7 +13,7 @@ export async function main(ns: NS): Promise<void> {
     let stats = []
 
     for (const server of servers) {
-        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.1);
+        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.6);
 
         if (first == undefined) {
             continue;
@@ -23,7 +24,7 @@ export async function main(ns: NS): Promise<void> {
     }
 
     stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
-    // stats = stats.slice(0, 5)
+    stats = stats.slice(0, 5)
 
     for (let stat of stats) {
         // Logging for debugging
@@ -68,8 +69,7 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
     const weakenTime = ns.getWeakenTime(server);
 
     // Correct full cycle time (weaken finishes last)
-    const buffer = 50;
-    const fullCycleTime = weakenTime + buffer;
+    const fullCycleTime = weakenTime + BUFFER;
 
     // Expected money per cycle
     const moneyPerCycle = hackAmount * hackChance;

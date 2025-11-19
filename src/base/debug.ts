@@ -1,4 +1,4 @@
-export let DEBUG = false
+export let DEBUG = true
 import { NS } from "@ns";
 
 

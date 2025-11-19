@@ -1,5 +1,4 @@
 import { NS } from "@ns";
-import { findBestMoneyPerSecondServer, getKnownServers } from "../util/find"
 import { getAvailableRam } from "../util/availableram"
 import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "/base/debug";
@@ -16,27 +15,27 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("setup/setup.js", "home", 1)
     ns.exec('util/killall.js', 'home', 1)
 
-
+    let counter = 0;
     while (true) {
         // Trying to make money
-        let bestServerToHack = notPreppedServers(ns).pop()!
+        // let server = notPreppedServers(ns).pop()!
+        let target = getCustomServer(ns, 'phantasy')
 
-        ns.print(bestServerToHack.hostname + " is my next target")
-
-        let server = await nextUsableServer(ns)
+        ns.print(target.hostname + " is my next target")
 
         try {
+            let server = await nextUsableServer(ns)
+            let batch = createBatchOptimal(ns, target.hostname, server.availableRam)
 
-            let ram = getAvailableRam(ns, server.hostname)
-            let batch = createBatchOptimal(ns, bestServerToHack.hostname, ram)
-
-            batch.tasks.forEach(task => {
+            for (const task of batch.tasks) {
                 ns.exec(task.script, server.hostname, task.threads, batch.server, task.delay)
-            });
+            }
 
-            await ns.sleep(500)
+            await ns.sleep(2000)
         } catch (e) {
-            ns.print(`ERROR ${e}`)
+            counter++;
+            ns.print(`ERROR counter:${counter} -> ${e}`)
+            await ns.sleep(500)
         }
     }
 }
