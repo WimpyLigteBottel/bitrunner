@@ -61,6 +61,7 @@ export type CustomServerV2 = {
     // security
     currentSecurity: number
     minSecurity: number;
+    requiredHacking: number;
 
     // hacking
     backdoored: boolean;

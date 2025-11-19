@@ -16,8 +16,10 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
         ramUsed: s.ramUsed,
         // Money Available
         maxRam: s.maxRam,
-        moneyAvailable: ns.formatNumber(s.moneyAvailable || 0),
-        moneyMax: ns.formatNumber(s.moneyMax || 0),
+        moneyAvailable: ns.formatNumber(s.moneyAvailable ?? 0),
+        moneyMax: ns.formatNumber(s.moneyMax ?? 0),
+
+        requiredHacking: s.requiredHackingSkill ?? 999999,
 
         // security
         currentSecurity: s.hackDifficulty ?? 0,
@@ -25,7 +27,7 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
 
         // hacking
         backdoored: s.backdoorInstalled ?? false,
-        canHack: player.skills.hacking >= (s.requiredHackingSkill || 999999),
+        canHack: player.skills.hacking >= (s.requiredHackingSkill ?? 999999),
         canExecuteScripts: s.hasAdminRights,
         hackChance: ns.formulas.hacking.hackChance(s, player) * 100,
         hacktime: ns.getHackTime(s.hostname),

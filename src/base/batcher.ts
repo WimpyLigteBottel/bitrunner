@@ -12,13 +12,13 @@ export function createBatchOptimal(
     let requestType = getBatchType(ns, targetHost)
 
     // Start with the smallest possible batch (0)
-    let bestBatch = createBatch(ns, targetHost, 0.001, availableRam, requestType);
+    let bestBatch = createBatch(ns, targetHost, 0.0001, availableRam, requestType);
 
     try {
         for (let i = 1; i < 1000; i++) {
             const batch = createBatch(ns, targetHost, i / 1000, availableRam, requestType);
 
-            if (batch.totalCost < availableRam) {
+            if (batch.totalCost < availableRam && batch.totalCost > 0) {
                 bestBatch = batch;  // mid fits
             }
         }

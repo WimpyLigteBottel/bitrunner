@@ -31,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
 }
 
 
-function connectString(server: CustomServer, currentString: String) {
+function connectString(server: CustomServer, currentString: string): string {
     if (server.parent == undefined)
         return currentString
 
@@ -55,7 +55,7 @@ export function findBestMoneyPerSecondServer(ns: NS): CustomServerV2 {
         return getCustomServer(ns, 'n00dles')
     }
 
-    stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
+    stats = stats.toSorted((b: any, a: any) => a.moneyPerSecond - b.moneyPerSecond)
 
     return getCustomServer(ns, stats.pop()!.server)
 }

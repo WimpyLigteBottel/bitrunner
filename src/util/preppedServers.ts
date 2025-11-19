@@ -18,7 +18,7 @@ export function preppedServers(ns: NS): CustomServerV2[] {
         if (isPrepped(ns, server.hostname))
             prepList.push(getCustomServer(ns, server.hostname))
     }
-    return prepList.filter(x => x.moneyMax != '0')
+    return prepList.filter(x => x.moneyMax != '0').toSorted((a, b) => b.requiredHacking - a.requiredHacking)
 }
 
 export function notPreppedServers(ns: NS): CustomServerV2[] {
@@ -28,5 +28,5 @@ export function notPreppedServers(ns: NS): CustomServerV2[] {
         if (!isPrepped(ns, server.hostname))
             prepList.push(getCustomServer(ns, server.hostname))
     }
-    return prepList.filter(x => x.moneyMax != '0')
+    return prepList.filter(x => x.moneyMax != '0').toSorted((a, b) => b.requiredHacking - a.requiredHacking)
 }

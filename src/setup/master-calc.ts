@@ -5,6 +5,7 @@ import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "/base/debug";
 import { CustomServerV2, TASK_NAME } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
+import { notPreppedServers } from "/util/preppedServers";
 
 
 
@@ -18,36 +19,25 @@ export async function main(ns: NS): Promise<void> {
 
     while (true) {
         // Trying to make money
-        let bestServerToHack = getCustomServer(ns, 'joesguns')
-        // trying to prep
-        // let bestServerToHack = findNextServerToPrep(ns)
-        let maxBatches = bestServerToHack.maxBatches
-        ns.print('Targeting ' + bestServerToHack.hostname)
-        let tempCounter = 0
-        ns.print('max batches ' + maxBatches)
+        let bestServerToHack = notPreppedServers(ns).pop()!
 
-        while (tempCounter < maxBatches) {
-            let server = await nextUsableServer(ns)
+        ns.print(bestServerToHack.hostname + " is my next target")
 
-            try {
+        let server = await nextUsableServer(ns)
 
-                let ram = getAvailableRam(ns, server.hostname)
-                let batch = createBatchOptimal(ns, bestServerToHack.hostname, ram)
+        try {
 
-                batch.tasks.forEach(task => {
-                    ns.exec(task.script, server.hostname, task.threads, batch.server, task.delay)
-                });
+            let ram = getAvailableRam(ns, server.hostname)
+            let batch = createBatchOptimal(ns, bestServerToHack.hostname, ram)
 
-                await ns.sleep(1000)
+            batch.tasks.forEach(task => {
+                ns.exec(task.script, server.hostname, task.threads, batch.server, task.delay)
+            });
 
-                tempCounter++
-            } catch (e) {
-                ns.print(`ERROR ${e}`)
-            }
+            await ns.sleep(500)
+        } catch (e) {
+            ns.print(`ERROR ${e}`)
         }
-
-        await ns.sleep(ns.getWeakenTime(bestServerToHack.hostname))
-        ns.print('XXXXXXXXXXXXXX')
     }
 }
 
@@ -76,11 +66,5 @@ function findServersThatCanBeUsed(ns: NS) {
 }
 
 function findNextServerToPrep(ns: NS) {
-    return getKnownServers(ns, false)
-        .map(server => getCustomServer(ns, server.hostname))
-        .filter(server => server.hostname != 'home')
-        .filter(server => server.canHack)
-        .filter(server => server.currentSecurity != server.minSecurity && server.moneyMax != server.moneyAvailable)
-        .toSorted((b, a) => a.weakTime - b.weakTime)
-        .pop()!
+    return notPreppedServers(ns).pop()!
 }

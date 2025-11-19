@@ -1,9 +1,6 @@
 import { NS } from "@ns";
 import { disableLogs } from "/base/debug";
-import { findBestMoneyPerSecondServer, getKnownServers } from "./find";
 import { getCustomServer } from "./serverCustomStats";
-import { preppedServers } from "./preppedServers";
-
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
@@ -12,31 +9,17 @@ export async function main(ns: NS): Promise<void> {
     await analyze(ns)
 }
 
-
 async function analyze(ns: NS) {
-    let hostname = await ns.prompt('What server would you like to analyze?', {
-        type: 'text'
-    }) as any
+    let hostname = (ns.args[0] || "") as string
 
     if (hostname == '') {
-        hostname = findBestMoneyPerSecondServer(ns).hostname
-        ns.print(hostname)
+        hostname = await ns.prompt('What server would you like to analyze?', {
+            type: 'text'
+        }) as any
     }
 
     while (true) {
         ns.clearLog()
-
-        ns.print(" ----------- ")
-
-        let servers = preppedServers(ns).map((x) => {
-            let newMap = { name: x.hostname, money: x.moneyMax }
-            return newMap;
-        }
-        )
-
-        ns.print(JSON.stringify(servers, null, 2))
-        ns.print(" ----------- ")
-
 
         let s = getCustomServer(ns, hostname)
 
