@@ -11,6 +11,10 @@ export function createHackThreads(ns: NS, targetHost: string, targetPercentage: 
     let threads = Math.ceil(ns.hackAnalyzeThreads(targetHost, hackAmount));
     threads = Math.max(1, threads);
 
+    if(threads < 1){
+        throw Error(`Zero hack threads ${targetHost}:${targetPercentage}`)
+    }
+
     return {
         time: tHack,
         delay: tWeaken - tHack - 2 * buffer,   // ⭐ Correct Hack Delay for HGW

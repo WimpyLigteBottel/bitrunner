@@ -8,18 +8,22 @@ export function createGrowThreads(ns: NS, targetHost: string, targetPercentage: 
     const maxMoney = ns.getServerMaxMoney(targetHost);
     const availableMoney = maxMoney * (1 - targetPercentage);
 
-    let growThreads = Math.ceil(ns.growthAnalyze(targetHost, maxMoney / availableMoney));
-    growThreads = Math.max(1, growThreads);
+    let threads = Math.ceil(ns.growthAnalyze(targetHost, maxMoney / availableMoney));
+    threads = Math.max(1, threads);
 
     const tGrow = ns.getGrowTime(targetHost);
     const tWeaken = ns.getWeakenTime(targetHost);
+
+    if (threads < 1) {
+        throw Error(`Zero grow threads ${targetHost}:${targetPercentage}`)
+    }
 
     return {
         time: tGrow,
         delay: tWeaken - tGrow - buffer, // ⭐ correct for single-cycle HGW
         name: TASK_NAME.g,
         script: "base/grow.js",
-        threads: growThreads,
-        cost: growThreads * ns.getScriptRam("base/grow.js"),
+        threads: threads,
+        cost: threads * ns.getScriptRam("base/grow.js"),
     } as Task;
 }

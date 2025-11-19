@@ -11,9 +11,6 @@ export function createBatchOptimal(
 
     let requestType = getBatchType(ns, targetHost)
 
-    let low = 0;
-    let high = 1;  // guarantee upper bound exceeds feasible size
-
     // Start with the smallest possible batch (0)
     let bestBatch = createBatch(ns, targetHost, 0.001, availableRam, requestType);
 

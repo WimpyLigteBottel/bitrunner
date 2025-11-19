@@ -11,14 +11,18 @@ export function creatWeakenThreads(ns: NS, targetHost: string, growthThreads: nu
     let weakenNeeded1 = Math.ceil(growIncrease / weakenAnalyze);
     let weakenNeeded2 = Math.ceil(hackIncrease / weakenAnalyze);
 
-    let totalThreads = weakenNeeded1 + weakenNeeded2;
+    let threads = weakenNeeded1 + weakenNeeded2;
+
+    if (threads < 1) {
+        throw Error(`Zero weaken threads ${targetHost}:${growthThreads}:${hackThreads}`)
+    }
 
     return {
         time: ns.getWeakenTime(targetHost),
         delay: 0,
         name: TASK_NAME.w,
         script: "base/weaken.js",
-        threads: totalThreads,
-        cost: totalThreads * ns.getScriptRam("base/weaken.js"),
+        threads: threads,
+        cost: threads * ns.getScriptRam("base/weaken.js"),
     } as Task;
 }
