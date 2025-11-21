@@ -1,0 +1,66 @@
+import { NS } from "@ns";
+import { createBatchOptimal } from "/base/batcher";
+import { disableLogs } from "/base/debug";
+import { getCustomServer } from "/util/serverCustomStats";
+import { notPreppedServers } from "/util/preppedServers";
+import { BUFFER } from "/models/Models";
+
+
+
+export async function main(ns: NS): Promise<void> {
+    disableLogs(ns)
+    ns.ui.openTail()
+
+    ns.exec("setup/setup.js", "home", 1)
+
+
+    let counter = 0;
+    while (true) {
+        let target = findNextServerToPrep(ns)
+
+        ns.print(target.hostname + " is my next target")
+
+        let server = getCustomServer(ns, 'home')
+        let firstWeakenFinish = performance.now() + target.weakTime
+        let offset = 0
+        try {
+            let batch = createBatchOptimal(ns, target.hostname, server.availableRam - 30)
+
+            for (const task of batch.tasks) {
+                const additionalMsec = Math.max(0, firstWeakenFinish + offset - performance.now() - task.time);
+
+                ns.exec(task.script, server.hostname, task.threads, batch.server, additionalMsec, `Threads ${task.threads}`);
+            }
+
+            await ns.sleep(target.weakTime)
+        } catch (e) {
+            counter++;
+            ns.print(`ERROR counter:${counter} -> ${e}`)
+            await ns.sleep(target.weakTime + 5000)
+        }
+
+
+    }
+}
+
+function findNextServerToPrep(ns: NS) {
+
+    if (ns.args[0] != undefined && ns.args[0] != '') {
+        return getCustomServer(ns, ns.args[0] as string)
+    }
+
+    let counter = 2
+
+    if (ns.args[1] != undefined) {
+        counter = ns.args[1] as number
+    }
+
+    let servers = notPreppedServers(ns)
+
+    while (counter > 1) {
+        servers.pop()
+        counter--
+    }
+
+    return servers.pop()!
+}

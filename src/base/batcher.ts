@@ -1,8 +1,6 @@
 import { NS } from "@ns";
 import { Batch, RequestType } from "/models/Models";
 import { createBatch } from "./batching/create-batch";
-import { getCustomServer } from "/util/serverCustomStats";
-
 
 export function createBatchOptimal(
     ns: NS,
@@ -37,44 +35,31 @@ export function createBatchOptimal(
     }
 
     let hackT = bestBatch.tasks.find(x => x.name == 'h')
-    let growT = bestBatch.tasks.find(x => x.name == 'g')
-    let weakT = bestBatch.tasks.find(x => x.name == 'w')
 
 
-
-
-
-    if (hackT != null) {
-        let hackAmount = ns.hackAnalyze(targetHost) * hackT!.threads * ns.getServer(targetHost).moneyMax!
-        let growAmount = ns.formulas.hacking.growAmount(ns.getServer(targetHost), ns.getPlayer(), hackT!.threads)
-
-        ns.print({
-            percentage: bestBatch.percentage,
-            hackAmount: ns.formatNumber(hackAmount),
-            growAmount: ns.formatNumber(growAmount),
-        })
+    if (hackT != undefined) {
+        let growT = bestBatch.tasks.find(x => x.name == 'g')!
+        let weakT = bestBatch.tasks.find(x => x.name == 'w')!
+        if (growT.threads <= 0 || weakT.threads <= 0 || hackT.threads <= 0) {
+            ns.print("WARN " + JSON.stringify(bestBatch, null, 1))
+        }
     }
 
-
-    // ns.print(JSON.stringify(bestBatch, null, 1))
 
     return bestBatch;
 }
 
 
 function getBatchType(ns: NS, targetHost: string): RequestType {
-
-    // return 'PREP'
-
     let server = ns.getServer(targetHost)
 
     if (server.hackDifficulty! > server.minDifficulty!) {
         return "WEAKEN"
     }
 
-
     if (server.moneyMax! > server.moneyAvailable!) {
         return "PREP"
     }
+
     return "HACK"
 }

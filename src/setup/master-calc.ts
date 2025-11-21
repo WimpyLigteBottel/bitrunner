@@ -2,7 +2,7 @@ import { NS } from "@ns";
 import { getAvailableRam } from "../util/availableram"
 import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "/base/debug";
-import { CustomServerV2, TASK_NAME } from "/models/Models";
+import { BUFFER, CustomServerV2, Task, TASK_NAME } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
 
@@ -15,43 +15,61 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("setup/setup.js", "home", 1)
     ns.exec('util/killall.js', 'home', 1)
 
+    await ns.sleep(1000)
+
     let counter = 0;
     while (true) {
-        // Trying to make money
-        // let server = notPreppedServers(ns).pop()!
-        let target = getCustomServer(ns, 'phantasy')
+        let target = getTargetServer(ns);
+        let firstWeakenFinish = performance.now() + target.weakTime
+        let offset = 0
+        while (true) {
+            try {
+                let server = await nextUsableServer(ns)
+                let batch = createBatchOptimal(ns, target.hostname, server.availableRam)
 
-        ns.print(target.hostname + " is my next target")
+                for (const task of batch.tasks) {
+                    const additionalMsec = Math.max(0, firstWeakenFinish + offset - performance.now() - task.time);
 
-        try {
-            let server = await nextUsableServer(ns)
-            let batch = createBatchOptimal(ns, target.hostname, server.availableRam)
+                    ns.exec(task.script, server.hostname, task.threads, batch.server, additionalMsec, `Threads ${task.threads}`);
+                    offset += BUFFER;
+                }
+            } catch (e) {
+                if (e instanceof Error && e.message == 'There is no more servers to execute on') {
+                    ns.print('Going to wait now ' + `${ns.tFormat(target.weakTime)}`)
+                    await ns.sleep(target.weakTime + offset + 5000)
+                    break;
+                }
 
-            for (const task of batch.tasks) {
-                ns.exec(task.script, server.hostname, task.threads, batch.server, task.delay)
+                counter++;
+                ns.print(`ERROR counter:${counter} -> ${e}`)
+                await ns.sleep(5000)
             }
-
-            await ns.sleep(2000)
-        } catch (e) {
-            counter++;
-            ns.print(`ERROR counter:${counter} -> ${e}`)
-            await ns.sleep(500)
         }
+
     }
 }
 
-async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
-    while (true) {
-        let servers = findServersThatCanBeUsed(ns);
-
-        for (const x of servers) {
-            let noScriptsRunning = getAvailableRam(ns, x.hostname) == ns.getServerMaxRam(x.hostname)
-            if (noScriptsRunning) {
-                return x;
-            }
-        }
-        await ns.sleep(1000)
+function getTargetServer(ns: NS) {
+    if (ns.args[0] != undefined && ns.args[0] != '') {
+        return getCustomServer(ns, ns.args[0] as string);
     }
+
+    return notPreppedServers(ns).pop()!;
+}
+
+async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
+    let target = getTargetServer(ns)
+    let servers = findServersThatCanBeUsed(ns).toSorted((b, a) => a.availableRam - b.availableRam);
+
+    for (const x of servers) {
+        let batch = createBatchOptimal(ns, target.hostname, x.availableRam).totalCost
+        let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch
+        if (noScriptsRunning) {
+            return x;
+        }
+    }
+
+    throw Error('There is no more servers to execute on')
 }
 
 

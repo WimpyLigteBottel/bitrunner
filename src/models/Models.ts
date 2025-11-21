@@ -1,17 +1,26 @@
-import { Server } from "@ns";
+import { NS, Server } from "@ns";
 
 
 export type RequestType = "HACK" | "PREP" | "WEAKEN"
 
-export const BUFFER = 200
+export const BUFFER = 100
 
-export type HackRequest = {
-    requesterName: string,
-    requestType: RequestType;
+
+export type SCRIPT = {
+    target: string;
+    sleep: number;
+    delayMs: number;
+    threads?: number;
 }
 
-
-export type HackResponse = {} & Batch
+function toScript(ns: NS): SCRIPT {
+    return {
+        target: ns.args[0] as string,
+        sleep: ns.args[1] as number,
+        delayMs: ns.args[2] as number,
+        threads: ns.args[3] as number
+    }
+}
 
 export enum TASK_NAME {
     w = "w",
@@ -48,6 +57,12 @@ export type CustomServer = {
     parent: CustomServer | undefined
 } & Server
 
+export type CleanTimes = {
+    hacktimeC: string;
+    growTimeC: string;
+    weakTimeC: string;
+}
+
 export type CustomServerV2 = {
     hostname: string;
 
@@ -73,4 +88,4 @@ export type CustomServerV2 = {
     growTime: number;
     weakTime: number;
     maxBatches: number;
-}
+} & CleanTimes

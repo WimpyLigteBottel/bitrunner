@@ -33,6 +33,9 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
         hacktime: ns.getHackTime(s.hostname),
         growTime: ns.getGrowTime(s.hostname),
         weakTime: ns.getWeakenTime(s.hostname),
+        hacktimeC: ns.tFormat(ns.getHackTime(s.hostname)),
+        growTimeC: ns.tFormat(ns.getGrowTime(s.hostname)),
+        weakTimeC: ns.tFormat(ns.getWeakenTime(s.hostname)),
         maxBatches: maxBatches
     };
 }

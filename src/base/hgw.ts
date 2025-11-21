@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { createBatchOptimal } from "./batcher";
 import { disableLogs } from "./debug";
+import { BUFFER } from "/models/Models";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns)
@@ -15,7 +16,7 @@ export async function main(ns: NS): Promise<void> {
 
   let longestDelay = batch.tasks.find(x => x.name == 'w')!.time 
 
-  ns.spawn(ns.getScriptName(), {threads: 1, spawnDelay: longestDelay + 500}, targetHost)
+  ns.spawn(ns.getScriptName(), {threads: 1, spawnDelay: longestDelay + BUFFER}, targetHost)
 }
 
 
