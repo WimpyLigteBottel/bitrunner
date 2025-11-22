@@ -13,31 +13,67 @@ export async function main(ns: NS): Promise<void> {
     let stats = []
 
     for (const server of servers) {
-        const first = calculateFullCycleMoneyPerSecond(ns, server, 0.99999);
+        const first = findHighestPercentagePerServer(ns, server);
 
         if (first == undefined) {
             continue;
         }
 
-        if (first.moneyPerSecond != 0)
+        if (first.moneyPerSecond != 0 && first.server != undefined)
             stats.push(first)
     }
 
     stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
-    stats = stats.slice(0, 5)
+    stats = stats.slice(0, 15)
 
     for (let stat of stats) {
         // Logging for debugging
-        ns.print(`Server: ${stat.server}`);
-        ns.print(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.totalWeakenThreads}`);
-        ns.print(`Total ram cost: ${stat.totalRamCost}`);
-        ns.print(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
-        ns.print(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
-        ns.print(`Money Generated per Second: $${ns.formatNumber(stat.moneyPerSecond)}`);
-        ns.print("----------")
+        // ns.print(`Hack Threads: ${stat.hackThreads}, Grow Threads: ${stat.growThreads}, Weaken Threads: ${stat.totalWeakenThreads}`);
+        // ns.print(`Total ram cost: ${stat.totalRamCost}`);
+        // ns.print(`Cycle Time: ${ns.tFormat(stat.fullCycleTime)} (s)`);
+        // ns.print(`Money Generated per Cycle: $${ns.formatNumber(stat.moneyPerCycle)}`);
+        ns.print(`Server: ${stat.server} -> Money p/s: $${ns.formatNumber(stat.moneyPerSecond)}`);
+        // ns.print(`Percentage: ${ns.formatNumber(stat.percentage)}`);
     }
 
 
+}
+
+
+function findHighestPercentagePerServer(ns: NS, server: string) {
+
+    let highestAmount = 1
+    let low = 0.00001;     // definitely fits
+    let high = 0.99999;    // probably too big, but serves as the upper bound
+
+    let bestBatch;
+
+    try {
+        bestBatch = calculateFullCycleMoneyPerSecond(ns, server, low);
+        // 20–30 iterations = enough precision
+        for (let i = 0; i < 60; i++) {
+            let mid: string | number = ((low + high) / 2).toFixed(3);
+            mid = parseFloat(mid)
+            const batch = calculateFullCycleMoneyPerSecond(ns, server, mid);
+
+            if (batch == undefined)
+                break;
+
+            if (batch.moneyPerSecond >= highestAmount) {
+                bestBatch = batch;
+                highestAmount = batch?.moneyPerSecond!
+                low = mid;
+            } else {
+                // mid too big -> reduce
+                high = mid;
+            }
+        }
+    } catch (er) {
+        ns.print('ERROR ' + er)
+    }
+
+
+    return { ...bestBatch!, percentage: low }
 }
 
 

@@ -1,5 +1,4 @@
 import { NS } from "@ns";
-import { printDone } from "./debug";
 import { getCustomServer } from "/util/serverCustomStats";
 
 export async function main(ns: NS): Promise<void> {
@@ -7,7 +6,7 @@ export async function main(ns: NS): Promise<void> {
     ns.ui.openTail()
 
 
-    while (ns.getPurchasedServers().length < 24) {
+    while (ns.getPurchasedServers().length < 25) {
         await ns.sleep(1000)
         if (ns.getPurchasedServerCost(32) < ns.getPlayer().money) {
             let bought = ns.getPurchasedServers().map(x => getCustomServer(ns, x))

@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { disableLogs } from "/base/debug";
+import { disableLogs } from "../models/debug";
 import { getCustomServer } from "./serverCustomStats";
 
 export async function main(ns: NS): Promise<void> {

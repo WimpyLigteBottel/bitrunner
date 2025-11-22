@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { createBatchOptimal } from "/base/batcher";
-import { disableLogs } from "/base/debug";
+import { disableLogs } from "../models/debug";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
 import { BUFFER } from "/models/Models";

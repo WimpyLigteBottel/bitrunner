@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { notPreppedServers, preppedServers } from "./preppedServers";
-import { disableLogs } from "/base/debug";
+import { disableLogs } from "../models/debug";
 
 
 export async function main(ns: NS): Promise<void> {

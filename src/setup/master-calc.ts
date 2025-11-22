@@ -1,8 +1,8 @@
 import { NS } from "@ns";
 import { getAvailableRam } from "../util/availableram"
 import { createBatchOptimal } from "/base/batcher";
-import { disableLogs } from "/base/debug";
-import { BUFFER, CustomServerV2, Task, TASK_NAME } from "/models/Models";
+import { disableLogs } from "../models/debug";
+import { BUFFER, CustomServerV2, } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
 
@@ -22,6 +22,8 @@ export async function main(ns: NS): Promise<void> {
         let target = getTargetServer(ns);
         let firstWeakenFinish = performance.now() + target.weakTime
         let offset = 0
+
+        let pid = ns.exec("util/analyze.js", "home", 1, target.hostname)
         while (true) {
             try {
                 let server = await nextUsableServer(ns)
@@ -35,7 +37,7 @@ export async function main(ns: NS): Promise<void> {
                 }
             } catch (e) {
                 if (e instanceof Error && e.message == 'There is no more servers to execute on') {
-                    ns.print('Going to wait now ' + `${ns.tFormat(target.weakTime)}`)
+                    ns.print('Going to wait now ' + `${ns.tFormat(target.weakTime)} for ${target.hostname}`)
                     await ns.sleep(target.weakTime + offset + 5000)
                     break;
                 }
@@ -45,7 +47,7 @@ export async function main(ns: NS): Promise<void> {
                 await ns.sleep(5000)
             }
         }
-
+        ns.kill(pid)
     }
 }
 

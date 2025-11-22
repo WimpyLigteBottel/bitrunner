@@ -1,12 +1,13 @@
 import { NS } from "@ns";
 import { createBatchOptimal } from "./batcher";
-import { disableLogs } from "./debug";
+import { disableLogs } from "../models/debug";
 import { BUFFER } from "/models/Models";
+import { getCustomServer } from "/util/serverCustomStats";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns)
   let targetHost = ns.args[0] as string
-  let availiableRam = remainingServerRam(ns, ns.getHostname())
+  let availiableRam = getCustomServer(ns,'home').availableRam
 
   let batch = createBatchOptimal(ns, targetHost, availiableRam)
 
@@ -17,9 +18,4 @@ export async function main(ns: NS): Promise<void> {
   let longestDelay = batch.tasks.find(x => x.name == 'w')!.time 
 
   ns.spawn(ns.getScriptName(), {threads: 1, spawnDelay: longestDelay + BUFFER}, targetHost)
-}
-
-
-function remainingServerRam(ns: NS, host: string): number {
-  return ns.getServerMaxRam(host) - ns.getServerUsedRam(host)
 }

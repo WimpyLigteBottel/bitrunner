@@ -3,7 +3,7 @@ import { NS, Server } from "@ns";
 
 export type RequestType = "HACK" | "PREP" | "WEAKEN"
 
-export const BUFFER = 100
+export const BUFFER = 200
 
 
 export type SCRIPT = {
