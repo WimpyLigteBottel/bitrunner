@@ -1,6 +1,6 @@
 
 export let ALL_SERVERS: string[] = [
-    'nwo',
+'nwo',
 'blade',
 'The-Cave',
 'fulcrumassets',

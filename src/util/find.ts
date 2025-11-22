@@ -27,7 +27,7 @@ export async function main(ns: NS): Promise<void> {
     let text = connectString(tofind, "backdoor;")
 
     // print out full connect string
-    ns.tprint(text)
+    ns.tprint("connect home;" + text)
 }
 
 

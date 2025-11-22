@@ -7,12 +7,18 @@ export async function main(ns: NS): Promise<void> {
 
 
     while (ns.getPurchasedServers().length < 25) {
-        await ns.sleep(1000)
+        await ns.sleep(100)
         if (ns.getPurchasedServerCost(32) < ns.getPlayer().money) {
             let bought = ns.getPurchasedServers().map(x => getCustomServer(ns, x))
             let counter = bought.length
 
-            ns.purchaseServer('home-' + counter, 32)
+            if (counter.toString().length == 1) {
+                ns.purchaseServer('home-0' + counter, 32)
+            } else {
+                ns.purchaseServer('home-' + counter, 32)
+            }
+
+
         }
     }
 
@@ -20,8 +26,6 @@ export async function main(ns: NS): Promise<void> {
     let lowest = lowestServer(ns)!
     while (lowest.maxRam < 1048576) {
         await ns.sleep(100)
-
-
         if (canAfford(ns, lowest.maxRam * 2)) {
             ns.upgradePurchasedServer(lowest?.hostname, lowest?.maxRam * 2)
         }

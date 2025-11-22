@@ -65,6 +65,7 @@ export type CleanTimes = {
 
 export type CustomServerV2 = {
     hostname: string;
+    parent: CustomServerV2 | undefined
 
     // Ram
     availableRam: number;

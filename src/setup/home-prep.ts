@@ -3,9 +3,6 @@ import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "../models/debug";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
-import { BUFFER } from "/models/Models";
-
-
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
@@ -16,6 +13,8 @@ export async function main(ns: NS): Promise<void> {
 
     let counter = 0;
     while (true) {
+        let pid = ns.exec('util/profits.js', 'home', 1)
+        ns.ui.closeTail(pid)
         let target = findNextServerToPrep(ns)
 
         ns.print(target.hostname + " is my next target")

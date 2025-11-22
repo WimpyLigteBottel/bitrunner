@@ -7,10 +7,10 @@ export async function main(ns: NS): Promise<void> {
     ns.disableLog('getServerMaxMoney')
     ns.disableLog('scan')
     ns.clearLog()
-    ns.ui.openTail()
+    // ns.ui.openTail()
     let servers = ALL_SERVERS
 
-    let stats = []
+    let stats: Stat[] = []
 
     for (const server of servers) {
         const first = findHighestPercentagePerServer(ns, server);
@@ -23,8 +23,7 @@ export async function main(ns: NS): Promise<void> {
             stats.push(first)
     }
 
-    stats = stats.toSorted((b, a) => a.moneyPerSecond - b.moneyPerSecond)
-    stats = stats.slice(0, 15)
+    stats = stats.toSorted((b, a) => a.moneyPerCycle - b.moneyPerCycle)
 
     for (let stat of stats) {
         // Logging for debugging
@@ -36,7 +35,7 @@ export async function main(ns: NS): Promise<void> {
         // ns.print(`Percentage: ${ns.formatNumber(stat.percentage)}`);
     }
 
-
+    ns.write("profits.txt", toPretty(stats), "w")
 }
 
 
@@ -46,7 +45,7 @@ function findHighestPercentagePerServer(ns: NS, server: string) {
     let low = 0.00001;     // definitely fits
     let high = 0.99999;    // probably too big, but serves as the upper bound
 
-    let bestBatch;
+    let bestBatch: Stat | undefined;
 
     try {
         bestBatch = calculateFullCycleMoneyPerSecond(ns, server, low);
@@ -73,12 +72,12 @@ function findHighestPercentagePerServer(ns: NS, server: string) {
     }
 
 
-    return { ...bestBatch!, percentage: low }
+    return { ...bestBatch! } as Stat
 }
 
 
 /** @param {NS} ns **/
-export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFraction: number) {
+export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFraction: number): Stat | undefined {
     const maxMoney = ns.getServerMaxMoney(server);
     const hackChance = ns.hackAnalyzeChance(server);
 
@@ -117,12 +116,33 @@ export function calculateFullCycleMoneyPerSecond(ns: NS, server: string, stealFr
         server,
         hackThreads,
         growThreads,
-        weakenThreadsHack,
-        weakenThreadsGrow,
         totalWeakenThreads,
-        fullCycleTime,
-        moneyPerCycle,
-        moneyPerSecond,
+        fullCycleTime: ns.tFormat(fullCycleTime),
+        moneyPerCycle: moneyPerCycle,
+        moneyPerCycleC: ns.formatNumber(moneyPerCycle),
+        moneyPerSecond: moneyPerSecond,
+        moneyPerSecondC: ns.formatNumber(moneyPerSecond),
         totalRamCost: (hackThreads + growThreads + totalWeakenThreads) * 1.75
-    };
+    } as Stat;
+}
+
+
+type Stat = {
+    server: string,
+    hackThreads: number,
+    growThreads: number,
+    totalWeakenThreads: number,
+    fullCycleTime: string,
+    moneyPerCycle: number,
+    moneyPerCycleC: string,
+    moneyPerSecond: number;
+    moneyPerSecondC: string;
+    totalRamCost: number;
+}
+
+function toPretty(stats: Stat[]) {
+    let pretty = stats.map(x => {
+        return { server: x.server, moneyPerCycle: x.moneyPerCycleC, totalRamCost: x.totalRamCost }
+    });
+    return JSON.stringify(pretty, null, 1)
 }

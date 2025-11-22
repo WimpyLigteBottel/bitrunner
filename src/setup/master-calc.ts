@@ -24,6 +24,7 @@ export async function main(ns: NS): Promise<void> {
         let offset = 0
 
         let pid = ns.exec("util/analyze.js", "home", 1, target.hostname)
+        ns.ui.moveTail(0, 0, pid)
         while (true) {
             try {
                 let server = await nextUsableServer(ns)
@@ -47,7 +48,9 @@ export async function main(ns: NS): Promise<void> {
                 await ns.sleep(5000)
             }
         }
+        ns.ui.closeTail(pid)
         ns.kill(pid)
+
     }
 }
 
