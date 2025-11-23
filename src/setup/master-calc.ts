@@ -4,7 +4,7 @@ import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "../models/debug";
 import { BUFFER, CustomServerV2, } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
-import { notPreppedServers } from "/util/preppedServers";
+import { isPrepped, notPreppedServers } from "/util/preppedServers";
 
 
 
@@ -39,9 +39,22 @@ export async function main(ns: NS): Promise<void> {
             } catch (e) {
                 if (e instanceof Error && e.message == 'There is no more servers to execute on') {
                     ns.print('Going to wait now ' + `${ns.tFormat(target.weakTime)} for ${target.hostname}`)
-                    await ns.sleep(target.weakTime + offset + 5000)
+                    await ns.sleep(target.weakTime + 5000)
+
+
+                    if (isPrepped(ns, target.hostname)) {
+                        findServersThatCanBeUsed(ns).forEach(x => {
+                            if (!ns.isRunning('base/hack.js', x.hostname))
+                                ns.killall(x.hostname)
+                        })
+                    }
+
+                    await ns.sleep(offset)
+
                     break;
                 }
+
+
 
                 counter++;
                 ns.print(`ERROR counter:${counter} -> ${e}`)
@@ -85,8 +98,4 @@ function findServersThatCanBeUsed(ns: NS) {
         .map(server => getCustomServer(ns, server))
         .filter(server => server.canExecuteScripts)
         .filter(server => getAvailableRam(ns, server.hostname) > 5.20)
-}
-
-function findNextServerToPrep(ns: NS) {
-    return notPreppedServers(ns).pop()!
 }

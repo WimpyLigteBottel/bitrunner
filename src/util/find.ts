@@ -12,6 +12,8 @@ export async function main(ns: NS): Promise<void> {
     //ns.ui.openTail()
     let knownServers = getKnownServers(ns)
 
+    ns.write('servers.txt', JSON.stringify(knownServers, null, 1), 'w')
+
 
     let targetHost = ns.args[0] as string
     if (targetHost == undefined || targetHost == "") {

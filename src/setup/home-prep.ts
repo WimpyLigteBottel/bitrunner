@@ -3,6 +3,7 @@ import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "../models/debug";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
+import { BUFFER } from "/models/Models";
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
@@ -31,7 +32,7 @@ export async function main(ns: NS): Promise<void> {
                 ns.exec(task.script, server.hostname, task.threads, batch.server, additionalMsec, `Threads ${task.threads}`);
             }
 
-            await ns.sleep(target.weakTime)
+            await ns.sleep(target.weakTime + BUFFER * 3)
         } catch (e) {
             counter++;
             ns.print(`ERROR counter:${counter} -> ${e}`)
