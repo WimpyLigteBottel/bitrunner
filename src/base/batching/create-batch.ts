@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { Batch, BUFFER, RequestType } from "/models/Models";
+import { Batch, BUFFER, CustomServerV2, RequestType } from "/models/Models";
 import { createGrowThreads } from "./createGrowThreads";
 import { createHackThreads } from "./createHackThreads";
 import { creatWeakenThreads } from "./creatWeakenThreads";
@@ -9,26 +9,27 @@ export function createBatch(
   ns: NS,
   targetHost: string,
   targetPercentage: number,
-  availableRam: number,
-  requestType: RequestType
+  requestType: RequestType,
+  server: CustomServerV2
 ): Batch {
   switch (requestType) {
     case "HACK":
-      return hgwBatch(ns, targetHost, targetPercentage);
+      return hgwBatch(ns, targetHost, targetPercentage, server);
     case "WEAKEN":
-      return weakenBatch(ns, targetHost, targetPercentage, availableRam);
+      return weakenBatch(ns, targetHost, targetPercentage, server);
     case "PREP":
-      return prepBatch(ns, targetHost, targetPercentage);
+      return prepBatch(ns, targetHost, targetPercentage, server);
   }
 }
 
 export function hgwBatch(
   ns: NS,
   targetHost: string,
-  targetPercentage: number
+  targetPercentage: number,
+  server: CustomServerV2
 ): Batch {
   let hackTask = createHackThreads(ns, targetHost, targetPercentage);
-  let growTask = createGrowThreads(ns, targetHost, targetPercentage);
+  let growTask = createGrowThreads(ns, targetHost, targetPercentage, server);
   let weakenTask = creatWeakenThreads(
     ns,
     targetHost,
@@ -47,9 +48,10 @@ export function hgwBatch(
 function prepBatch(
   ns: NS,
   targetHost: string,
-  targetPercentage: number
+  targetPercentage: number,
+  server: CustomServerV2
 ): Batch {
-  let growTask = createGrowThreads(ns, targetHost, targetPercentage);
+  let growTask = createGrowThreads(ns, targetHost, targetPercentage, server);
   let weakenTask = creatWeakenThreads(ns, targetHost, growTask.threads, 1);
 
   return buildBatch([weakenTask, growTask], targetHost, targetPercentage);
@@ -59,28 +61,27 @@ function weakenBatch(
   ns: NS,
   targetHost: string,
   targetPercentage: number,
-  availableRam: number
+  server: CustomServerV2
 ) {
-  let server = ns.getServer(targetHost);
+  let target = ns.getServer(targetHost);
 
-  let toWeaken = (server.hackDifficulty ?? 0) - (server.minDifficulty ?? 0);
-  toWeaken = Math.ceil(toWeaken / ns.weakenAnalyze(1));
+  let toWeaken = (target.hackDifficulty ?? 0) - (target.minDifficulty ?? 0);
 
   let weakenTask = {
     time: ns.getWeakenTime(targetHost),
     delay: 0,
-    name: TASK_NAME.w,
+    name: TASK_NAME.W,
     script: "base/weaken.js",
-    threads: toWeaken,
+    threads: Math.ceil(toWeaken / ns.weakenAnalyze(1)),
     cost: toWeaken * ns.getScriptRam("base/weaken.js"),
   } as Task;
 
-  let batch = prepBatch(ns, targetHost, targetPercentage);
+  let batch = prepBatch(ns, targetHost, targetPercentage, server);
 
   batch.tasks[0].delay = batch.tasks[0].delay + BUFFER * 3;
   batch.tasks[1].delay = batch.tasks[1].delay + BUFFER * 3;
 
-  let tasks = [weakenTask, ...batch.tasks]
+  let tasks = [weakenTask, ...batch.tasks];
 
   return buildBatch(tasks, targetHost, targetPercentage);
 }

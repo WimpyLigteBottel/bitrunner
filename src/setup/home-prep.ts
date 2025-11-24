@@ -24,7 +24,7 @@ export async function main(ns: NS): Promise<void> {
         let firstWeakenFinish = performance.now() + target.weakTime
         let offset = 0
         try {
-            let batch = createBatchOptimal(ns, target.hostname, server.availableRam - 30)
+            let batch = createBatchOptimal(ns, target.hostname, server)
 
             for (const task of batch.tasks) {
                 const additionalMsec = Math.max(0, firstWeakenFinish + offset - performance.now() - task.time);

@@ -1,101 +1,122 @@
 import { NS } from "@ns";
-import { getAvailableRam } from "../util/availableram"
+import { getAvailableRam } from "../util/availableram";
 import { createBatchOptimal } from "/base/batcher";
 import { disableLogs } from "../models/debug";
-import { BUFFER, CustomServerV2, } from "/models/Models";
+import { BUFFER, CustomServerV2 } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
 import { isPrepped, notPreppedServers } from "/util/preppedServers";
-
-
+import { getKnownServers } from "/util/find";
 
 export async function main(ns: NS): Promise<void> {
-    disableLogs(ns)
-    ns.ui.openTail()
+  disableLogs(ns);
+  ns.ui.openTail();
 
-    ns.exec("setup/setup.js", "home", 1)
-    ns.exec('util/killall.js', 'home', 1)
+  ns.exec("setup/setup.js", "home", 1);
+  ns.exec("util/killall.js", "home", 1);
 
-    await ns.sleep(1000)
+  await ns.sleep(1000);
 
-    let counter = 0;
+  let counter = 0;
+  while (true) {
+    let target = getTargetServer(ns);
+    let firstWeakenFinish = performance.now() + target.weakTime;
+    let offset = 0;
+
+    let pid = ns.exec("util/analyze.js", "home", 1, target.hostname);
+    ns.ui.moveTail(0, 0, pid);
     while (true) {
-        let target = getTargetServer(ns);
-        let firstWeakenFinish = performance.now() + target.weakTime
-        let offset = 0
+      try {
+        let server = await nextUsableServer(ns);
+        let batch = createBatchOptimal(
+          ns,
+          target.hostname,
+          server
+        );
 
-        let pid = ns.exec("util/analyze.js", "home", 1, target.hostname)
-        ns.ui.moveTail(0, 0, pid)
-        while (true) {
-            try {
-                let server = await nextUsableServer(ns)
-                let batch = createBatchOptimal(ns, target.hostname, server.availableRam)
+        for (const task of batch.tasks) {
+          const additionalMsec = Math.max(
+            0,
+            firstWeakenFinish + offset - performance.now() - task.time
+          );
 
-                for (const task of batch.tasks) {
-                    const additionalMsec = Math.max(0, firstWeakenFinish + offset - performance.now() - task.time);
-
-                    ns.exec(task.script, server.hostname, task.threads, batch.server, additionalMsec, `Threads ${task.threads}`);
-                    offset += BUFFER;
-                }
-            } catch (e) {
-                if (e instanceof Error && e.message == 'There is no more servers to execute on') {
-                    ns.print('Going to wait now ' + `${ns.tFormat(target.weakTime)} for ${target.hostname}`)
-                    await ns.sleep(target.weakTime + 5000)
-
-
-                    if (isPrepped(ns, target.hostname)) {
-                        findServersThatCanBeUsed(ns).forEach(x => {
-                            if (!ns.isRunning('base/hack.js', x.hostname))
-                                ns.killall(x.hostname)
-                        })
-                    }
-
-                    await ns.sleep(offset)
-
-                    break;
-                }
-
-
-
-                counter++;
-                ns.print(`ERROR counter:${counter} -> ${e}`)
-                await ns.sleep(5000)
-            }
+          ns.exec(
+            task.script,
+            server.hostname,
+            task.threads,
+            batch.server,
+            additionalMsec,
+            `Threads ${task.threads}`
+          );
+          offset += BUFFER;
         }
-        ns.ui.closeTail(pid)
-        ns.kill(pid)
+      } catch (e) {
+        if (
+          e instanceof Error &&
+          e.message == "There is no more servers to execute on"
+        ) {
+          ns.print(
+            "Going to wait now " +
+              `${ns.tFormat(target.weakTime)} for ${target.hostname}`
+          );
+          await ns.sleep(target.weakTime + 5000);
 
+          if (isPrepped(ns, target.hostname)) {
+            findServersThatCanBeUsed(ns).forEach((x) => {
+              if (!ns.isRunning("base/hack.js", x.hostname))
+                ns.killall(x.hostname);
+            });
+          }
+
+          await ns.sleep(offset);
+
+          break;
+        }
+
+        counter++;
+        ns.print(`ERROR counter:${counter} -> ${e}`);
+        await ns.sleep(5000);
+      }
     }
+    ns.ui.closeTail(pid);
+    ns.kill(pid);
+  }
 }
 
 function getTargetServer(ns: NS) {
-    if (ns.args[0] != undefined && ns.args[0] != '') {
-        return getCustomServer(ns, ns.args[0] as string);
-    }
+  if (ns.args[0] != undefined && ns.args[0] != "") {
+    return getCustomServer(ns, ns.args[0] as string);
+  }
 
-    return notPreppedServers(ns).pop()!;
+  return notPreppedServers(ns).pop()!;
 }
 
 async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
-    let target = getTargetServer(ns)
-    let servers = findServersThatCanBeUsed(ns).toSorted((b, a) => a.availableRam - b.availableRam);
+  let target = getTargetServer(ns);
+  let servers = findServersThatCanBeUsed(ns).toSorted(
+    (b, a) => a.availableRam - b.availableRam
+  );
 
-    for (const x of servers) {
-        let batch = createBatchOptimal(ns, target.hostname, x.availableRam).totalCost
-        let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch
-        if (noScriptsRunning) {
-            return x;
-        }
+  for (const x of servers) {
+    let batch = createBatchOptimal(
+      ns,
+      target.hostname,
+      x
+    ).totalCost;
+    
+    let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch;
+    if (noScriptsRunning) {
+      return x;
     }
+  }
 
-    throw Error('There is no more servers to execute on')
+  throw Error("There is no more servers to execute on");
 }
 
-
 function findServersThatCanBeUsed(ns: NS) {
-    // return getKnownServers(ns, false)
-    return ns.getPurchasedServers()
-        .toSorted()
-        .map(server => getCustomServer(ns, server))
-        .filter(server => server.canExecuteScripts)
-        .filter(server => getAvailableRam(ns, server.hostname) > 5.20)
+  // return ns.getPurchasedServers().toSorted().map(server => getCustomServer(ns, server.hostname))
+  return getKnownServers(ns, false)
+    .map((server) => getCustomServer(ns, server.hostname))
+    .filter( server => !server.hostname.includes('hacknet'))
+    .filter((server) => server.canExecuteScripts)
+    .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
 }

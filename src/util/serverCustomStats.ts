@@ -10,6 +10,7 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
 
     return {
         hostname: s.hostname,
+        parent: undefined,
 
         // Ram
         availableRam: s.maxRam - s.ramUsed,

@@ -304,7 +304,7 @@ const buyNextThing = () => {
   /// Improve this logic to use CHPS + past 60 seconds money to get idea if its worth it to buy upgrade.... Maybe use parameter for this...
   // aka... If i have made more money in the last 60 seconds than the cost its fine to buy... But then i need to do it in slide window timeframe
 
-  let upgrade = getBestUpgrade();
+  let upgrade = getCheapestUpgrade();
   let mps = currentMoneyPerSecond();
   let canAfford = upgrade.cost < ns.getPlayer().money;
 

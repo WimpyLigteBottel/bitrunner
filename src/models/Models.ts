@@ -24,6 +24,7 @@ function toScript(ns: NS): SCRIPT {
 
 export enum TASK_NAME {
     w = "w",
+    W = "W",
     h = "h",
     g = "g",
 }
@@ -58,9 +59,9 @@ export type CustomServer = {
 } & Server
 
 export type CleanTimes = {
-    hacktimeC: string;
-    growTimeC: string;
-    weakTimeC: string;
+    hacktimeC?: string;
+    growTimeC?: string;
+    weakTimeC?: string;
 }
 
 export type CustomServerV2 = {
@@ -88,5 +89,5 @@ export type CustomServerV2 = {
     hacktime: number;
     growTime: number;
     weakTime: number;
-    maxBatches: number;
+    maxBatches?: number;
 } & CleanTimes
