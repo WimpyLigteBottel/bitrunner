@@ -22,8 +22,8 @@ export async function main(ns: NS): Promise<void> {
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
 
-    let pid = ns.exec("util/analyze.js", "home", 1, target.hostname);
-    ns.ui.moveTail(0, 0, pid);
+    // let pid = ns.exec("util/analyze.js", "home", 1, target.hostname);
+    // ns.ui.moveTail(0, 0, pid);
     while (true) {
       try {
         let server = await nextUsableServer(ns);
@@ -61,7 +61,9 @@ export async function main(ns: NS): Promise<void> {
           await ns.sleep(target.weakTime + 5000);
 
           if (isPrepped(ns, target.hostname)) {
-            findServersThatCanBeUsed(ns).forEach((x) => {
+            findServersThatCanBeUsed(ns)
+            .filter(x=> x.hostname != 'home')
+            .forEach((x) => {
               if (!ns.isRunning("base/hack.js", x.hostname))
                 ns.killall(x.hostname);
             });
@@ -77,8 +79,8 @@ export async function main(ns: NS): Promise<void> {
         await ns.sleep(5000);
       }
     }
-    ns.ui.closeTail(pid);
-    ns.kill(pid);
+    // ns.ui.closeTail(pid);
+    // ns.kill(pid);
   }
 }
 
@@ -102,7 +104,7 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
       target.hostname,
       x
     ).totalCost;
-    
+
     let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch;
     if (noScriptsRunning) {
       return x;
