@@ -21,5 +21,8 @@ export function disableLogs(ns: NS) {
     ns.disableLog('getServerMoneyAvailable')
     ns.disableLog('exec')
     ns.disableLog('killall')
+    ns.disableLog('gang.setMemberTask')
+    ns.disableLog('gang.purchaseEquipment')
+    ns.disableLog('gang.setTerritoryWarfare')
     ns.clearLog()
 }
