@@ -6,61 +6,79 @@ import { notPreppedServers } from "/util/preppedServers";
 import { BUFFER } from "/models/Models";
 
 export async function main(ns: NS): Promise<void> {
-    disableLogs(ns)
-    ns.ui.openTail()
+  disableLogs(ns);
+  ns.ui.openTail();
 
-    ns.exec("setup/setup.js", "home", 1)
+  ns.exec("setup/setup.js", "home", 1);
 
+  let pids = [];
 
-    let counter = 0;
-    while (true) {
-        let pid = ns.exec('util/profits.js', 'home', 1)
-        ns.ui.closeTail(pid)
-        let target = findNextServerToPrep(ns)
+  let counter = 0;
+  while (true) {
+    let target = findNextServerToPrep(ns);
+    let pid1 = ns.exec("util/profits.js", "home", 1);
+    let pid2 = ns.exec("util/analyze.js", "home", 1, target.hostname);
 
-        ns.print(target.hostname + " is my next target")
+    pids.push(pid1);
+    pids.push(pid2);
 
-        let server = getCustomServer(ns, 'home')
-        let firstWeakenFinish = performance.now() + target.weakTime
-        let offset = 0
-        try {
-            let batch = createBatchOptimal(ns, target.hostname, server)
+    ns.print(target.hostname + " is my next target");
 
-            for (const task of batch.tasks) {
-                const additionalMsec = Math.max(0, firstWeakenFinish + offset - performance.now() - task.time);
+    let server = getCustomServer(ns, "home");
+    let firstWeakenFinish = performance.now() + target.weakTime;
+    let offset = 0;
+    try {
+      let batch = createBatchOptimal(ns, target.hostname, server);
 
-                ns.exec(task.script, server.hostname, task.threads, batch.server, additionalMsec, `Threads ${task.threads}`);
-            }
+      for (const task of batch.tasks) {
+        const additionalMsec = Math.max(
+          0,
+          firstWeakenFinish + offset - performance.now() - task.time
+        );
 
-            await ns.sleep(target.weakTime + BUFFER * 3)
-        } catch (e) {
-            counter++;
-            ns.print(`ERROR counter:${counter} -> ${e}`)
-            await ns.sleep(target.weakTime + 5000)
-        }
+        ns.exec(
+          task.script,
+          server.hostname,
+          task.threads,
+          batch.server,
+          additionalMsec,
+          `Threads ${task.threads}`
+        );
+      }
 
-
+      await ns.sleep(target.weakTime + BUFFER * 3);
+    } catch (e) {
+      counter++;
+      ns.print(`ERROR counter:${counter} -> ${e}`);
+      await ns.sleep(target.weakTime + 5000);
     }
+
+    pids.forEach((x) => {
+      ns.ui.closeTail(x);
+      ns.kill(x);
+    });
+
+    pids = []
+  }
 }
 
 function findNextServerToPrep(ns: NS) {
+  if (ns.args[0] != undefined && ns.args[0] != "") {
+    return getCustomServer(ns, ns.args[0] as string);
+  }
 
-    if (ns.args[0] != undefined && ns.args[0] != '') {
-        return getCustomServer(ns, ns.args[0] as string)
-    }
+  let counter = 2;
 
-    let counter = 2
+  if (ns.args[1] != undefined) {
+    counter = ns.args[1] as number;
+  }
 
-    if (ns.args[1] != undefined) {
-        counter = ns.args[1] as number
-    }
+  let servers = notPreppedServers(ns);
 
-    let servers = notPreppedServers(ns)
+  while (counter > 1) {
+    servers.pop();
+    counter--;
+  }
 
-    while (counter > 1) {
-        servers.pop()
-        counter--
-    }
-
-    return servers.pop()!
+  return servers.pop()!;
 }

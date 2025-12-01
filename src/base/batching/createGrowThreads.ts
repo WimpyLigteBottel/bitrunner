@@ -12,6 +12,10 @@ export function createGrowThreads(
 
   let multi = maxMoney / availableMoney;
 
+  if (multi == Infinity) {
+    throw Error("Cant grow this much");
+  }
+
   let threads = ns.growthAnalyze(
     targetHost,
     multi,

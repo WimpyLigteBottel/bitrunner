@@ -7,13 +7,16 @@ export const activedClash = (ns: NS) => {
 
   for (const gangName of Object.keys(otherGangs)) {
     const chance = ns.gang.getChanceToWinClash(gangName);
-    minChance = Math.min(minChance, chance);
+    const gang = ns.gang.getOtherGangInformation()[gangName];
+
+    if (gang.territory != 0 && gangName != 'Slum Snakes') {
+      minChance = Math.min(minChance, chance);
+    }
   }
 
   const threshold = 0.9;
 
   if (minChance >= threshold) {
-    ns.print("Clashes ENABLED (safe).");
     ns.gang.setTerritoryWarfare(true);
   } else {
     ns.gang.setTerritoryWarfare(false);

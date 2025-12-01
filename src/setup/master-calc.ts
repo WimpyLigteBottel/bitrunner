@@ -27,11 +27,7 @@ export async function main(ns: NS): Promise<void> {
     while (true) {
       try {
         let server = await nextUsableServer(ns);
-        let batch = createBatchOptimal(
-          ns,
-          target.hostname,
-          server
-        );
+        let batch = createBatchOptimal(ns, target.hostname, server);
 
         for (const task of batch.tasks) {
           const additionalMsec = Math.max(
@@ -62,11 +58,11 @@ export async function main(ns: NS): Promise<void> {
 
           if (isPrepped(ns, target.hostname)) {
             findServersThatCanBeUsed(ns)
-            .filter(x=> x.hostname != 'home')
-            .forEach((x) => {
-              if (!ns.isRunning("base/hack.js", x.hostname))
-                ns.killall(x.hostname);
-            });
+              .filter((x) => x.hostname != "home")
+              .forEach((x) => {
+                if (!ns.isRunning("base/hack.js", x.hostname))
+                  ns.killall(x.hostname);
+              });
           }
 
           await ns.sleep(offset);
@@ -99,11 +95,7 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
   );
 
   for (const x of servers) {
-    let batch = createBatchOptimal(
-      ns,
-      target.hostname,
-      x
-    ).totalCost;
+    let batch = createBatchOptimal(ns, target.hostname, x).totalCost;
 
     let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch;
     if (noScriptsRunning) {
@@ -118,7 +110,7 @@ function findServersThatCanBeUsed(ns: NS) {
   // return ns.getPurchasedServers().toSorted().map(server => getCustomServer(ns, server.hostname))
   return getKnownServers(ns, false)
     .map((server) => getCustomServer(ns, server.hostname))
-    .filter( server => !server.hostname.includes('hacknet'))
+    .filter((server) => !server.hostname.includes("hacknet"))
     .filter((server) => server.canExecuteScripts)
     .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
 }

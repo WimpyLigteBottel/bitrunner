@@ -31,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
 
   ns.exec("setup/setup.js", "home", 1);
 
-  let task;
+  let task = ns.args[0] as string;
   if (ns.args[0] == "" || ns.args[0] == undefined) {
     task = (await ns.prompt("Select Gang jobs", {
       type: "select",
@@ -43,7 +43,7 @@ export async function main(ns: NS): Promise<void> {
     activedClash(ns);
     hireAllGangMembers(ns);
     accendMembers(ns);
-    await figureOutTask(ns, task!);
+    figureOutTask(ns, task!);
 
     suitUpGangMembers(ns);
 

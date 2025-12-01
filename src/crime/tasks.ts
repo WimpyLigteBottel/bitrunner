@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 
-export const figureOutTask = async (ns: NS, task: string) => {
+export const figureOutTask = (ns: NS, task: string) => {
   if (task == "Money") {
     assignBestJobs(ns);
   } else if (task == "Territory Warfare" || task == "Vigilante Justice") {
@@ -49,7 +49,7 @@ const taskNames = [
 
 const findBestTask = (ns: NS, memberName: string) => {
   let highestGain = {
-    task: "Mug People",
+    task: "Train Combat",
     income: 0,
   };
 
@@ -97,6 +97,11 @@ const getWeakestTrainingTask = (
   let hacking = member.hack;
 
   let weakest = Math.min(agi, dex, str, def, cha, hacking);
+
+  if (ns.gang.getGangInformation().faction == "Slum Snakes") {
+    return "Train Combat";
+  }
+
   if (weakest == agi || weakest == dex || weakest == str || weakest == def) {
     return "Train Combat";
   }
