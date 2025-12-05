@@ -1,28 +1,32 @@
-export let DEBUG = false
+export let DEBUG = false;
 import { NS } from "@ns";
 
-
-
 export function printDone(ns: NS, name: string, target: string) {
-    if (DEBUG) {
-        ns.tprint(`${name} - ${new Date().toISOString()} - ${target}`)
-    }
+  if (DEBUG) {
+    ns.tprint(`${name} - ${new Date().toISOString()} - ${target}`);
+  }
+}
+
+export function openTail(ns: NS) {
+  if (DEBUG) {
+    ns.ui.openTail();
+  }
 }
 
 export function disableLogs(ns: NS) {
-    ns.disableLog("run")
-    ns.disableLog('getServerMaxRam')
-    ns.disableLog('getServerUsedRam')
-    ns.disableLog('getServerSecurityLevel')
-    ns.disableLog('getServerMinSecurityLevel')
-    ns.disableLog('scan')
-    ns.disableLog('sleep')
-    ns.disableLog('getServerMaxMoney')
-    ns.disableLog('getServerMoneyAvailable')
-    ns.disableLog('exec')
-    ns.disableLog('killall')
-    ns.disableLog('gang.setMemberTask')
-    ns.disableLog('gang.purchaseEquipment')
-    ns.disableLog('gang.setTerritoryWarfare')
-    ns.clearLog()
+  ns.disableLog("run");
+  ns.disableLog("getServerMaxRam");
+  ns.disableLog("getServerUsedRam");
+  ns.disableLog("getServerSecurityLevel");
+  ns.disableLog("getServerMinSecurityLevel");
+  ns.disableLog("scan");
+  ns.disableLog("sleep");
+  ns.disableLog("getServerMaxMoney");
+  ns.disableLog("getServerMoneyAvailable");
+  ns.disableLog("exec");
+  ns.disableLog("killall");
+  ns.disableLog("gang.setMemberTask");
+  ns.disableLog("gang.purchaseEquipment");
+  ns.disableLog("gang.setTerritoryWarfare");
+  ns.clearLog();
 }

@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { disableLogs } from "/models/debug";
+import { disableLogs, openTail } from "/models/debug";
 import { canBuyNextNode } from "./canBuyNextNode";
 import {
   currentMoneyPerSecond,
@@ -21,7 +21,7 @@ export const updateLastProduction = (name?: string, upgrade?: string) => {
 
 export async function main(tmpNs: NS): Promise<void> {
   ns = tmpNs;
-  ns.ui.openTail();
+  openTail(ns);
   disableLogs(ns);
 
   updateLastProduction();
@@ -68,5 +68,9 @@ const compareUpgrades = (ns: NS) => {
   ns.print("--------");
   ns.print({ ...cheapest, cost: ns.formatNumber(cheapest.cost) });
   ns.print("VS");
-  ns.print({ ...best, cost: ns.formatNumber(best.cost), payback: ns.tFormat(best.payback! * 1000) });
+  ns.print({
+    ...best,
+    cost: ns.formatNumber(best.cost),
+    payback: ns.tFormat(best.payback! * 1000),
+  });
 };

@@ -9,8 +9,12 @@ export function createHackThreads(
   const tHack = ns.getHackTime(targetHost);
   const tWeaken = ns.getWeakenTime(targetHost);
 
-  const hackAmount = ns.getServerMaxMoney(targetHost) * targetPercentage;
-  let threads = Math.floor(ns.hackAnalyzeThreads(targetHost, hackAmount));
+  const players = ns.getPlayer();
+  const server = ns.getServer(targetHost);
+
+  let threads = Math.floor(
+    targetPercentage / ns.formulas.hacking.hackPercent(server, players)
+  );
   threads = Math.max(1, threads);
 
   if (threads < 1) {

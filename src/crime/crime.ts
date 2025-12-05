@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { disableLogs } from "../models/debug";
+import { disableLogs, openTail } from "../models/debug";
 import { figureOutTask, hireAllGangMembers } from "./tasks";
 import { accendMembers } from "./accend-members";
 import { suitUpGangMembers } from "./equipment";
@@ -27,7 +27,7 @@ const taskNames = [
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
-  ns.ui.openTail();
+  openTail(ns);
 
   ns.exec("setup/setup.js", "home", 1);
 

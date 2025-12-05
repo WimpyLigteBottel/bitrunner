@@ -2,19 +2,54 @@ import { NS } from "@ns";
 
 export async function main(ns: NS): Promise<void> {
   ns.exec("setup/setup.js", "home", 1);
-  ns.exec("crime/crime.js", "home", 1, "Money");
-  ns.exec("hacknet/hacknet.js", "home", 1);
-  // ns.exec("setup/share-ram.js", "home", 1)
-  // ns.exec("util/TORrouter.js", "home", 1)
 
-  ns.print("---------");
+  ns.tprint("---------");
+  ns.tprint("connect home;connect darkweb;buy -a");
   ns.exec("util/find.js", "home", 1, "CSEC");
-  ns.exec("util/find.js", "home", 1, "I.I.I.I");
   ns.exec("util/find.js", "home", 1, "avmnite-02h");
+  ns.exec("util/find.js", "home", 1, "I.I.I.I");
   ns.exec("util/find.js", "home", 1, "run4theh111z");
   // ns.exec("util/find.js", "home", 1, "w0r1d_d43m0n");
-  ns.print("---------");
+  ns.tprint("---------");
 
-  // ns.exec("setup/home-prep.js", "home", 1);
-  ns.exec("setup/master-calc.js", "home", 1);
+  let text = [
+    "1.Crime",
+    "2.Buy Servers",
+    "3.Buy Hacknet",
+    "4.Sleeves",
+    "5.Prep",
+    "6.Target Hack",
+  ].join("\n");
+
+  let scriptsToBoot = ns.args[0] as string;
+  if (ns.args[0] == "" || ns.args[0] == undefined) {
+    scriptsToBoot = (await ns.prompt(text, {
+      type: "text",
+    })) as string;
+  }
+
+  if (scriptsToBoot.includes("1")) {
+    ns.exec("crime/crime.js", "home", 1, "Money");
+  }
+
+  if (scriptsToBoot.includes("2")) {
+    ns.exec("base/upgrade.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("3")) {
+    ns.exec("hacknet/hacknet.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("4")) {
+    ns.exec("sleeves/sleeves.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("5")) {
+    ns.exec("setup/home-prep.js", "home", 1, "", 2);
+  }
+
+  if (scriptsToBoot.includes("6")) {
+    ns.exec("setup/master-calc.js", "home", 1);
+  }
+
 }
