@@ -1,4 +1,4 @@
-import { NS, Server } from "@ns";
+import { Server } from "@ns";
 
 export type RequestType = "HACK" | "PREP" | "WEAKEN";
 
@@ -10,15 +10,6 @@ export type SCRIPT = {
   delayMs: number;
   threads?: number;
 };
-
-function toScript(ns: NS): SCRIPT {
-  return {
-    target: ns.args[0] as string,
-    sleep: ns.args[1] as number,
-    delayMs: ns.args[2] as number,
-    threads: ns.args[3] as number,
-  };
-}
 
 export enum TASK_NAME {
   w = "w",
@@ -93,3 +84,16 @@ export type CustomServerV2 = {
   hackChance: number;
   maxBatches: number;
 } & CleanTimes;
+
+export type CustomServerMini = {
+  hostname: string;
+  ram: string;
+  money: String;
+
+  security: string;
+  info: string;
+
+  hacktimeC?: string;
+  growTimeC?: string;
+  weakTimeC?: string;
+};

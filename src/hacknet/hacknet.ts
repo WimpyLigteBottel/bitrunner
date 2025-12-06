@@ -1,23 +1,36 @@
 import { NS } from "@ns";
-import { disableLogs, openTail } from "/models/debug";
+import { disableLogs, openTail, pTime } from "/models/debug";
 import { canBuyNextNode } from "./canBuyNextNode";
 import {
   currentMoneyPerSecond,
   hashToMoneyPerSecond,
   totalProduction,
 } from "./hash-calculations";
-import { getBestUpgrade, getCheapestUpgrade } from "./getUpgrade";
+import { getBestUpgrade } from "./getUpgrade";
 
 export let ns: NS;
 
-let lastPurchaseTime: number | undefined = undefined;
+let lastPurchaseTime: number = Date.now();
 let lastTotalProduction: number;
 
 export const updateLastProduction = (name?: string, upgrade?: string) => {
-  ns.print(`${name} | ${upgrade}`);
+  ns.print(
+    `${name} | ${upgrade} -> made $${moneyMade(
+      ns
+    )} over ${timeSinceLastPurchase(ns)}`
+  );
   lastTotalProduction = hashToMoneyPerSecond(totalProduction(ns));
   lastPurchaseTime = Date.now();
 };
+
+const moneyMade = (ns: NS) => {
+  return ns.formatNumber(
+    hashToMoneyPerSecond(totalProduction(ns)) - lastTotalProduction || 0
+  );
+};
+
+const timeSinceLastPurchase = (ns: NS) =>
+  pTime(ns, Date.now() - lastPurchaseTime!);
 
 export async function main(tmpNs: NS): Promise<void> {
   ns = tmpNs;
@@ -27,7 +40,7 @@ export async function main(tmpNs: NS): Promise<void> {
   updateLastProduction();
 
   while (true) {
-    await ns.sleep(100);
+    await ns.sleep(1000);
     buyNextThing();
   }
 }
@@ -47,30 +60,12 @@ const buyNextThing = () => {
   // aka... If i have made more money in the last 60 seconds than the cost its fine to buy... But then i need to do it in slide window timeframe
 
   let upgrade = getBestUpgrade(ns);
-  // compareUpgrades(ns);
   let mps = currentMoneyPerSecond(ns);
   let canAfford = upgrade.cost < ns.getPlayer().money;
 
-  // ns.print("----------")
-  // ns.print("WARN " + JSON.stringify(upgrade));
-  // ns.print("ERROR " + JSON.stringify(getCheapestUpgrade()));
   if (canAfford)
     if (mps > upgrade.cost || moneyMade > upgrade.cost) {
       upgrade.execute();
       updateLastProduction(`${upgrade.nodeIndex}`, upgrade.action);
     }
-};
-
-const compareUpgrades = (ns: NS) => {
-  let cheapest = getCheapestUpgrade(ns);
-  let best = getBestUpgrade(ns);
-
-  ns.print("--------");
-  ns.print({ ...cheapest, cost: ns.formatNumber(cheapest.cost) });
-  ns.print("VS");
-  ns.print({
-    ...best,
-    cost: ns.formatNumber(best.cost),
-    payback: ns.tFormat(best.payback! * 1000),
-  });
 };

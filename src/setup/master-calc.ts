@@ -1,10 +1,10 @@
 import { NS } from "@ns";
 import { getAvailableRam } from "../util/availableram";
 import { createBatchOptimal } from "/base/batcher";
-import { disableLogs } from "../models/debug";
+import { disableLogs, pTime } from "../models/debug";
 import { BUFFER, CustomServerV2 } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
-import { isPrepped, notPreppedServers } from "/util/preppedServers";
+import { notPreppedServers } from "/util/preppedServers";
 import { getKnownServers } from "/util/find";
 
 export async function main(ns: NS): Promise<void> {
@@ -14,10 +14,9 @@ export async function main(ns: NS): Promise<void> {
   ns.exec("setup/setup.js", "home", 1);
   ns.exec("util/killall.js", "home", 1);
 
-  await ns.sleep(1000);
-
   let counter = 0;
   while (true) {
+    await ns.sleep(1000);
     let target = getTargetServer(ns);
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
@@ -52,20 +51,22 @@ export async function main(ns: NS): Promise<void> {
         ) {
           ns.print(
             "Going to wait now " +
-              `${ns.tFormat(target.weakTime)} for ${target.hostname}`
+              `${pTime(ns, target.weakTime + offset)} for ${
+                target.hostname
+              }`
           );
-          await ns.sleep(target.weakTime + 5000);
 
-          if (isPrepped(ns, target.hostname)) {
-            findServersThatCanBeUsed(ns)
-              .filter((x) => x.hostname != "home")
-              .forEach((x) => {
-                if (!ns.isRunning("base/hack.js", x.hostname))
-                  ns.killall(x.hostname);
-              });
+          let timeToWakeUp = performance.now() + target.weakTime + offset;
+          while (performance.now() < timeToWakeUp) {
+            await ns.sleep(1000);
           }
 
-          await ns.sleep(offset);
+          let script = ns.getRunningScript();
+          let currentMoneyPerSecond =
+            script?.onlineMoneyMade! / script?.onlineRunningTime!;
+          ns.print(
+            `Current production ${ns.formatNumber(currentMoneyPerSecond)}`
+          );
 
           break;
         }

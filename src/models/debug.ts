@@ -1,10 +1,15 @@
 export let DEBUG = false;
 import { NS } from "@ns";
+// NOT ALLOWED TO IMPORTING ANYTHING ELSE!
 
 export function printDone(ns: NS, name: string, target: string) {
   if (DEBUG) {
     ns.tprint(`${name} - ${new Date().toISOString()} - ${target}`);
   }
+}
+
+export function pTime(ns:NS,time:number): string {
+  return ns.tFormat(time).replaceAll(" minute ","m").replaceAll(" seconds","s")
 }
 
 export function openTail(ns: NS) {

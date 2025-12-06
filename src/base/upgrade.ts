@@ -1,12 +1,16 @@
 import { NS } from "@ns";
 import { getCustomServer } from "/util/serverCustomStats";
+import { openTail } from "/models/debug";
 
 export async function main(ns: NS): Promise<void> {
+    openTail(ns)
 
-    ns.ui.openTail()
 
+    let {getRunningScript} = ns
+    ns.print(getRunningScript())
+    ns.print(getCustomServer(ns,"home"))
 
-    while (ns.getPurchasedServers().length < 25) {
+    while (ns.getPurchasedServers().length < ns.getPurchasedServerLimit()) {
         await ns.sleep(1000)
         if (ns.getPurchasedServerCost(32) < ns.getPlayer().money) {
             let bought = ns.getPurchasedServers().map(x => getCustomServer(ns, x))
@@ -25,10 +29,10 @@ export async function main(ns: NS): Promise<void> {
     while (lowest.maxRam < 1048576) {
         await ns.sleep(1000)
         if (canAfford(ns, lowest.maxRam * 2)) {
+            ns.print(lowest.hostname)
             ns.upgradePurchasedServer(lowest?.hostname, lowest?.maxRam * 2)
         }
         lowest = lowestServer(ns)!
-        ns.print(lowest.hostname)
     }
 
 }

@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { disableLogs } from "../models/debug";
-import { getCustomServer } from "./serverCustomStats";
+import { getCustomServer, getMiniCustomServer } from "./serverCustomStats";
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
@@ -21,7 +21,7 @@ async function analyze(ns: NS) {
     while (true) {
         ns.clearLog()
 
-        let s = getCustomServer(ns, hostname)
+        let s = getMiniCustomServer(ns, hostname)
 
         ns.print(JSON.stringify(s, null, 2))
         await ns.sleep(50)

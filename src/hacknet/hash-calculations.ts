@@ -15,6 +15,7 @@ export const paybackSeconds = (cost: number, gain: number) => {
   return cost / hashToMoneyPerSecond(gain);
 };
 
+
 export const currentMoneyPerSecond = (ns: NS) =>
   (currentHashPerSecond(ns) / Upgrades["Sell for Money"].cost) *
   Upgrades["Sell for Money"].receive;

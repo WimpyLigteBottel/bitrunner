@@ -9,6 +9,7 @@ export const getBestUpgrade = (ns: NS) => {
     let level = deltaProduction(ns, i, "level");
     let ram = deltaProduction(ns, i, "ram");
     let core = deltaProduction(ns, i, "core");
+    let node = deltaProduction(ns, i, "node");
 
     let levelpb = paybackSeconds(level.cost, level.production);
 

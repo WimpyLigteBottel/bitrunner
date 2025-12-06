@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { CustomServerV2 } from "/models/Models";
+import { CustomServerMini, CustomServerV2 } from "/models/Models";
 
 export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
   let s = ns.getServer(hostname);
@@ -67,5 +67,39 @@ export function getCustomServer(ns: NS, hostname: string): CustomServerV2 {
     growTimeC: ns.tFormat(ns.getGrowTime(s.hostname)),
     weakTimeC: ns.tFormat(ns.getWeakenTime(s.hostname)),
     maxBatches: maxBatches,
+  };
+}
+
+export function getMiniCustomServer(
+  ns: NS,
+  hostname: string
+): CustomServerMini {
+  let s = ns.getServer(hostname);
+  let player = ns.getPlayer();
+
+  let info = "";
+  if (s.backdoorInstalled) {
+    info += "Backdoor ";
+  }
+
+  if (s.hasAdminRights) {
+    info += "Admin ";
+  }
+
+  if (player.skills.hacking >= (s.requiredHackingSkill ?? 999999)) {
+    info += "Hackable✓ ";
+  }
+
+  return {
+    hostname: s.hostname,
+    ram: `${s.ramUsed} / ${s.maxRam}`,
+    money: `${ns.formatNumber(s.moneyAvailable ?? 0)} / ${ns.formatNumber(
+      s.moneyMax ?? 0
+    )}`,
+    security: `${s.minDifficulty} / ${s.hackDifficulty}`,
+    info,
+    hacktimeC: ns.tFormat(ns.getHackTime(s.hostname)),
+    growTimeC: ns.tFormat(ns.getGrowTime(s.hostname)),
+    weakTimeC: ns.tFormat(ns.getWeakenTime(s.hostname)),
   };
 }
