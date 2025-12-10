@@ -19,7 +19,6 @@ export function createGrowThreads(
   let threads = ns.growthAnalyze(
     targetHost,
     multi,
-    ns.getServer(server.hostname).cpuCores
   );
   threads = Math.ceil(threads);
   threads = Math.max(1, threads);

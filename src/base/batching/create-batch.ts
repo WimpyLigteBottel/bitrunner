@@ -81,7 +81,7 @@ function weakenBatch(
   batch.tasks[0].delay = batch.tasks[0].delay + BUFFER * 3;
   batch.tasks[1].delay = batch.tasks[1].delay + BUFFER * 3;
 
-  let tasks = [weakenTask, ...batch.tasks];
+  let tasks = [weakenTask, batch.tasks[0], batch.tasks[1]];
 
   return buildBatch(tasks, targetHost, targetPercentage);
 }

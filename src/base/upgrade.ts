@@ -5,11 +5,6 @@ import { openTail } from "/models/debug";
 export async function main(ns: NS): Promise<void> {
     openTail(ns)
 
-
-    let {getRunningScript} = ns
-    ns.print(getRunningScript())
-    ns.print(getCustomServer(ns,"home"))
-
     while (ns.getPurchasedServers().length < ns.getPurchasedServerLimit()) {
         await ns.sleep(1000)
         if (ns.getPurchasedServerCost(32) < ns.getPlayer().money) {
@@ -29,7 +24,6 @@ export async function main(ns: NS): Promise<void> {
     while (lowest.maxRam < 1048576) {
         await ns.sleep(1000)
         if (canAfford(ns, lowest.maxRam * 2)) {
-            ns.print(lowest.hostname)
             ns.upgradePurchasedServer(lowest?.hostname, lowest?.maxRam * 2)
         }
         lowest = lowestServer(ns)!

@@ -12,8 +12,8 @@ export function pTime(ns:NS,time:number): string {
   return ns.tFormat(time).replaceAll(" minute ","m").replaceAll(" seconds","s")
 }
 
-export function openTail(ns: NS) {
-  if (DEBUG) {
+export function openTail(ns: NS, override: boolean = false) {
+  if (override || DEBUG) {
     ns.ui.openTail();
   }
 }

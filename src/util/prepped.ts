@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { notPreppedServers, preppedServers } from "./preppedServers";
+import { preppedServers } from "./preppedServers";
 import { disableLogs } from "../models/debug";
 
 

@@ -1,28 +1,31 @@
 import { NS } from "@ns";
 import { getAvailableRam } from "../util/availableram";
 import { createBatchOptimal } from "/base/batcher";
-import { disableLogs, pTime } from "../models/debug";
+import { disableLogs, openTail, pTime } from "../models/debug";
 import { BUFFER, CustomServerV2 } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
-import { notPreppedServers } from "/util/preppedServers";
+import {
+  ifPreppedKillScriptsOnOtherServers,
+  notPreppedServers,
+} from "/util/preppedServers";
 import { getKnownServers } from "/util/find";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
-  ns.ui.openTail();
+  openTail(ns,true)
 
   ns.exec("setup/setup.js", "home", 1);
   ns.exec("util/killall.js", "home", 1);
 
   let counter = 0;
   while (true) {
+    let isPrepping = true;
     await ns.sleep(1000);
     let target = getTargetServer(ns);
+    
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
 
-    // let pid = ns.exec("util/analyze.js", "home", 1, target.hostname);
-    // ns.ui.moveTail(0, 0, pid);
     while (true) {
       try {
         let server = await nextUsableServer(ns);
@@ -33,6 +36,8 @@ export async function main(ns: NS): Promise<void> {
             0,
             firstWeakenFinish + offset - performance.now() - task.time
           );
+
+          if (task.name == "h") isPrepping = false;
 
           ns.exec(
             task.script,
@@ -51,14 +56,16 @@ export async function main(ns: NS): Promise<void> {
         ) {
           ns.print(
             "Going to wait now " +
-              `${pTime(ns, target.weakTime + offset)} for ${
-                target.hostname
-              }`
+              `${pTime(ns, target.weakTime + offset)} for ${target.hostname}`
           );
 
           let timeToWakeUp = performance.now() + target.weakTime + offset;
           while (performance.now() < timeToWakeUp) {
             await ns.sleep(1000);
+            if (isPrepping) {
+              ifPreppedKillScriptsOnOtherServers(ns, target.hostname, []);
+              isPrepping = false
+            }
           }
 
           let script = ns.getRunningScript();
@@ -91,9 +98,9 @@ function getTargetServer(ns: NS) {
 
 async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
   let target = getTargetServer(ns);
-  let servers = findServersThatCanBeUsed(ns).toSorted(
-    (b, a) => a.availableRam - b.availableRam
-  );
+  let servers = findServersThatCanBeUsed(ns)
+    .filter((x) => x.availableRam > x.maxRam * 0.1)
+    .toSorted((b, a) => a.availableRam - b.availableRam);
 
   for (const x of servers) {
     let batch = createBatchOptimal(ns, target.hostname, x).totalCost;
@@ -108,6 +115,12 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
 }
 
 function findServersThatCanBeUsed(ns: NS) {
+  // use this if you have high level home servers
+  return getKnownServers(ns, false)
+    .map((server) => getCustomServer(ns, server.hostname))
+    .filter((server) => server.hostname.includes("home"))
+    .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
+
   // return ns.getPurchasedServers().toSorted().map(server => getCustomServer(ns, server.hostname))
   return getKnownServers(ns, false)
     .map((server) => getCustomServer(ns, server.hostname))

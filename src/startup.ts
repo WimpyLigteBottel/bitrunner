@@ -19,6 +19,7 @@ export async function main(ns: NS): Promise<void> {
     "4.Sleeves",
     "5.Prep",
     "6.Target Hack",
+    "7.Prep (multiple)",
   ].join("\n");
 
   let scriptsToBoot = ns.args[0] as string;
@@ -48,8 +49,17 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("setup/home-prep.js", "home", 1, "", 2);
   }
 
+  if (scriptsToBoot.includes("7")) {
+    ns.exec("setup/home-prep.js", "home", 1, "", 1);
+    ns.exec("setup/home-prep.js", "home", 1, "", 2);
+    ns.exec("setup/home-prep.js", "home", 1, "", 3);
+    ns.exec("setup/home-prep.js", "home", 1, "", 4);
+    ns.exec("setup/home-prep.js", "home", 1, "", 5);
+    ns.exec("setup/home-prep.js", "home", 1, "", 6);
+    ns.exec("setup/home-prep.js", "home", 1, "", 7);
+  }
+
   if (scriptsToBoot.includes("6")) {
     ns.exec("setup/master-calc.js", "home", 1);
   }
-
 }
