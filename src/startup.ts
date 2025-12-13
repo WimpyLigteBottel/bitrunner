@@ -1,7 +1,9 @@
 import { NS } from "@ns";
 
 export async function main(ns: NS): Promise<void> {
+  ns.exec("singularity/buyTOR.js", "home", 1);
   ns.exec("setup/setup.js", "home", 1);
+  ns.exec("util/profits.js", "home", 1);
 
   ns.tprint("---------");
   ns.tprint("connect home;connect darkweb;buy -a");
@@ -20,6 +22,9 @@ export async function main(ns: NS): Promise<void> {
     "5.Prep",
     "6.Target Hack",
     "7.Prep (multiple)",
+    "8.Backoor all servers",
+    "9.Upgrade home",
+    "A.Factions invites",
   ].join("\n");
 
   let scriptsToBoot = ns.args[0] as string;
@@ -49,6 +54,10 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("setup/home-prep.js", "home", 1, "", 2);
   }
 
+  if (scriptsToBoot.includes("6")) {
+    ns.exec("setup/master-calc.js", "home", 1);
+  }
+
   if (scriptsToBoot.includes("7")) {
     ns.exec("setup/home-prep.js", "home", 1, "", 1);
     ns.exec("setup/home-prep.js", "home", 1, "", 2);
@@ -59,7 +68,19 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("setup/home-prep.js", "home", 1, "", 7);
   }
 
-  if (scriptsToBoot.includes("6")) {
-    ns.exec("setup/master-calc.js", "home", 1);
+  if (scriptsToBoot.includes("8")) {
+    ns.exec("singularity/backdoor.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("9")) {
+    ns.exec("singularity/homeupgrade.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("A")) {
+    ns.exec("singularity/factions.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("A")) {
+    ns.exec("singularity/factions.js", "home", 1);
   }
 }
