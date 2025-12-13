@@ -1,10 +1,10 @@
 import { NS } from "@ns";
-import { disableLogs } from "../models/debug";
-import { getCustomServer, getMiniCustomServer } from "./serverCustomStats";
+import { disableLogs, openTail } from "../models/debug";
+import { getMiniCustomServer } from "./serverCustomStats";
 
 export async function main(ns: NS): Promise<void> {
     disableLogs(ns)
-    ns.ui.openTail()
+    openTail(ns)
 
     await analyze(ns)
 }

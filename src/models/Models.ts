@@ -2,7 +2,7 @@ import { Server } from "@ns";
 
 export type RequestType = "HACK" | "PREP" | "WEAKEN";
 
-export const BUFFER = 200;
+export const BUFFER = 50;
 
 export type SCRIPT = {
   target: string;

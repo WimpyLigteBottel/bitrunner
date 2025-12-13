@@ -3,11 +3,11 @@ import { Batch, CustomServerV2, RequestType } from "/models/Models";
 import { createBatch } from "./batching/create-batch";
 import { DEBUG } from "/models/debug";
 
-export function createBatchOptimal(
+ export async function createBatchOptimal(
   ns: NS,
   targetHost: string,
   server: CustomServerV2
-): Batch {
+): Promise<Batch> {
   let requestType = getBatchType(ns, targetHost);
 
   let low = 0; // definitely fits
@@ -17,7 +17,7 @@ export function createBatchOptimal(
 
   try {
     // 20–30 iterations = enough precision
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 10; i++) {
       let mid: string | number = ((low + high) / 2).toFixed(4);
       mid = parseFloat(mid);
       const batch = createBatch(ns, targetHost, mid, requestType, server);
@@ -31,6 +31,7 @@ export function createBatchOptimal(
       }
     }
   } catch (er) {
+    await ns.sleep(1)
     ns.print("ERROR " + er);
   }
 
@@ -59,6 +60,9 @@ const updateBatch = (ns: NS, bestBatch: Batch): Batch => {
   let hack = findTask(bestBatch, "h");
   let weaken = findTask(bestBatch, "w");
   let grow = findTask(bestBatch, "g");
+
+  if(bestBatch.server == "n00dles")
+    return bestBatch
 
   if (hack?.threads == 1 || hack?.threads! >= grow?.threads!) {
     if (DEBUG) {

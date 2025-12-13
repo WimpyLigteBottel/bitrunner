@@ -22,13 +22,14 @@ export async function main(ns: NS): Promise<void> {
     pids.push(pid1);
     pids.push(pid2);
 
+    
     ns.print(target.hostname + " is my next target");
 
     let server = getCustomServer(ns, "home");
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
     try {
-      let batch = createBatchOptimal(ns, target.hostname, server);
+      let batch = await createBatchOptimal(ns, target.hostname, server);
 
       for (const task of batch.tasks) {
         const additionalMsec = Math.max(

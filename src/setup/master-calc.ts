@@ -4,40 +4,33 @@ import { createBatchOptimal } from "/base/batcher";
 import { disableLogs, openTail, pTime } from "../models/debug";
 import { BUFFER, CustomServerV2 } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
-import {
-  ifPreppedKillScriptsOnOtherServers,
-  notPreppedServers,
-} from "/util/preppedServers";
+import { notPreppedServers } from "/util/preppedServers";
 import { getKnownServers } from "/util/find";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
-  openTail(ns,true)
+  openTail(ns, true);
 
   ns.exec("setup/setup.js", "home", 1);
   ns.exec("util/killall.js", "home", 1);
 
   let counter = 0;
   while (true) {
-    let isPrepping = true;
     await ns.sleep(1000);
     let target = getTargetServer(ns);
-    
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
 
     while (true) {
       try {
         let server = await nextUsableServer(ns);
-        let batch = createBatchOptimal(ns, target.hostname, server);
+        let batch = await createBatchOptimal(ns, target.hostname, server);
 
         for (const task of batch.tasks) {
           const additionalMsec = Math.max(
             0,
             firstWeakenFinish + offset - performance.now() - task.time
           );
-
-          if (task.name == "h") isPrepping = false;
 
           ns.exec(
             task.script,
@@ -62,10 +55,6 @@ export async function main(ns: NS): Promise<void> {
           let timeToWakeUp = performance.now() + target.weakTime + offset;
           while (performance.now() < timeToWakeUp) {
             await ns.sleep(1000);
-            if (isPrepping) {
-              ifPreppedKillScriptsOnOtherServers(ns, target.hostname, []);
-              isPrepping = false
-            }
           }
 
           let script = ns.getRunningScript();
@@ -103,9 +92,10 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
     .toSorted((b, a) => a.availableRam - b.availableRam);
 
   for (const x of servers) {
-    let batch = createBatchOptimal(ns, target.hostname, x).totalCost;
+    let batch = await createBatchOptimal(ns, target.hostname, x);
+    let cost = batch.totalCost
 
-    let noScriptsRunning = getAvailableRam(ns, x.hostname) > batch;
+    let noScriptsRunning = getAvailableRam(ns, x.hostname) > cost;
     if (noScriptsRunning) {
       return x;
     }
@@ -121,10 +111,4 @@ function findServersThatCanBeUsed(ns: NS) {
     .filter((server) => server.hostname.includes("home"))
     .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
 
-  // return ns.getPurchasedServers().toSorted().map(server => getCustomServer(ns, server.hostname))
-  return getKnownServers(ns, false)
-    .map((server) => getCustomServer(ns, server.hostname))
-    .filter((server) => !server.hostname.includes("hacknet"))
-    .filter((server) => server.canExecuteScripts)
-    .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
 }
