@@ -80,7 +80,4 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("singularity/factions.js", "home", 1);
   }
 
-  if (scriptsToBoot.includes("A")) {
-    ns.exec("singularity/factions.js", "home", 1);
-  }
 }

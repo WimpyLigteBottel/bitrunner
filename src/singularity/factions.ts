@@ -5,7 +5,9 @@ export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
   ns.clearLog();
 
-  // travelToEachCity(ns);
+  if (ns.getPlayer().money > 200_000 * 6) {
+    travelToEachCity(ns);
+  }
 
   // small buffer for faction invites
   await ns.sleep(1000);
@@ -30,9 +32,9 @@ export async function main(ns: NS): Promise<void> {
 
       if (sleeveNumber != undefined) {
         const worked =
-          ns.sleeve.setToFactionWork(sleeveNumber, faction, "hacking") ||
+          ns.sleeve.setToFactionWork(sleeveNumber, faction, "security") ||
           ns.sleeve.setToFactionWork(sleeveNumber, faction, "field") ||
-          ns.sleeve.setToFactionWork(sleeveNumber, faction, "security");
+          ns.sleeve.setToFactionWork(sleeveNumber, faction, "hacking");
 
         if (worked) {
           ns.print(
@@ -43,10 +45,9 @@ export async function main(ns: NS): Promise<void> {
       }
 
       const worked =
-        ns.singularity.workForFaction(faction, "hacking", false) ||
+        ns.singularity.workForFaction(faction, "security", false) ||
         ns.singularity.workForFaction(faction, "field", false) ||
-        ns.singularity.workForFaction(faction, "security", false);
-
+        ns.singularity.workForFaction(faction, "hacking", false);
       if (worked) {
         ns.print(`I am working for faction ${faction}`);
         break;

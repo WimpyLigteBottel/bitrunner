@@ -11,17 +11,26 @@ export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
   openTail(ns, true);
 
+  // Restarting hack grow on home
+  ns.scriptKill("base/hack.js", "home");
+  ns.scriptKill("base/grow.js", "home");
+  ns.scriptKill("base/weaken.js", "home");
+
   ns.exec("setup/setup.js", "home", 1);
+
+  // kill other scripts on other services
   ns.exec("util/killall.js", "home", 1);
 
   let counter = 0;
   while (true) {
-    await ns.sleep(1000);
+    await ns.sleep(1); // to prevent hainging calls a second
     let target = getTargetServer(ns);
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
 
     while (true) {
+      await ns.sleep(1); // to prevent hainging calls a second
+
       try {
         let server = await nextUsableServer(ns);
         let batch = await createBatchOptimal(ns, target.hostname, server);
@@ -43,27 +52,9 @@ export async function main(ns: NS): Promise<void> {
           offset += BUFFER;
         }
       } catch (e) {
-        if (
-          e instanceof Error &&
-          e.message == "There is no more servers to execute on"
-        ) {
-          ns.print(
-            "Going to wait now " +
-              `${pTime(ns, target.weakTime + offset)} for ${target.hostname}`
-          );
-
-          let timeToWakeUp = performance.now() + target.weakTime + offset;
-          while (performance.now() < timeToWakeUp) {
-            await ns.sleep(1000);
-          }
-
-          let script = ns.getRunningScript();
-          let currentMoneyPerSecond =
-            script?.onlineMoneyMade! / script?.onlineRunningTime!;
-          ns.print(
-            `Current production ${ns.formatNumber(currentMoneyPerSecond)}`
-          );
-
+        let shouldExit = await noMoreServers(ns, e as Error, target, offset);
+        if (shouldExit) {
+          currentProductionByScript(ns);
           break;
         }
 
@@ -72,9 +63,32 @@ export async function main(ns: NS): Promise<void> {
         await ns.sleep(5000);
       }
     }
-    // ns.ui.closeTail(pid);
-    // ns.kill(pid);
   }
+}
+
+async function noMoreServers(
+  ns: NS,
+  e: Error,
+  target: CustomServerV2,
+  offset: number
+) {
+  if (e.message != "There is no more servers to execute on") {
+    return false;
+  }
+
+  let time = pTime(ns, target.weakTime + offset);
+  ns.print(`Going to wait now ${time} for ${target.hostname}`);
+
+  await ns.sleep(target.weakTime + offset);
+
+  return true;
+}
+
+function currentProductionByScript(ns: NS) {
+  let script = ns.getRunningScript();
+  let currentMoneyPerSecond =
+    script?.onlineMoneyMade! / script?.onlineRunningTime!;
+  ns.print(`Current production ${ns.formatNumber(currentMoneyPerSecond)}`);
 }
 
 function getTargetServer(ns: NS) {
@@ -91,11 +105,13 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
     .filter((x) => x.availableRam > x.maxRam * 0.1)
     .toSorted((b, a) => a.availableRam - b.availableRam);
 
+  // ns.print(target.hostname,servers.map(x=>x.hostname))
+
   for (const x of servers) {
     let batch = await createBatchOptimal(ns, target.hostname, x);
-    let cost = batch.totalCost
+    let cost = batch.totalCost;
 
-    let noScriptsRunning = getAvailableRam(ns, x.hostname) > cost;
+    let noScriptsRunning = x.availableRam >= cost;
     if (noScriptsRunning) {
       return x;
     }
@@ -105,10 +121,11 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
 }
 
 function findServersThatCanBeUsed(ns: NS) {
-  // use this if you have high level home servers
   return getKnownServers(ns, false)
     .map((server) => getCustomServer(ns, server.hostname))
     .filter((server) => server.hostname.includes("home"))
-    .filter((server) => getAvailableRam(ns, server.hostname) > 1.75 * 3);
-
+    .filter(
+      (server) => server.canExecuteScripts || server.hostname.includes("home")
+    )
+    .filter((server) => server.availableRam > 1.75 * 3);
 }

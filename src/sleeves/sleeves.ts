@@ -3,9 +3,9 @@ import { openTail, disableLogs } from "/models/debug";
 import { isAllSynced, syncAllSleeves } from "./sync";
 import { isAllRecovered, recoverAllSleeves } from "./recover";
 import { trainAllSleeves } from "./train";
+import { buyAugsForSleeves } from "./buyAugsForSleeves";
 
 let map = new Map<Number, SleevePerson>();
-
 
 /** @param {NS} ns **/
 const updateSleeveMap = (ns: NS) => {
@@ -25,21 +25,10 @@ export async function main(ns: NS): Promise<void> {
 
   while (true) {
     updateSleeveMap(ns);
-    let isSynced = isAllSynced(ns);
-    let isRecovered = isAllRecovered(ns);
-    let inGang = ns.gang.inGang();
-
-    ns.print({
-      isSynced,
-      isRecovered,
-      inGang,
-    });
-
     recoverAllSleeves(ns);
     syncAllSleeves(ns);
     trainAllSleeves(ns);
-
-
+    buyAugsForSleeves(ns);
     respawnScript(ns);
     await ns.sleep(5000);
   }

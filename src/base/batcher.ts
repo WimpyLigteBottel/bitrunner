@@ -3,7 +3,7 @@ import { Batch, CustomServerV2, RequestType } from "/models/Models";
 import { createBatch } from "./batching/create-batch";
 import { DEBUG } from "/models/debug";
 
- export async function createBatchOptimal(
+export async function createBatchOptimal(
   ns: NS,
   targetHost: string,
   server: CustomServerV2
@@ -20,6 +20,12 @@ import { DEBUG } from "/models/debug";
     for (let i = 0; i < 10; i++) {
       let mid: string | number = ((low + high) / 2).toFixed(4);
       mid = parseFloat(mid);
+
+      // // this is safety clamp so that i dont hack too much and cause instability
+      if (mid > 0.10 && requestType == "HACK") {
+        mid = 0.10;
+      }
+
       const batch = createBatch(ns, targetHost, mid, requestType, server);
 
       if (batch.totalCost <= server.availableRam) {
@@ -31,11 +37,11 @@ import { DEBUG } from "/models/debug";
       }
     }
   } catch (er) {
-    await ns.sleep(1)
+    await ns.sleep(1);
     ns.print("ERROR " + er);
   }
 
-  return updateBatch(ns, bestBatch);
+  return bestBatch;
 }
 
 function getBatchType(ns: NS, targetHost: string): RequestType {
@@ -54,30 +60,4 @@ function getBatchType(ns: NS, targetHost: string): RequestType {
 
 const findTask = (batch: Batch, name: "h" | "g" | "w") => {
   return batch.tasks.find((x) => x.name == name);
-};
-
-const updateBatch = (ns: NS, bestBatch: Batch): Batch => {
-  let hack = findTask(bestBatch, "h");
-  let weaken = findTask(bestBatch, "w");
-  let grow = findTask(bestBatch, "g");
-
-  if(bestBatch.server == "n00dles")
-    return bestBatch
-
-  if (hack?.threads == 1 || hack?.threads! >= grow?.threads!) {
-    if (DEBUG) {
-      ns.print(
-        "WARN seems like hack is greater than grow which means i might not grow it properly"
-      );
-    }
-
-    let tasks = [];
-
-    if (grow != undefined) tasks.push(grow);
-    if (weaken != undefined) tasks.push(weaken);
-
-    return { ...bestBatch, tasks };
-  }
-
-  return bestBatch;
 };

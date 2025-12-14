@@ -20,7 +20,7 @@ export function createGrowThreads(
     targetHost,
     multi,
   );
-  threads = Math.ceil(threads);
+  threads = Math.ceil(threads * 1.03);
   threads = Math.max(1, threads);
 
   const tGrow = ns.getGrowTime(targetHost);
