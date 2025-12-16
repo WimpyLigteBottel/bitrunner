@@ -45,8 +45,10 @@ export async function main(ns: NS): Promise<void> {
             task.script,
             server.hostname,
             task.threads,
-            batch.server,
-            additionalMsec,
+            // arguments
+            batch.server, // target
+            additionalMsec, // sleep
+            true, // affect stock
             `Threads ${task.threads}`
           );
           offset += BUFFER;

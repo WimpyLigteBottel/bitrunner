@@ -11,18 +11,30 @@ export async function main(ns: NS): Promise<void> {
 
   ns.exec("setup/setup.js", "home", 1);
 
+  let target = findNextServerToPrep(ns);
+  let currentTarget = target.hostname;
+
   let pids = [];
+
+  ns.exec("util/profits.js", "home", 1);
+  let pid2 = ns.exec("util/analyze.js", "home", 1, target.hostname);
+  pids.push(pid2);
 
   let counter = 0;
   while (true) {
     let target = findNextServerToPrep(ns);
-    let pid1 = ns.exec("util/profits.js", "home", 1);
-    let pid2 = ns.exec("util/analyze.js", "home", 1, target.hostname);
 
-    pids.push(pid1);
-    pids.push(pid2);
+    if (currentTarget != target.hostname) {
+      ns.print("New target " + target.hostname);
+      pids.forEach((x) => {
+        ns.ui.closeTail(x);
+        ns.kill(x);
+      });
+      currentTarget = target.hostname;
 
-    
+      pids = [];
+    }
+
     ns.print(target.hostname + " is my next target");
 
     let server = getCustomServer(ns, "home");
@@ -41,8 +53,10 @@ export async function main(ns: NS): Promise<void> {
           task.script,
           server.hostname,
           task.threads,
-          batch.server,
-          additionalMsec,
+          // arguments
+          batch.server, // target
+          additionalMsec, // sleep
+          true, // affect stock
           `Threads ${task.threads}`
         );
       }
@@ -53,13 +67,6 @@ export async function main(ns: NS): Promise<void> {
       ns.print(`ERROR counter:${counter} -> ${e}`);
       await ns.sleep(target.weakTime + 5000);
     }
-
-    pids.forEach((x) => {
-      ns.ui.closeTail(x);
-      ns.kill(x);
-    });
-
-    pids = []
   }
 }
 

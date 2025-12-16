@@ -2,14 +2,31 @@ export let DEBUG = false;
 import { NS } from "@ns";
 // NOT ALLOWED TO IMPORTING ANYTHING ELSE!
 
-export function printDone(ns: NS, name: string, target: string) {
+export function printDone(
+  ns: NS,
+  name: string,
+  target: string,
+  affectStock: boolean = false
+) {
+  let message = {
+    name,
+    time: new Date().toISOString(),
+    target,
+    "affecting stock": affectStock,
+  };
+
   if (DEBUG) {
-    ns.tprint(`${name} - ${new Date().toISOString()} - ${target}`);
+    ns.tprint(`${message}`);
+  } else {
+    ns.print(`${message}`);
   }
 }
 
-export function pTime(ns:NS,time:number): string {
-  return ns.tFormat(time).replaceAll(" minute ","m").replaceAll(" seconds","s")
+export function pTime(ns: NS, time: number): string {
+  return ns
+    .tFormat(time)
+    .replaceAll(" minute ", "m")
+    .replaceAll(" seconds", "s");
 }
 
 export function openTail(ns: NS, override: boolean = false) {

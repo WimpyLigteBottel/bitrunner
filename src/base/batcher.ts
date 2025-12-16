@@ -22,9 +22,9 @@ export async function createBatchOptimal(
       mid = parseFloat(mid);
 
       // // this is safety clamp so that i dont hack too much and cause instability
-      if (mid > 0.10 && requestType == "HACK") {
-        mid = 0.10;
-      }
+      // if (mid > 0.10 && requestType == "HACK") {
+      //   mid = 0.10;
+      // }
 
       const batch = createBatch(ns, targetHost, mid, requestType, server);
 

@@ -16,12 +16,21 @@ export function createGrowThreads(
     throw Error("Cant grow this much");
   }
 
-  let threads = ns.growthAnalyze(
-    targetHost,
-    multi,
-  );
-  threads = Math.ceil(threads * 1.03);
-  threads = Math.max(1, threads);
+  let threads = ns.growthAnalyze(targetHost, multi);
+
+  // Safety scaling by hack percentage
+  if (targetPercentage >= 0.75) {
+    threads *= 2.0; // 100% extra for 75%+ hacks
+  } else if (targetPercentage >= 0.5) {
+    threads *= 1.5; // 50% extra for 50-75% hacks
+  } else if (targetPercentage >= 0.25) {
+    threads *= 1.25; // 25% extra for 25-50% hacks
+  } else if (targetPercentage >= 0.1) {
+    threads *= 1.15; // 15% extra for 10-25% hacks
+  } else {
+    threads *= 1.05; // 5% extra for <10% hacks
+  }
+  threads = Math.max(1, Math.floor(threads));
 
   const tGrow = ns.getGrowTime(targetHost);
   const tWeaken = ns.getWeakenTime(targetHost);
