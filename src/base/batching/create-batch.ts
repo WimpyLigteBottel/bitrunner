@@ -80,7 +80,10 @@ function weakenBatch(
 
   batch.tasks[0].delay = batch.tasks[0].delay + BUFFER * 2;
   batch.tasks[1].delay = batch.tasks[1].delay + BUFFER * 2;
-  batch.tasks[1].threads = batch.tasks[1].threads - weakenTask.threads;
+
+  if (weakenTask.threads < batch.tasks[1].threads) {
+    batch.tasks[1].threads = batch.tasks[1].threads - weakenTask.threads;
+  }
 
   let tasks = [weakenTask, batch.tasks[0], batch.tasks[1]];
 

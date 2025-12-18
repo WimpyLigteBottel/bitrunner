@@ -6,3 +6,10 @@ export type StockMarketSimplified = {
 export type PricePoint = {
   symbol: string;
 } & StockMarketSimplified;
+
+export type TrendType =
+  | "VERY_STRONG"
+  | "STRONG"
+  | "SAME"
+  | "WEAK"
+  | "VERY_WEAK";

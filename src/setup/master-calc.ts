@@ -1,5 +1,4 @@
 import { NS } from "@ns";
-import { getAvailableRam } from "../util/availableram";
 import { createBatchOptimal } from "/base/batcher";
 import { disableLogs, openTail, pTime } from "../models/debug";
 import { BUFFER, CustomServerV2 } from "/models/Models";
@@ -125,6 +124,7 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
 function findServersThatCanBeUsed(ns: NS) {
   return getKnownServers(ns, false)
     .map((server) => getCustomServer(ns, server.hostname))
+    .filter((server) => !server.hostname.includes("hacknet"))
     .filter((server) => server.hostname.includes("home"))
     .filter(
       (server) => server.canExecuteScripts || server.hostname.includes("home")

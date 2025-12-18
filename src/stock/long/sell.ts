@@ -1,33 +1,36 @@
 import { NS } from "@ns";
-import { getTrend, isPriceHigh } from "../stock-utils";
-import { StockMarketSimplified } from "../Models";
+import { TrendType } from "../Models";
 
 export function sellLongStocks(
   ns: NS,
   sym: string,
-  state: Record<string, StockMarketSimplified[]>
+  short: TrendType,
+  mid: TrendType,
+  long: TrendType
 ) {
-  const [longShares, avgBuyPrice] = ns.stock.getPosition(sym);
+  const [longShares] = ns.stock.getPosition(sym);
 
   // Don't try to sell if we don't own any shares
   if (longShares === 0) {
     return;
   }
 
-  const currentPrice = ns.stock.getPrice(sym);
-  const trend = getTrend(ns, sym, 20, state);
-  const profitPercent = (currentPrice - avgBuyPrice) / avgBuyPrice;
-  const isHigh = isPriceHigh(ns, sym, 1.03, state);
-
-  // Sell conditions (ANY of these should trigger a sell):
-  const shouldSell =
-    (profitPercent >= 0.05 && (trend < -0.01 || isHigh)) || // Take profit: 5%+ gain AND (trend turning negative OR price is high)
-    profitPercent < -0.03 || // Stop loss: Cut losses at -3%
-    (profitPercent > 0.02 && trend < -0.02); // Protect gains: Have some profit but trend clearly reversing
-
-  if (!shouldSell) {
+  if (short == "WEAK" || (short == "SAME" && mid == "WEAK" && long == "WEAK")) {
+    sellShares(ns, sym, `Losing money`);
     return;
   }
+
+  if (short == "VERY_WEAK") {
+    sellShares(ns, sym, `Losing money FAST`);
+    return;
+  }
+}
+
+function sellShares(ns: NS, sym: string, reason?: string) {
+  const [longShares, avgBuyPrice] = ns.stock.getPosition(sym);
+
+  const currentPrice = ns.stock.getPrice(sym);
+  const profitPercent = (currentPrice - avgBuyPrice) / avgBuyPrice;
 
   const salePrice = ns.stock.sellStock(sym, longShares);
 
@@ -45,13 +48,5 @@ export function sellLongStocks(
   ns.print(`  Bought at: $${ns.formatNumber(avgBuyPrice)}`);
   ns.print(`  Sold at: $${ns.formatNumber(salePrice)}`);
   ns.print(`  Profit: $${pTotalProfit} (${pProfitPercent}%)`);
-  ns.print(
-    `  Reason: ${
-      profitPercent < -0.03
-        ? "Stop Loss"
-        : profitPercent >= 0.05
-        ? "Take Profit"
-        : "Trend Reversal"
-    }`
-  );
+  ns.print(`  Reason: ${reason}`);
 }

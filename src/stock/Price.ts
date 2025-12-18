@@ -4,12 +4,13 @@ import { StockMarketSimplified } from "./Models";
 export function recordPrice(
   ns: NS,
   symbol: string,
-  state: Record<string, StockMarketSimplified[]>
+  state: Record<string, StockMarketSimplified[]>,
+  limit = 200
 ) {
   const newValue = current(ns, symbol);
   const prev = state[symbol] ?? [];
 
-  state[symbol] = [newValue, ...prev].toSorted((a,b)=> a.date - b.date);
+  state[symbol] = [newValue, ...prev].toSorted((a,b)=> a.date - b.date).slice(-limit);
 }
 
 function current(ns: NS, symbol: string) {

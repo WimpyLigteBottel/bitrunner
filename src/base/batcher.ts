@@ -17,14 +17,14 @@ export async function createBatchOptimal(
 
   try {
     // 20–30 iterations = enough precision
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 30; i++) {
       let mid: string | number = ((low + high) / 2).toFixed(4);
       mid = parseFloat(mid);
 
       // // this is safety clamp so that i dont hack too much and cause instability
-      // if (mid > 0.10 && requestType == "HACK") {
-      //   mid = 0.10;
-      // }
+      if (mid > 0.50 && requestType == "HACK") {
+        mid = 0.50;
+      }
 
       const batch = createBatch(ns, targetHost, mid, requestType, server);
 

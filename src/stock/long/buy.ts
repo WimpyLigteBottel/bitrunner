@@ -1,46 +1,42 @@
 import { NS } from "@ns";
-import { getTrend, getVolatility, isPriceLow } from "../stock-utils";
-import { StockMarketSimplified } from "../Models";
+import { TrendType } from "../Models";
+import { getVolatility } from "../stock-utils";
 
 const RESERVE_MONEY = 100_000;
-const PRICE_LOW_THRESHOLD = 0.92; // was 0.97 — too high
 const COMMISSION = 100_000;
 
 // Stability thresholds (BN8-friendly)
-const MAX_STABLE_TREND = 0.02; // +/- 2% short-term movement
 export function buyLongStocks(
   ns: NS,
   sym: string,
-  state: Record<string, StockMarketSimplified[]>
+  short: TrendType,
+  mid: TrendType,
+  long: TrendType
 ) {
   const [longShares] = ns.stock.getPosition(sym);
 
-  // Short window trend = stability check, NOT direction
-  const shortTrend = getTrend(ns, sym, 100, state);
-  const volatility = getVolatility(ns, sym, state);
-  const priceLow = isPriceLow(ns, sym, PRICE_LOW_THRESHOLD, state);
+  if (short == "VERY_STRONG" && mid == "VERY_STRONG" && long == "VERY_STRONG") {
+    ns.print(`BUY -> Reason: VERY_STRONG -> ${sym}`);
+    return;
+  }
 
-  // BUY LOGIC (range-bound)
-  const stable = Math.abs(shortTrend) < MAX_STABLE_TREND;
-  const isGoodBuy = priceLow && stable && volatility > 0;
+  if (long == "WEAK" && mid == "STRONG" && short == "VERY_STRONG") {
+    ns.print(`BUY -> Reason: Possibly early reversal -> ${sym}`);
+    return;
+  }
 
-  if (!isGoodBuy) return;
+  // const { shares, canAfford } = calculatePurchaseAmount(ns, sym, longShares);
+  // if (!canAfford || shares === 0) return;
 
-  const maxShares = ns.stock.getMaxShares(sym);
-  if (longShares >= maxShares * 0.9) return;
+  // const priceBoughtAt = ns.stock.buyStock(sym, shares);
+  // if (priceBoughtAt === 0) return;
 
-  const { shares, canAfford } = calculatePurchaseAmount(ns, sym, longShares);
-  if (!canAfford || shares === 0) return;
-
-  const priceBoughtAt = ns.stock.buyStock(sym, shares);
-  if (priceBoughtAt === 0) return;
-
-  const [finalPosition] = ns.stock.getPosition(sym);
-  ns.print(
-    `✅ BOUGHT ${finalPosition - longShares} ${sym} @ ${priceBoughtAt.toFixed(
-      2
-    )}`
-  );
+  // const [finalPosition] = ns.stock.getPosition(sym);
+  // ns.print(
+  //   `✅ BOUGHT ${finalPosition - longShares} ${sym} @ ${priceBoughtAt.toFixed(
+  //     2
+  //   )}`
+  // );
 }
 
 function calculatePurchaseAmount(

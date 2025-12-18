@@ -6,9 +6,14 @@ export async function main(ns: NS): Promise<void> {
   let sleepDuration = ns.args[1] as number;
   let affectStock = ns.args[2] as boolean | false;
 
+  // await ns.hack(host, {
+  //   additionalMsec: sleepDuration,
+  //   stock: affectStock,
+  // });
+
   await ns.hack(host, {
     additionalMsec: sleepDuration,
-    stock: affectStock,
+    stock: false,
   });
 
   printDone(ns, "    hack", host, affectStock);

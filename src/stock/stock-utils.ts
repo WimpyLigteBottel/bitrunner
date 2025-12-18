@@ -1,5 +1,6 @@
 import { NS } from "@ns";
-import { PricePoint, StockMarketSimplified } from "./Models";
+import { StockMarketSimplified, TrendType } from "./Models";
+import { readState } from "./state";
 
 export function getAveragePrice(
   ns: NS,
@@ -14,7 +15,6 @@ export function getAveragePrice(
 
 // Detect if stock is trending up or down
 export function getTrend(
-  ns: NS,
   symbol: string,
   lookback = 20,
   stats: Record<string, StockMarketSimplified[]>
@@ -32,58 +32,20 @@ export function getTrend(
 }
 
 export function getVolatility(
-  ns: NS,
   symbol: string,
   stats: Record<string, StockMarketSimplified[]>
 ) {
-  const avg = getAveragePrice(ns, symbol, stats);
-  const squaredDiffs = stats[symbol].map((point) =>
-    Math.pow(point.price - avg, 2)
-  );
-  const variance =
-    squaredDiffs.reduce((a, b) => a + b, 0) / stats[symbol].length;
-  return Math.sqrt(variance);
-}
+  const prices = stats[symbol].map((x) => x.price);
 
-// Check if current price is high (near historical high)
-export function isPriceHigh(
-  ns: NS,
-  symbol: string,
-  threshold = 1.05,
-  stats: Record<string, StockMarketSimplified[]>
-) {
-  const currentPrice = stats[symbol][stats[symbol].length - 1].price;
-  const avgPrice = getAveragePrice(ns, symbol, stats);
+  if (prices.length < 2) return 0;
 
-  return currentPrice > avgPrice * threshold;
-}
+  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const squaredDiffs = prices.map((price) => Math.pow(price - mean, 2));
+  const variance = squaredDiffs.reduce((a, b) => a + b, 0) / prices.length;
+  const stdDev = Math.sqrt(variance);
 
-export function isPriceHighStock(
-  ns: NS,
-  sym: string,
-  threshold: number,
-  state: Record<string, StockMarketSimplified[]>
-): boolean {
-  const history = state[sym];
-
-  const prices = history.map((s) => s.price);
-  const maxPrice = Math.max(...prices);
-  const currentPrice = ns.stock.getPrice(sym);
-
-  // True if current price is >= threshold times the max (e.g., at 103% of peak)
-  return currentPrice >= maxPrice * threshold;
-}
-
-export function isPriceLow(
-  ns: NS,
-  symbol: string,
-  threshold = 0.95,
-  stats: Record<string, StockMarketSimplified[]>
-) {
-  const currentPrice = stats[symbol][stats[symbol].length - 1].price;
-  const avgPrice = getAveragePrice(ns, symbol, stats);
-
-  return currentPrice < avgPrice * threshold;
+  // Return as percentage of mean
+  return (stdDev / mean) * 100;
 }
 
 export async function waitForStockTick(ns: NS, symbol = "WDS") {
@@ -103,33 +65,55 @@ export function simpleForecast(
   priceHistory: number[],
   slice = 100
 ): {
-  increases: number;
-  decreases: number;
+  up: number;
+  down: number;
 } {
   const recent = priceHistory.slice(-slice);
-  let increases = 0;
-  let decreases = 0;
+  let inc = 0;
+  let dec = 0;
 
   for (let i = 1; i < recent.length; i++) {
-    if (recent[i] > recent[i - 1]) increases++;
-    if (recent[i] < recent[i - 1]) decreases++;
+    if (recent[i] > recent[i - 1]) inc++;
+    if (recent[i] < recent[i - 1]) dec++;
   }
-  return { increases, decreases };
+  return { up: inc, down: dec };
 }
 
 export function simpleForecastPricePoint(
-  priceHistory: PricePoint[],
-  slice: number = 101
+  ns: NS,
+  sym: string,
+  slice: number,
+  stats: Record<string, StockMarketSimplified[]> | undefined
 ): {
-  symbol: string;
-  increases: number;
-  decreases: number;
+  up: number;
+  down: number;
+  trend: TrendType;
 } {
-  return {
-    ...simpleForecast(
-      priceHistory.map((x) => x.price),
-      slice
-    ),
-    symbol: priceHistory[0].symbol,
-  };
+  let state = stats ?? readState(ns);
+
+  const priceHistory = state[sym].map((x) => x.price);
+
+  const result = simpleForecast(priceHistory, slice);
+
+  let trendType: TrendType = "SAME";
+
+  if (result.up > result.down) {
+    if (result.up > result.down * 2) {
+      trendType = "VERY_STRONG";
+    } else if (result.up - result.down > 5) {
+      trendType = "STRONG";
+    } else {
+      trendType = "SAME";
+    }
+  } else {
+    if (result.down > result.up * 2) {
+      trendType = "VERY_WEAK";
+    } else if (result.down - result.up > 5) {
+      trendType = "WEAK";
+    } else {
+      trendType = "SAME";
+    }
+  }
+
+  return { ...result, trend: trendType };
 }

@@ -8,4 +8,6 @@ export async function main(ns: NS): Promise<void> {
   darkwebPrograms.forEach((x) => {
     ns.singularity.purchaseProgram(x);
   });
+
+  ns.singularity.connect('home')
 }

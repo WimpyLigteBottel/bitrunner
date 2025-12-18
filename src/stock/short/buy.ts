@@ -1,6 +1,10 @@
 import { NS } from "@ns";
-import { getTrend, getVolatility } from "../stock-utils";
-import { StockMarketSimplified } from "../Models";
+import {
+  getTrend,
+  getVolatility,
+  simpleForecastPricePoint,
+} from "../stock-utils";
+import { StockMarketSimplified, TrendType } from "../Models";
 
 const RESERVE_MONEY = 100_000;
 const MAX_TREND = -0.01; // Negative trend (stock declining)
@@ -27,58 +31,14 @@ export function isPriceHigh(
 export function buyShortStocks(
   ns: NS,
   sym: string,
-  state: Record<string, StockMarketSimplified[]>
+  short: TrendType,
+  mid: TrendType,
+  long: TrendType
 ) {
-  const [, avgBuyPrice, sharesShort, avgShortPrice] =
-    ns.stock.getPosition(sym);
-  const currentPrice = ns.stock.getPrice(sym);
-  const trend = getTrend(ns, sym, 20, state);
-  const volatility = getVolatility(ns, sym, state);
-  const priceHigh = isPriceHigh(ns, sym, PRICE_HIGH_THRESHOLD, state);
-
-  // Inverted logic: want HIGH price, NEGATIVE trend, positive volatility
-  const isGoodShort = priceHigh && trend < MAX_TREND && volatility > 0;
-
-  // Silently skip bad shorts
-  if (!isGoodShort) {
+  if (short == "VERY_WEAK" && mid == "VERY_WEAK" && long == "VERY_WEAK") {
+    ns.print("VERY STRONG WEAK should SHORT!!!! -> " + sym);
     return;
   }
-
-  const maxShares = ns.stock.getMaxShares(sym);
-
-  // Check if we already have a large short position
-  if (sharesShort >= maxShares * 0.9) {
-    return;
-  }
-
-  const { shares, canAfford, debugInfo } = calculateShortPurchaseAmount(
-    ns,
-    sym,
-    sharesShort
-  );
-
-  if (!canAfford) {
-    return;
-  }
-
-  // Buy short position
-  const shortPrice = ns.stock.buyShort(sym, shares);
-
-  if (shortPrice === 0) {
-    return;
-  }
-
-  const finalPosition = ns.stock.getPosition(sym);
-  ns.print(
-    `  ✅ SHORTED ${finalPosition[2]} shares @ avg $${ns.formatNumber(
-      finalPosition[3]
-    )}`
-  );
-  ns.print(
-    `  📉 Betting on decline from $${ns.formatNumber(currentPrice)} (trend: ${(
-      trend * 100
-    ).toFixed(2)}%)`
-  );
 }
 
 function calculateShortPurchaseAmount(

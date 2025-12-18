@@ -3,16 +3,11 @@
 import { NS } from "@ns";
 import { initState, readState } from "./state";
 import { openTail } from "/models/debug";
-import {
-  simpleForecast,
-  simpleForecastPricePoint,
-  waitForStockTick,
-} from "./stock-utils";
+import { getVolatility, simpleForecastPricePoint, waitForStockTick } from "./stock-utils";
 import { sellLongStocks } from "./long/sell";
 import { buyLongStocks } from "./long/buy";
 import { buyShortStocks } from "./short/buy";
 import { sellShortStocks } from "./short/sell";
-import { PricePoint, StockMarketSimplified } from "./Models";
 
 const MIN_HISTORY = 30; // Need at least 30 data points before trading
 
@@ -23,7 +18,6 @@ export async function main(ns: NS) {
   initState(ns);
 
   while (true) {
-    getStockFocus(ns);
     await waitForStockTick(ns);
 
     // Trading logic
@@ -38,56 +32,17 @@ export async function main(ns: NS) {
         continue;
       }
 
-      sellLongStocks(ns, sym, state);
-      buyLongStocks(ns, sym, state);
+      // Short window trend = stability check, NOT direction
+      const shortTrend = simpleForecastPricePoint(ns, sym, 20, state);
+      const midTrend = simpleForecastPricePoint(ns, sym, 50, state);
+      const longTrend = simpleForecastPricePoint(ns, sym, 100, state);
 
-      buyShortStocks(ns, sym, state);
-      sellShortStocks(ns, sym, state);
+      const spread = getVolatility(sym,state)
+
+      sellLongStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
+      buyLongStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
+      // buyShortStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
+      // sellShortStocks(ns, sym, state);
     }
   }
-}
-
-function getStockFocus(ns: NS) {
-  let result: Record<string, PricePoint[]> = {};
-  for (const sym of ns.stock.getSymbols()) {
-    let state = readState(ns);
-
-    let pricePoint: PricePoint[] = state[sym].map((x) => {
-      return {
-        symbol: sym,
-        ...x,
-      };
-    });
-
-    result[sym] = pricePoint;
-  }
-
-  let focus = [] as any[];
-
-  Object.values(result)
-    .filter(
-      (x) =>
-        simpleForecastPricePoint(x).increases >
-        simpleForecastPricePoint(x).decreases
-    )
-    .toSorted((b, a) => {
-      let aV =
-        simpleForecastPricePoint(a).increases -
-        simpleForecastPricePoint(a).decreases;
-
-      let bV =
-        simpleForecastPricePoint(b).increases 
-        simpleForecastPricePoint(b).decreases;
-
-      return aV - bV;
-    })
-    .forEach((x) => {
-      focus.push(simpleForecastPricePoint(x));
-    });
-
-  for (const stock of focus.slice(0, 5)) {
-    ns.print(JSON.stringify(stock) +"  VS   " + JSON.stringify(stock));
-  }
-
-  ns.print("XXXXX")
 }

@@ -16,9 +16,9 @@ export function printDone(
   };
 
   if (DEBUG) {
-    ns.tprint(`${message}`);
+    ns.tprint(`${JSON.stringify(message)}`);
   } else {
-    ns.print(`${message}`);
+    ns.print(`${JSON.stringify(message)}`);
   }
 }
 

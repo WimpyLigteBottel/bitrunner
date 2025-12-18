@@ -20,13 +20,13 @@ export function createGrowThreads(
 
   // Safety scaling by hack percentage
   if (targetPercentage >= 0.75) {
-    threads *= 2.0; // 100% extra for 75%+ hacks
+    threads *= 4.0; // 100% extra for 75%+ hacks
   } else if (targetPercentage >= 0.5) {
-    threads *= 1.5; // 50% extra for 50-75% hacks
+    threads *= 3; // 50% extra for 50-75% hacks
   } else if (targetPercentage >= 0.25) {
-    threads *= 1.25; // 25% extra for 25-50% hacks
+    threads *= 1.5; // 25% extra for 25-50% hacks
   } else if (targetPercentage >= 0.1) {
-    threads *= 1.15; // 15% extra for 10-25% hacks
+    threads *= 1.3; // 15% extra for 10-25% hacks
   } else {
     threads *= 1.05; // 5% extra for <10% hacks
   }
