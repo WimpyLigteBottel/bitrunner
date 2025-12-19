@@ -25,6 +25,8 @@ export async function main(ns: NS): Promise<void> {
     "8.Backoor all servers",
     "9.Upgrade home",
     "A.Factions invites",
+    "B.Stock record + reset",
+    "C.Stock trading",
   ].join("\n");
 
   let scriptsToBoot = ns.args[0] as string;
@@ -80,4 +82,12 @@ export async function main(ns: NS): Promise<void> {
     ns.exec("singularity/factions.js", "home", 1);
   }
 
+  if (scriptsToBoot.includes("B")) {
+    ns.exec("stock/reset.js", "home", 1);
+    ns.exec("stock/stock-record.js", "home", 1);
+  }
+
+  if (scriptsToBoot.includes("C")) {
+    ns.exec("stock/trader-without4s", "home", 1);
+  }
 }

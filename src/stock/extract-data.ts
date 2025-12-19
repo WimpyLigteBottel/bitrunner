@@ -29,6 +29,8 @@ export async function main(ns: NS): Promise<void> {
     type: "text",
   })) as string;
 
+  choice = choice.trim()
+
   openTail(ns, true);
   ns.ui.resizeTail(1010, 600, ns.getRunningScript()?.pid);
 

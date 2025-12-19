@@ -8,7 +8,8 @@ export async function main(ns: NS): Promise<void> {
   ns.clearLog();
   let knownServers = getKnownServers(ns)
     .filter((x) => x.requiredHackingSkill! < ns.getPlayer().skills.hacking)
-    .filter((x) => !x.purchasedByPlayer);
+    .filter((x) => !x.purchasedByPlayer)
+    .toSorted((b,a)=> a.requiredHackingSkill! - b.requiredHackingSkill!);
 
   // prints all servers that can be backdoored
   //ns.print(knownServers.map((x) => x.hostname));

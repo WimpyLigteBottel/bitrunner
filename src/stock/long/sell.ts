@@ -15,7 +15,11 @@ export function sellLongStocks(
     return;
   }
 
-  if (short == "WEAK" || (short == "SAME" && mid == "WEAK" && long == "WEAK")) {
+  if (
+    short == "WEAK" ||
+    (short == "SAME" && mid == "WEAK" && long == "WEAK") ||
+    (short == "SAME" && mid == "STRONG" && long == "STRONG") // double check this line
+  ) {
     sellShares(ns, sym, `Losing money`);
     return;
   }

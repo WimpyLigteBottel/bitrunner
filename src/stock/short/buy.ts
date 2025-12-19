@@ -1,32 +1,8 @@
 import { NS } from "@ns";
-import {
-  getTrend,
-  getVolatility,
-  simpleForecastPricePoint,
-} from "../stock-utils";
-import { StockMarketSimplified, TrendType } from "../Models";
+import { getSpread } from "../stock-utils";
+import { TrendType } from "../Models";
 
-const RESERVE_MONEY = 100_000;
-const MAX_TREND = -0.01; // Negative trend (stock declining)
-const PRICE_HIGH_THRESHOLD = 1.03; // Price is high relative to history
-const COMMISSION = 100_000;
-
-export function isPriceHigh(
-  ns: NS,
-  sym: string,
-  threshold: number,
-  state: Record<string, StockMarketSimplified[]>
-): boolean {
-  const history = state[sym];
-  if (!history || history.length < 20) return false;
-
-  const prices = history.map((s) => s.price);
-  const maxPrice = Math.max(...prices);
-  const currentPrice = ns.stock.getPrice(sym);
-
-  // True if current price is >= threshold times the max (e.g., at 103% of peak)
-  return currentPrice >= maxPrice * threshold;
-}
+const RESERVE_MONEY = 1_000_000;
 
 export function buyShortStocks(
   ns: NS,
@@ -36,36 +12,48 @@ export function buyShortStocks(
   long: TrendType
 ) {
   if (short == "VERY_WEAK" && mid == "VERY_WEAK" && long == "VERY_WEAK") {
-    ns.print("VERY STRONG WEAK should SHORT!!!! -> " + sym);
+    buy(ns, sym, `for ${sym}`);
     return;
   }
+}
+
+function buy(ns: NS, sym: string, reason?: string) {
+  const spread = `${getSpread(ns, sym).toFixed(4)}%`;
+
+  const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
+    ns.stock.getPosition(sym);
+
+  const { shares, canAfford } = calculateShortPurchaseAmount(
+    ns,
+    sym,
+    sharesShort
+  );
+  if (!canAfford || shares === 0) return;
+
+  const priceBoughtAt = ns.stock.buyShort(sym, shares);
+  if (priceBoughtAt === 0) return;
+  ns.print(`✅ BOUGHT ${shares} - ${reason} @ ${priceBoughtAt.toFixed(2)}`);
 }
 
 function calculateShortPurchaseAmount(
   ns: NS,
   symbol: string,
   currentShortShares: number
-): { shares: number; canAfford: boolean; debugInfo: any } {
+): { shares: number; canAfford: boolean } {
   const playerMoney = ns.getServerMoneyAvailable("home");
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
 
-  const minimumRequired = RESERVE_MONEY + COMMISSION + currentPrice;
+  const minimumRequired = RESERVE_MONEY + currentPrice;
 
   if (playerMoney <= minimumRequired) {
     return {
       shares: 0,
       canAfford: false,
-      debugInfo: {
-        playerMoney,
-        availableMoney: 0,
-        affordableShares: 0,
-        maxShares,
-      },
     };
   }
 
-  const availableMoney = playerMoney - RESERVE_MONEY - COMMISSION;
+  const availableMoney = playerMoney - RESERVE_MONEY;
   const affordableShares = Math.floor(availableMoney / currentPrice);
 
   const remainingShares = maxShares - currentShortShares;
@@ -74,12 +62,5 @@ function calculateShortPurchaseAmount(
   return {
     shares: sharesToShort,
     canAfford: sharesToShort > 0,
-    debugInfo: {
-      playerMoney,
-      availableMoney,
-      affordableShares,
-      remainingShares,
-      maxShares,
-    },
   };
 }

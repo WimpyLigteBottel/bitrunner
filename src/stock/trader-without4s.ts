@@ -3,7 +3,7 @@
 import { NS } from "@ns";
 import { initState, readState } from "./state";
 import { openTail } from "/models/debug";
-import { getVolatility, simpleForecastPricePoint, waitForStockTick } from "./stock-utils";
+import { simpleForecastPricePoint, waitForStockTick } from "./stock-utils";
 import { sellLongStocks } from "./long/sell";
 import { buyLongStocks } from "./long/buy";
 import { buyShortStocks } from "./short/buy";
@@ -37,12 +37,28 @@ export async function main(ns: NS) {
       const midTrend = simpleForecastPricePoint(ns, sym, 50, state);
       const longTrend = simpleForecastPricePoint(ns, sym, 100, state);
 
-      const spread = getVolatility(sym,state)
-
-      sellLongStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
+      sellLongStocks(
+        ns,
+        sym,
+        shortTrend.trend,
+        midTrend.trend,
+        longTrend.trend
+      );
       buyLongStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
-      // buyShortStocks(ns, sym, shortTrend.trend, midTrend.trend, longTrend.trend);
-      // sellShortStocks(ns, sym, state);
+      sellShortStocks(
+        ns,
+        sym,
+        shortTrend.trend,
+        midTrend.trend,
+        longTrend.trend
+      );
+      buyShortStocks(
+        ns,
+        sym,
+        shortTrend.trend,
+        midTrend.trend,
+        longTrend.trend
+      );
     }
   }
 }

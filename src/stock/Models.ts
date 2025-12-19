@@ -12,4 +12,12 @@ export type TrendType =
   | "STRONG"
   | "SAME"
   | "WEAK"
-  | "VERY_WEAK";
+  | "VERY_WEAK"
+  | "UNKOWN"
+  ;
+
+export type Trend = {
+  up: number;
+  down: number;
+  trend: TrendType;
+};

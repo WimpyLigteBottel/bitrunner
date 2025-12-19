@@ -11,43 +11,53 @@ export function sellShortStocks(
   const [longShares, avgBuyPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(sym);
 
-  // // Don't try to sell if we don't have any short shares
-  // if (sharesShort === 0) {
-  //   return;
-  // }
+  // Don't try to sell if we don't have any short shares
+  if (sharesShort === 0) {
+    return;
+  }
 
-  // const currentPrice = ns.stock.getPrice(sym);
+  if (short == "STRONG" || short == "VERY_STRONG") {
+    sellShares(ns, sym, `Losing money`);
+    return;
+  }
 
-  // // INVERTED: For shorts, profit when price DROPS
-  // // If we shorted at $100 and price is now $95, that's +5% profit
-  // const profitPercent = (avgShortPrice - currentPrice) / avgShortPrice;
+  if (
+    (short == "SAME" && mid == "WEAK" && long == "WEAK") ||
+    (short == "SAME" && mid == "VERY_WEAK" && long == "VERY_WEAK") // double check this line
+  ) {
+    sellShares(ns, sym, `Losing money`);
+    return;
+  }
 
-  // // Sell short position (closes the short)
-  // const salePrice = ns.stock.sellShort(sym, sharesShort);
+  if (mid == "VERY_STRONG" && long == "VERY_STRONG") {
+    sellShares(ns, sym, `Losing money FAST`);
+    return;
+  }
+}
 
-  // if (salePrice === 0) {
-  //   ns.print(`❌ Failed to sell short ${sym}`);
-  //   return;
-  // }
+function sellShares(ns: NS, sym: string, reason?: string) {
+  const [, , sharesShort, avgShortPrice] = ns.stock.getPosition(sym);
+  const currentPrice = ns.stock.getPrice(sym);
 
-  // // For shorts: profit = (short price - current price) * shares
-  // const totalProfit = (avgShortPrice - salePrice) * sharesShort;
-  // const pShortShares = ns.formatNumber(sharesShort);
-  // const pProfitPercent = (profitPercent * 100).toFixed(2);
-  // const pTotalProfit = ns.formatNumber(totalProfit);
+  const salePrice = ns.stock.sellShort(sym, sharesShort);
 
-  // ns.print(`\n=== CLOSED SHORT ${sym} ===`);
-  // ns.print(`  Shares: ${pShortShares}`);
-  // ns.print(`  Shorted at: $${ns.formatNumber(avgShortPrice)}`);
-  // ns.print(`  Covered at: $${ns.formatNumber(salePrice)}`);
-  // ns.print(`  Profit: $${pTotalProfit} (${pProfitPercent}%)`);
-  // ns.print(
-  //   `  Reason: ${
-  //     profitPercent < -0.03
-  //       ? "Stop Loss"
-  //       : profitPercent >= 0.05
-  //       ? "Take Profit"
-  //       : "Trend Reversal"
-  //   }`
-  // );
+  if (salePrice === 0) {
+    return;
+  }
+
+  // For shorts: profit = (short price - current price) * shares
+  const totalProfit = (avgShortPrice - salePrice) * sharesShort;
+  const pShortShares = ns.formatNumber(sharesShort);
+  const pProfitPercent = (
+    ((avgShortPrice - currentPrice) / avgShortPrice) *
+    100
+  ).toFixed(2);
+  const pTotalProfit = ns.formatNumber(totalProfit);
+
+  ns.print(`\n=== CLOSED SHORT ${sym} ===`);
+  ns.print(`  Shares: ${pShortShares}`);
+  ns.print(`  Shorted at: $${ns.formatNumber(avgShortPrice)}`);
+  ns.print(`  Covered at: $${ns.formatNumber(salePrice)}`);
+  ns.print(`  Profit: $${pTotalProfit} (${pProfitPercent}%)`);
+  ns.print(`  REASON: ${reason}`);
 }

@@ -1,34 +1,12 @@
 import { NS } from "@ns";
-import { StockMarketSimplified, TrendType } from "./Models";
+import { StockMarketSimplified, Trend, TrendType } from "./Models";
 import { readState } from "./state";
 
-export function getAveragePrice(
-  ns: NS,
-  symbol: string,
-  stats: Record<string, StockMarketSimplified[]>
-) {
-  if (!stats[symbol] || stats[symbol].length === 0) return 0;
+export function getSpread(ns: NS, symbol: string): number {
+  let bid = ns.stock.getBidPrice(symbol);
+  let ask = ns.stock.getAskPrice(symbol);
 
-  const sum = stats[symbol].reduce((acc, point) => acc + point.price, 0);
-  return sum / stats[symbol].length;
-}
-
-// Detect if stock is trending up or down
-export function getTrend(
-  symbol: string,
-  lookback = 20,
-  stats: Record<string, StockMarketSimplified[]>
-) {
-  const recent = stats[symbol].slice(-lookback);
-  const firstHalf = recent.slice(0, lookback / 2);
-  const secondHalf = recent.slice(lookback / 2);
-
-  const firstAvg =
-    firstHalf.reduce((a, b) => a + b.price, 0) / firstHalf.length;
-  const secondAvg =
-    secondHalf.reduce((a, b) => a + b.price, 0) / secondHalf.length;
-
-  return (secondAvg - firstAvg) / firstAvg; // Return trend as percentage
+  return ((ask - bid) / ask) * 100;
 }
 
 export function getVolatility(
@@ -61,13 +39,7 @@ export async function waitForStockTick(ns: NS, symbol = "WDS") {
   }
 }
 
-export function simpleForecast(
-  priceHistory: number[],
-  slice = 100
-): {
-  up: number;
-  down: number;
-} {
+export function simpleForecast(priceHistory: number[], slice = 100): Trend {
   const recent = priceHistory.slice(-slice);
   let inc = 0;
   let dec = 0;
@@ -76,7 +48,7 @@ export function simpleForecast(
     if (recent[i] > recent[i - 1]) inc++;
     if (recent[i] < recent[i - 1]) dec++;
   }
-  return { up: inc, down: dec };
+  return { up: inc, down: dec, trend: "UNKOWN" };
 }
 
 export function simpleForecastPricePoint(
@@ -84,11 +56,7 @@ export function simpleForecastPricePoint(
   sym: string,
   slice: number,
   stats: Record<string, StockMarketSimplified[]> | undefined
-): {
-  up: number;
-  down: number;
-  trend: TrendType;
-} {
+): Trend {
   let state = stats ?? readState(ns);
 
   const priceHistory = state[sym].map((x) => x.price);
@@ -100,7 +68,7 @@ export function simpleForecastPricePoint(
   if (result.up > result.down) {
     if (result.up > result.down * 2) {
       trendType = "VERY_STRONG";
-    } else if (result.up - result.down > 5) {
+    } else if (result.up > result.down * 1.2) {
       trendType = "STRONG";
     } else {
       trendType = "SAME";
@@ -108,12 +76,12 @@ export function simpleForecastPricePoint(
   } else {
     if (result.down > result.up * 2) {
       trendType = "VERY_WEAK";
-    } else if (result.down - result.up > 5) {
+    } else if (result.down > result.up * 1.2) {
       trendType = "WEAK";
     } else {
       trendType = "SAME";
     }
   }
 
-  return { ...result, trend: trendType };
+  return { ...result, trend: trendType! };
 }
