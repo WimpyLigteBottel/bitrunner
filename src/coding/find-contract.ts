@@ -1,17 +1,12 @@
 import { CodingContractObject, NS } from "@ns";
 import { getKnownServers } from "/util/find";
-import { solve } from "./solvers/total-ways-to-sum";
 import { disableLogs } from "/models/debug";
+import { solveContract } from "./solveContract";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
 
-  let contracts: CodingContractObject[] = findAllContracts(ns);
-
-  let choice = (await ns.prompt(`WHat is the number`, {
-    type: "text",
-  })) as string;
-  ns.print(solve(parseInt(choice!)));
+  findAllContracts(ns);
 }
 
 function findAllContracts(ns: NS): CodingContractObject[] {
@@ -23,7 +18,13 @@ function findAllContracts(ns: NS): CodingContractObject[] {
     const contracts = files
       .filter((file) => file.endsWith(".cct"))
       .map((file) => {
-        return ns.codingcontract.getContract(file, server.hostname);
+        let contract = ns.codingcontract.getContract(file, server.hostname);
+
+        let answer = solveContract(ns, contract, file, server.hostname);
+
+        ns.print(answer);
+
+        return contract;
       });
 
     if (contracts.length > 0) {

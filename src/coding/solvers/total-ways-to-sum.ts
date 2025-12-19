@@ -1,17 +1,4 @@
-import { NS } from "@ns";
-import { disableLogs } from "/models/debug";
-
 let memo: any = {};
-
-export async function main(ns: NS): Promise<void> {
-  disableLogs(ns);
-
-  let choice = (await ns.prompt(`What is the input?`, {
-    type: "text",
-  })) as string;
-
-  ns.tprint(solve(parseInt(choice!)));
-}
 
 export function solve(target: number) {
   return partition(target, target - 1);
