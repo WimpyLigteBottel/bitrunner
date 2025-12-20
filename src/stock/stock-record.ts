@@ -26,7 +26,7 @@ export function recordPrice(
   ns: NS,
   symbol: string,
   state: Record<string, StockMarketSimplified[]>,
-  limit = 200
+  limit = 201
 ) {
   const newValue: StockMarketSimplified = {
     price: ns.stock.getPrice(symbol),

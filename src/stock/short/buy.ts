@@ -21,8 +21,6 @@ export function buyShortStocks(
 }
 
 function buy(ns: NS, sym: string, reason: string, long: TrendType) {
-  const spread = `${getSpread(ns, sym).toFixed(4)}%`;
-
   const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(sym);
 
@@ -35,7 +33,6 @@ function buy(ns: NS, sym: string, reason: string, long: TrendType) {
   if (!canAfford || shares === 0) return;
 
   if (!isTradeWorthIt(ns, sym, shares, expectedMoveByTrend(long))) {
-    ns.print(`SKIP -> ${sym} (position too small or move too weak)`);
     return;
   }
 

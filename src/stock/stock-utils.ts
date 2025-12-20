@@ -39,7 +39,7 @@ export async function waitForStockTick(ns: NS, symbol = "WDS") {
   }
 }
 
-export function simpleForecast(priceHistory: number[], slice = 100): Trend {
+function simpleForecast(priceHistory: number[], slice = 100): Trend {
   const recent = priceHistory.slice(-slice);
   let inc = 0;
   let dec = 0;
@@ -61,7 +61,7 @@ export function simpleForecastPricePoint(
 
   const priceHistory = state[sym].map((x) => x.price);
 
-  const result = simpleForecast(priceHistory, slice);
+  const result = simpleForecast(priceHistory, slice + 1);
 
   let trendType: TrendType = "SAME";
 

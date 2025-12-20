@@ -38,7 +38,6 @@ function buy(ns: NS, sym: string, logTrend: TrendType) {
   if (shares === 0) return;
 
   if (!isTradeWorthIt(ns, sym, shares, expectedMoveByTrend(logTrend))) {
-    ns.print(`SKIP -> ${sym} (position too small or move too weak)`);
     return;
   }
 
