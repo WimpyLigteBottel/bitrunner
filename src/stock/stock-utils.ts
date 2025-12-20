@@ -85,3 +85,50 @@ export function simpleForecastPricePoint(
 
   return { ...result, trend: trendType! };
 }
+
+export const globalStockList = [
+  { hostname: "aerocorp",          symbol: "AERO"  },
+  { hostname: "alpha-ent",         symbol: "APHE"  },
+  { hostname: "blade",             symbol: "BLD"   },
+  { hostname: "clarkinc",          symbol: "CLRK"  },
+  { hostname: "comptek",           symbol: "CTK"   },
+  { hostname: "catalyst",          symbol: "CTYS"  },
+  { hostname: "defcomm",           symbol: "DCOMM" },
+  { hostname: "ecorp",             symbol: "ECP"   },
+  { hostname: "fulcrumassets",     symbol: "FLCM"  },
+  { hostname: "foodnstuff",        symbol: "FNS"   },
+  { hostname: "4sigma",            symbol: "FSIG"  },
+  { hostname: "global-pharm",      symbol: "GPH"   },
+  { hostname: "helios",            symbol: "HLS"   },
+  { hostname: "icarus",            symbol: "ICRS"  },
+  { hostname: "joesguns",          symbol: "JGN"   },
+  { hostname: "kuai-gong",         symbol: "KGI"   },
+  { hostname: "lexo-corp",         symbol: "LXO"   },
+  { hostname: "microdyne",         symbol: "MDYN"  },
+  { hostname: "megacorp",          symbol: "MGCP"  },
+  { hostname: "netlink",           symbol: "NTLK"  },
+  { hostname: "nova-med",          symbol: "NVMD"  },
+  { hostname: "omega-net",         symbol: "OMGA"  },
+  { hostname: "omnia",             symbol: "OMN"   },
+  { hostname: "stormtech",         symbol: "STM"   },
+];
+
+
+export function isTrendingUp(ns: NS, hostname: string): Boolean {
+  let result = globalStockList.find((x) => x.hostname == hostname);
+
+  if (result == undefined) return false;
+
+  let forecast = simpleForecastPricePoint(ns, result.symbol, 10, readState(ns));
+
+  switch (forecast.trend) {
+    case "VERY_STRONG":
+    case "STRONG":
+    case "SAME":
+      return true;
+    case "WEAK":
+    case "VERY_WEAK":
+    default:
+      return false;
+  }
+}

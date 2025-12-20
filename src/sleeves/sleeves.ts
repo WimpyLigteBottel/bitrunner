@@ -1,7 +1,7 @@
 import { NS, SleevePerson } from "@ns";
 import { openTail, disableLogs } from "/models/debug";
-import { isAllSynced, syncAllSleeves } from "./sync";
-import { isAllRecovered, recoverAllSleeves } from "./recover";
+import { syncAllSleeves } from "./sync";
+import { recoverAllSleeves } from "./recover";
 import { trainAllSleeves } from "./train";
 import { buyAugsForSleeves } from "./buyAugsForSleeves";
 
@@ -17,6 +17,7 @@ const updateSleeveMap = (ns: NS) => {
 
   return map;
 };
+
 export async function main(ns: NS): Promise<void> {
   openTail(ns);
   disableLogs(ns);
@@ -24,13 +25,17 @@ export async function main(ns: NS): Promise<void> {
   // Try not to loop this as to save RAM since this is quite expense
 
   while (true) {
+    await ns.sleep(5000);
     updateSleeveMap(ns);
+
+    //setup sleeves
     recoverAllSleeves(ns);
     syncAllSleeves(ns);
+
+    //now sleeves can work
     trainAllSleeves(ns);
     buyAugsForSleeves(ns);
     respawnScript(ns);
-    await ns.sleep(5000);
   }
 }
 

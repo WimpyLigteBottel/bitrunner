@@ -13,11 +13,17 @@ export type TrendType =
   | "SAME"
   | "WEAK"
   | "VERY_WEAK"
-  | "UNKOWN"
-  ;
+  | "UNKOWN";
 
 export type Trend = {
   up: number;
   down: number;
   trend: TrendType;
 };
+
+export type ServerToSymbol = {
+  hostname: string;
+  symbol: string;
+};
+
+

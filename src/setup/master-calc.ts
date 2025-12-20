@@ -1,10 +1,11 @@
 import { NS } from "@ns";
 import { createBatchOptimal } from "/base/batcher";
 import { disableLogs, openTail, pTime } from "../models/debug";
-import { BUFFER, CustomServerV2 } from "/models/Models";
+import { BUFFER, CustomServerV2, TASK_NAME } from "/models/Models";
 import { getCustomServer } from "/util/serverCustomStats";
 import { notPreppedServers } from "/util/preppedServers";
 import { getKnownServers } from "/util/find";
+import { isTrendingUp } from "/stock/stock-utils";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
@@ -33,6 +34,7 @@ export async function main(ns: NS): Promise<void> {
       try {
         let server = await nextUsableServer(ns);
         let batch = await createBatchOptimal(ns, target.hostname, server);
+        let affectStock = isStockAndIsTrendingUp(ns, target.hostname);
 
         for (const task of batch.tasks) {
           const additionalMsec = Math.max(
@@ -47,7 +49,7 @@ export async function main(ns: NS): Promise<void> {
             // arguments
             batch.server, // target
             additionalMsec, // sleep
-            true, // affect stock
+            task.name == affectStock, // affect stock
             `Threads ${task.threads}`
           );
           offset += BUFFER;
@@ -66,6 +68,19 @@ export async function main(ns: NS): Promise<void> {
       }
     }
   }
+}
+/**
+ * 
+ * @param ns This is to indicate if stock market should be affected
+ * @param hostname 
+ * @returns 
+ */
+function isStockAndIsTrendingUp(ns: NS, hostname: string) {
+  if (isTrendingUp(ns, hostname)) {
+    return TASK_NAME.g;
+  }
+
+  return TASK_NAME.h;
 }
 
 async function noMoreServers(
