@@ -2,7 +2,7 @@ import { NS } from "@ns";
 import { TrendType } from "../Models";
 import { getSpread } from "../stock-utils";
 
-const RESERVE_MONEY = 1_000_000;
+const RESERVE_MONEY = 10_000_000;
 
 const COMMISSION = 200_000; // buy + sell
 const MIN_SHARE_VALUE = 5_000_000; // position size floor
@@ -33,17 +33,16 @@ export function buyLongStocks(
 function buy(ns: NS, sym: string, logTrend: TrendType) {
   const [longShares] = ns.stock.getPosition(sym);
 
-  const { shares, canAfford } = calculatePurchaseAmount(ns, sym, longShares);
+  const { shares } = calculatePurchaseAmount(ns, sym, longShares);
 
-  const spread = `${getSpread(ns, sym).toFixed(4)}%`;
-
-  if (!canAfford || shares === 0) return;
+  if (shares === 0) return;
 
   if (!isTradeWorthIt(ns, sym, shares, expectedMoveByTrend(logTrend))) {
     ns.print(`SKIP -> ${sym} (position too small or move too weak)`);
     return;
   }
 
+  const spread = `${getSpread(ns, sym).toFixed(4)}%`;
   const priceBoughtAt = ns.stock.buyStock(sym, shares);
 
   if (priceBoughtAt === 0) return;
@@ -56,7 +55,7 @@ function calculatePurchaseAmount(
   ns: NS,
   symbol: string,
   currentShares: number
-): { shares: number; canAfford: boolean } {
+): { shares: number } {
   const playerMoney = ns.getServerMoneyAvailable("home");
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
@@ -66,19 +65,22 @@ function calculatePurchaseAmount(
   if (playerMoney <= minimumRequired) {
     return {
       shares: 0,
-      canAfford: false,
     };
   }
 
-  const availableMoney = playerMoney - RESERVE_MONEY;
-  const affordableShares = Math.floor(availableMoney / currentPrice);
+  const affordableShares = Math.floor(playerMoney / currentPrice);
 
   const remainingShares = maxShares - currentShares;
   const sharesToBuy = Math.min(affordableShares, remainingShares);
 
+  if (currentPrice * sharesToBuy < RESERVE_MONEY) {
+    return {
+      shares: 0,
+    };
+  }
+
   return {
     shares: sharesToBuy,
-    canAfford: sharesToBuy > 0,
   };
 }
 

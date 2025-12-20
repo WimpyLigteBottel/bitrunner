@@ -56,7 +56,7 @@ export async function main(ns: NS): Promise<void> {
         let shouldExit = await noMoreServers(ns, e as Error, target, offset);
         if (shouldExit) {
           currentProductionByScript(ns);
-          offset = 0
+          offset = 0;
           break;
         }
 

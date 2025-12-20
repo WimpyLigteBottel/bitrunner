@@ -2,11 +2,7 @@ import { NS } from "@ns";
 import { disableLogs, openTail } from "/models/debug";
 import { readState } from "./state";
 import { StockMarketSimplified } from "./Models";
-import {
-  getVolatility,
-  simpleForecastPricePoint,
-  waitForStockTick,
-} from "./stock-utils";
+import { simpleForecastPricePoint, waitForStockTick } from "./stock-utils";
 
 let choice: string;
 
@@ -17,19 +13,12 @@ export async function main(ns: NS): Promise<void> {
   ns.clearLog();
 
   let symbols = ns.stock.getSymbols().toSorted();
-  //   const choice = (await ns.prompt(
-  //     "What stock are you looking for? " + symbols,
-  //     {
-  //       type: "select",
-  //       choices: symbols,
-  //     }
-  //   )) as string;
 
   choice = (await ns.prompt("What stock are you looking for? " + symbols, {
     type: "text",
   })) as string;
 
-  choice = choice.trim()
+  choice = choice.trim();
 
   openTail(ns, true);
   ns.ui.resizeTail(1010, 600, ns.getRunningScript()?.pid);
@@ -91,10 +80,32 @@ export function asciiGraph(
   let spread = ns.stock.getAskPrice(choice) - ns.stock.getBidPrice(choice);
   ns.print(`Spread: $` + ns.formatNumber(spread));
 
-  let climbNeeded = spread / ns.stock.getAskPrice(choice);
-  ns.print(`Climb needed: ` + climbNeeded * 100 + "%");
-  ns.print(`Volatility: ` + getVolatility(choice, state));
+  printTrends(ns, state);
 
+  ns.print("─".repeat(width + (showValues ? 10 : 0)));
+
+  // Graph body
+  rows.forEach((row, i) => {
+    let label = "";
+    if (showValues) {
+      const value = max - (i / (height - 1)) * range;
+      label = value.toFixed(2).padStart(7) + " | ";
+    }
+    ns.print(label + row.join(""));
+  });
+}
+
+function printTrends(ns: NS, state: Record<string, StockMarketSimplified[]>) {
+  ns.print(
+    `Possible cast (200): ${JSON.stringify(
+      simpleForecastPricePoint(ns, choice, 200, state)
+    )}`
+  );
+  ns.print(
+    `Possible cast (150): ${JSON.stringify(
+      simpleForecastPricePoint(ns, choice, 150, state)
+    )}`
+  );
   ns.print(
     `Possible cast (100): ${JSON.stringify(
       simpleForecastPricePoint(ns, choice, 100, state)
@@ -110,16 +121,4 @@ export function asciiGraph(
       simpleForecastPricePoint(ns, choice, 20, state)
     )}`
   );
-
-  ns.print("─".repeat(width + (showValues ? 10 : 0)));
-
-  // Graph body
-  rows.forEach((row, i) => {
-    let label = "";
-    if (showValues) {
-      const value = max - (i / (height - 1)) * range;
-      label = value.toFixed(2).padStart(7) + " | ";
-    }
-    ns.print(label + row.join(""));
-  });
 }

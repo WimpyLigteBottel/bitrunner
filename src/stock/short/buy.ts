@@ -2,7 +2,10 @@ import { NS } from "@ns";
 import { getSpread } from "../stock-utils";
 import { TrendType } from "../Models";
 
-const RESERVE_MONEY = 1_000_000;
+const RESERVE_MONEY = 10_000_000;
+
+const COMMISSION = 200_000; // buy + sell
+const MIN_SHARE_VALUE = 5_000_000; // position size floor
 
 export function buyShortStocks(
   ns: NS,
@@ -12,12 +15,12 @@ export function buyShortStocks(
   long: TrendType
 ) {
   if (short == "VERY_WEAK" && mid == "VERY_WEAK" && long == "VERY_WEAK") {
-    buy(ns, sym, `for ${sym}`);
+    buy(ns, sym, `for ${sym}`, long);
     return;
   }
 }
 
-function buy(ns: NS, sym: string, reason?: string) {
+function buy(ns: NS, sym: string, reason: string, long: TrendType) {
   const spread = `${getSpread(ns, sym).toFixed(4)}%`;
 
   const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
@@ -28,11 +31,37 @@ function buy(ns: NS, sym: string, reason?: string) {
     sym,
     sharesShort
   );
+
   if (!canAfford || shares === 0) return;
+
+  if (!isTradeWorthIt(ns, sym, shares, expectedMoveByTrend(long))) {
+    ns.print(`SKIP -> ${sym} (position too small or move too weak)`);
+    return;
+  }
 
   const priceBoughtAt = ns.stock.buyShort(sym, shares);
   if (priceBoughtAt === 0) return;
   ns.print(`✅ BOUGHT ${shares} - ${reason} @ ${priceBoughtAt.toFixed(2)}`);
+}
+
+function isTradeWorthIt(
+  ns: NS,
+  sym: string,
+  shares: number,
+  expectedMovePct: number // already in %
+): boolean {
+  const price = ns.stock.getPrice(sym);
+
+  const positionValue = shares * price;
+
+  const spreadPct = getSpread(ns, sym); // e.g. 0.85
+  const spreadCost = positionValue * (spreadPct / 100);
+
+  const expectedGain = positionValue * (expectedMovePct / 100);
+
+  return (
+    positionValue >= MIN_SHARE_VALUE && expectedGain > COMMISSION + spreadCost
+  );
 }
 
 function calculateShortPurchaseAmount(
@@ -63,4 +92,17 @@ function calculateShortPurchaseAmount(
     shares: sharesToShort,
     canAfford: sharesToShort > 0,
   };
+}
+
+function expectedMoveByTrend(long: TrendType): number {
+  switch (long) {
+    case "VERY_STRONG":
+      return 1.0; // 1.0%
+    case "STRONG":
+      return 0.6; // 0.6%
+    case "WEAK":
+      return 0.3; // 0.3%
+    default:
+      return 0.0;
+  }
 }
