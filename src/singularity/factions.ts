@@ -15,8 +15,9 @@ export async function main(ns: NS): Promise<void> {
   while (true) {
     let factions = ns.getPlayer().factions.filter((x) => {
       let isInGang = ns.gang.inGang();
-      let gangName = ns.gang.getGangInformation().faction;
-      return !isInGang || (isInGang && gangName != x);
+      return (
+        !isInGang || (isInGang && ns.gang.getGangInformation().faction != x)
+      );
     });
 
     for (const faction of factions) {

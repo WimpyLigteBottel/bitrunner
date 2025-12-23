@@ -36,30 +36,6 @@ export async function main(ns: NS) {
     for (let i = 0; i < longs.length; i++) {
       let symLong = longs[i].sym;
       let symShort = shorts[i].sym;
-
-      if (DEBUG) {
-        if (i == 0) {
-          ns.print(`Maybe the best! long: ${symLong} | short: ${symShort}`);
-        } else if (i == longs.length - 1) {
-          ns.print(`Maybe the WORST! long: ${symLong} | short: ${symShort}`);
-        }
-      }
-
-      buyLongStocks(
-        ns,
-        symLong,
-        simpleForecastPricePoint(ns, symLong, 20, state).trend,
-        simpleForecastPricePoint(ns, symLong, 50, state).trend,
-        simpleForecastPricePoint(ns, symLong, 100, state).trend
-      );
-      buyShortStocks(
-        ns,
-        symShort,
-        simpleForecastPricePoint(ns, symShort, 20, state).trend,
-        simpleForecastPricePoint(ns, symShort, 50, state).trend,
-        simpleForecastPricePoint(ns, symShort, 100, state).trend
-      );
-
       sellLongStocks(
         ns,
         symLong,
@@ -74,6 +50,35 @@ export async function main(ns: NS) {
         simpleForecastPricePoint(ns, symShort, 50, state).trend,
         simpleForecastPricePoint(ns, symShort, 100, state).trend
       );
+    }
+
+    for (let i = 0; i < longs.length; i++) {
+      let symLong = longs[i].sym;
+      let symShort = shorts[i].sym;
+
+      if (DEBUG) {
+        if (i == 0) {
+          ns.print(`Maybe the best! long: ${symLong} | short: ${symShort}`);
+        }
+      }
+
+      let bought = buyLongStocks(
+        ns,
+        symLong,
+        simpleForecastPricePoint(ns, symLong, 20, state).trend,
+        simpleForecastPricePoint(ns, symLong, 50, state).trend,
+        simpleForecastPricePoint(ns, symLong, 100, state).trend
+      );
+
+      if (bought) break;
+      bought = buyShortStocks(
+        ns,
+        symShort,
+        simpleForecastPricePoint(ns, symShort, 20, state).trend,
+        simpleForecastPricePoint(ns, symShort, 50, state).trend,
+        simpleForecastPricePoint(ns, symShort, 100, state).trend
+      );
+      if (bought) break;
     }
   }
 }

@@ -2,7 +2,7 @@
 
 import { NS } from "@ns";
 import { openTail } from "/models/debug";
-import { waitForStockTick } from "./stock-utils";
+import { getSpread, waitForStockTick } from "./stock-utils";
 import { sellLongStocks } from "./long/sell-smart";
 import { buyLongStocks } from "./long/buy-smart";
 import { sellShortStocks } from "./short/sell-smart";
@@ -19,14 +19,24 @@ export async function main(ns: NS) {
     let longs = getHighest(ns, "LONG");
     let shorts = getHighest(ns, "SHORT");
 
+    //ns.print(`longs ${JSON.stringify(longs[0])}`)
+    //ns.print(`shorts ${JSON.stringify(shorts[0])}`)
     for (let i = 0; i < longs.length; i++) {
-      // Try to buy the best stocks first
-      buyLongStocks(ns, longs[i].sym);
-      buyShortStocks(ns, shorts[i].sym);
-
       // Then sell stocks if not profitable anymore
       sellLongStocks(ns, longs[i].sym);
       sellShortStocks(ns, shorts[i].sym);
+    }
+
+    for (let i = 0; i < longs.length; i++) {
+      if (1 - shorts[i].forecast > longs[i].forecast) {
+        if (buyShortStocks(ns, shorts[i].sym)) {
+          break;
+        }
+      } else {
+        if (buyLongStocks(ns, longs[i].sym)) {
+          break;
+        }
+      }
     }
   }
 }
@@ -34,6 +44,7 @@ export async function main(ns: NS) {
 type SymWithForecast = {
   sym: string;
   forecast: number;
+  volatility?: number;
 };
 
 function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
@@ -43,6 +54,8 @@ function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
       return {
         sym: sym,
         forecast: ns.stock.getForecast(sym),
+        volatility: ns.stock.getVolatility(sym),
+        spread: getSpread(ns, sym),
       } as SymWithForecast;
     })
     .toSorted((a, b) => {

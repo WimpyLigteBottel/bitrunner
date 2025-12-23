@@ -2,28 +2,26 @@ import { NS } from "@ns";
 
 const RESERVE_MONEY = 10_000_000;
 
-export function buyShortStocks(ns: NS, sym: string) {
-  if (ns.stock.getForecast(sym) < 0.5) {
-    return;
+export function buyShortStocks(ns: NS, sym: string): boolean {
+  if (ns.stock.getForecast(sym) > 0.4) {
+    return false;
   }
 
-  const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
-    ns.stock.getPosition(sym);
+  const shares = calculateShortPurchaseAmount(ns, sym);
 
-  const shares = calculateShortPurchaseAmount(ns, sym, sharesShort);
-
-  if (shares === 0) return;
+  if (shares === 0) return false;
 
   const priceBoughtAt = ns.stock.buyShort(sym, shares);
-  if (priceBoughtAt === 0) return;
-  ns.print(`✅ BOUGHT ${shares}  @ ${priceBoughtAt.toFixed(2)}`);
+  if (priceBoughtAt === 0) return false;
+  ns.print(`✅📉 BOUGHT short ${shares}  # ${sym}`);
+
+  return true;
 }
 
-function calculateShortPurchaseAmount(
-  ns: NS,
-  symbol: string,
-  currentShortShares: number
-): number {
+function calculateShortPurchaseAmount(ns: NS, symbol: string): number {
+  const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
+    ns.stock.getPosition(symbol);
+
   const playerMoney = ns.getServerMoneyAvailable("home");
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
@@ -34,10 +32,12 @@ function calculateShortPurchaseAmount(
     return 0;
   }
 
-  const availableMoney = playerMoney - RESERVE_MONEY;
-  const affordableShares = Math.floor(availableMoney / currentPrice);
+  const affordableShares = Math.floor(playerMoney / currentPrice);
 
-  const shares = Math.min(affordableShares, maxShares - currentShortShares);
+  const shares = Math.min(
+    affordableShares,
+    maxShares - (sharesLong + sharesShort)
+  );
 
   if (currentPrice * shares < RESERVE_MONEY) {
     return 0;
