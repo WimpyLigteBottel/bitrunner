@@ -23,10 +23,12 @@ export async function main(ns: NS): Promise<void> {
 
   let counter = 0;
   while (true) {
+    ns.clearLog();
     await ns.sleep(1); // to prevent hainging calls a second
     let target = getTargetServer(ns);
     let firstWeakenFinish = performance.now() + target.weakTime;
     let offset = 0;
+    let affectStock = isStockAndIsTrendingUp(ns, target.hostname);
 
     while (true) {
       await ns.sleep(1); // to prevent hainging calls a second
@@ -34,7 +36,6 @@ export async function main(ns: NS): Promise<void> {
       try {
         let server = await nextUsableServer(ns);
         let batch = await createBatchOptimal(ns, target.hostname, server);
-        let affectStock = isStockAndIsTrendingUp(ns, target.hostname);
 
         for (const task of batch.tasks) {
           const additionalMsec = Math.max(
@@ -69,18 +70,25 @@ export async function main(ns: NS): Promise<void> {
     }
   }
 }
+
 /**
- * 
+ *
  * @param ns This is to indicate if stock market should be affected
- * @param hostname 
- * @returns 
+ * @param hostname
+ * @returns
  */
 function isStockAndIsTrendingUp(ns: NS, hostname: string) {
-  if (isTrendingUp(ns, hostname)) {
+  const trend = isTrendingUp(ns, hostname);
+
+  if (trend == undefined) {
+    return undefined
+  } else if (trend) {
     return TASK_NAME.g;
+  } else if (!trend) {
+    return TASK_NAME.h;
   }
 
-  return TASK_NAME.h;
+  return undefined;
 }
 
 async function noMoreServers(
@@ -145,5 +153,5 @@ function findServersThatCanBeUsed(ns: NS) {
     .filter(
       (server) => server.canExecuteScripts || server.hostname.includes("home")
     )
-    .filter((server) => server.availableRam > 1.75 * 3);
+    .filter((server) => server.availableRam > 1.75 * 10);
 }

@@ -78,14 +78,14 @@ function weakenBatch(
 
   let batch = prepBatch(ns, targetHost, targetPercentage, server);
 
-  batch.tasks[0].delay = batch.tasks[0].delay + BUFFER * 2;
-  batch.tasks[1].delay = batch.tasks[1].delay + BUFFER * 2;
+  batch.tasks[0].delay = batch.tasks[0].delay;
+  batch.tasks[1].delay = batch.tasks[1].delay - BUFFER;
 
   if (weakenTask.threads < batch.tasks[1].threads) {
     batch.tasks[1].threads = batch.tasks[1].threads - weakenTask.threads;
   }
 
-  let tasks = [weakenTask, batch.tasks[0], batch.tasks[1]];
+  let tasks = [batch.tasks[0], batch.tasks[1], weakenTask];
 
   return buildBatch(tasks, targetHost, targetPercentage);
 }

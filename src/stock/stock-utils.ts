@@ -86,49 +86,224 @@ export function simpleForecastPricePoint(
   return { ...result, trend: trendType! };
 }
 
-export const globalStockList = [
-  { hostname: "aerocorp",          symbol: "AERO"  },
-  { hostname: "alpha-ent",         symbol: "APHE"  },
-  { hostname: "blade",             symbol: "BLD"   },
-  { hostname: "clarkinc",          symbol: "CLRK"  },
-  { hostname: "comptek",           symbol: "CTK"   },
-  { hostname: "catalyst",          symbol: "CTYS"  },
-  { hostname: "defcomm",           symbol: "DCOMM" },
-  { hostname: "ecorp",             symbol: "ECP"   },
-  { hostname: "fulcrumassets",     symbol: "FLCM"  },
-  { hostname: "foodnstuff",        symbol: "FNS"   },
-  { hostname: "4sigma",            symbol: "FSIG"  },
-  { hostname: "global-pharm",      symbol: "GPH"   },
-  { hostname: "helios",            symbol: "HLS"   },
-  { hostname: "icarus",            symbol: "ICRS"  },
-  { hostname: "joesguns",          symbol: "JGN"   },
-  { hostname: "kuai-gong",         symbol: "KGI"   },
-  { hostname: "lexo-corp",         symbol: "LXO"   },
-  { hostname: "microdyne",         symbol: "MDYN"  },
-  { hostname: "megacorp",          symbol: "MGCP"  },
-  { hostname: "netlink",           symbol: "NTLK"  },
-  { hostname: "nova-med",          symbol: "NVMD"  },
-  { hostname: "omega-net",         symbol: "OMGA"  },
-  { hostname: "omnia",             symbol: "OMN"   },
-  { hostname: "stormtech",         symbol: "STM"   },
+export let globalStockList = [
+  {
+    hostname: "aerocorp",
+    symbol: "AERO",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "alpha-ent",
+    symbol: "APHE",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "blade",
+    symbol: "BLD",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "clarkinc",
+    symbol: "CLRK",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "comptek",
+    symbol: "CTK",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "catalyst",
+    symbol: "CTYS",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "defcomm",
+    symbol: "DCOMM",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "ecorp",
+    symbol: "ECP",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "fulcrumassets",
+    symbol: "FLCM",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "foodnstuff",
+    symbol: "FNS",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "4sigma",
+    symbol: "FSIG",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "global-pharm",
+    symbol: "GPH",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "helios",
+    symbol: "HLS",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "icarus",
+    symbol: "ICRS",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "joesguns",
+    symbol: "JGN",
+    highest: {
+      high: -1,
+      low: 11,
+    },
+  },
+  {
+    hostname: "kuai-gong",
+    symbol: "KGI",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "lexo-corp",
+    symbol: "LXO",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "microdyne",
+    symbol: "MDYN",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "megacorp",
+    symbol: "MGCP",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "netlink",
+    symbol: "NTLK",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "nova-med",
+    symbol: "NVMD",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "omega-net",
+    symbol: "OMGA",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "omnia",
+    symbol: "OMN",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
+  {
+    hostname: "stormtech",
+    symbol: "STM",
+    highest: {
+      high: 0,
+      low: 1,
+    },
+  },
 ];
 
+export function isTrendingUp(ns: NS, hostname: string): Boolean | undefined {
+  if (!ns.stock.has4SDataTIXAPI()) return undefined;
 
-export function isTrendingUp(ns: NS, hostname: string): Boolean {
   let result = globalStockList.find((x) => x.hostname == hostname);
 
   if (result == undefined) return false;
 
-  let forecast = simpleForecastPricePoint(ns, result.symbol, 10, readState(ns));
+  const forecast = ns.stock.getForecast(result.symbol);
 
-  switch (forecast.trend) {
-    case "VERY_STRONG":
-    case "STRONG":
-    case "SAME":
-      return true;
-    case "WEAK":
-    case "VERY_WEAK":
-    default:
-      return false;
+  if (hostname == result.hostname) {
+    result.highest.high = parseFloat(
+      Math.max(result.highest.high, forecast).toFixed(3)
+    );
+    result.highest.low = parseFloat(
+      Math.min(result.highest.low, forecast).toFixed(3)
+    );
   }
+
+  ns.print(`${JSON.stringify(result)}`);
+
+  if (forecast > 0.9 || forecast < 0.1) {
+    return undefined;
+  }
+
+  return forecast > 0.5;
 }
