@@ -2,6 +2,7 @@ import { NS } from "@ns";
 
 export const activedClash = (ns: NS) => {
   const otherGangs = ns.gang.getOtherGangInformation();
+  const ownGang = ns.gang.getGangInformation();
 
   let minChance = 1; // start at 100%
 
@@ -9,7 +10,7 @@ export const activedClash = (ns: NS) => {
     const chance = ns.gang.getChanceToWinClash(gangName);
     const gang = ns.gang.getOtherGangInformation()[gangName];
 
-    if (gang.territory != 0 && gangName != 'Slum Snakes') {
+    if (gang.territory != 0 && gangName != ownGang.faction) {
       minChance = Math.min(minChance, chance);
     }
   }
