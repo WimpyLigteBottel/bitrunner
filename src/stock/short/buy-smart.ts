@@ -2,10 +2,6 @@ import { NS } from "@ns";
 import { RESERVE_MONEY } from "../Models";
 
 export function buyShortStocks(ns: NS, sym: string): boolean {
-  if (ns.stock.getForecast(sym) > 0.4) {
-    return false;
-  }
-
   const shares = calculateShortPurchaseAmount(ns, sym);
 
   if (shares === 0) return false;

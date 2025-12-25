@@ -291,11 +291,13 @@ export function isTrendingUp(ns: NS, hostname: string): Boolean | undefined {
   const forecast = ns.stock.getForecast(result.symbol);
 
   if (hostname == result.hostname) {
+    result.highest.high = 0;
+    result.highest.low = 1;
     result.highest.high = parseFloat(
       Math.max(result.highest.high, forecast).toFixed(3)
     );
     result.highest.low = parseFloat(
-      Math.min(result.highest.low, forecast).toFixed(3)
+      Math.min(result.highest.low, 1 - forecast).toFixed(3)
     );
   }
 

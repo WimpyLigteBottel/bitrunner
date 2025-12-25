@@ -1,20 +1,20 @@
 import { NS } from "@ns";
 
 export function sellShortStocks(ns: NS, sym: string) {
-  const [, , sharesShort] = ns.stock.getPosition(sym);
-
-  // Don't try to sell if we don't have any short shares
-  if (sharesShort === 0) {
+  if (ns.stock.getForecast(sym) < 0.5) {
     return;
   }
 
-  if (ns.stock.getForecast(sym) > 0.5) {
-    sellShares(ns, sym, "Losing money");
-  }
+  sellShares(ns, sym, "Losing money");
 }
 
 function sellShares(ns: NS, sym: string, reason?: string) {
   const [, , sharesShort, avgShortPrice] = ns.stock.getPosition(sym);
+
+  if (sharesShort === 0) {
+    return;
+  }
+
   const currentPrice = ns.stock.getPrice(sym);
 
   const salePrice = ns.stock.sellShort(sym, sharesShort);

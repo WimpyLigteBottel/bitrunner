@@ -2,7 +2,7 @@
 
 import { NS } from "@ns";
 import { openTail } from "/models/debug";
-import { getSpread, waitForStockTick } from "./stock-utils";
+import { waitForStockTick } from "./stock-utils";
 import { sellLongStocks } from "./long/sell-smart";
 import { buyLongStocks } from "./long/buy-smart";
 import { sellShortStocks } from "./short/sell-smart";
@@ -54,11 +54,8 @@ function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
       return {
         sym: sym,
         forecast: ns.stock.getForecast(sym),
-        volatility: ns.stock.getVolatility(sym),
-        spread: getSpread(ns, sym),
       } as SymWithForecast;
     })
-    .filter((x) => x.forecast > 0.6 || x.forecast < 0.4)
     .toSorted((a, b) => {
       if (type == "LONG") {
         // biggest to smallest for longs

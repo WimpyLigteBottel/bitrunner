@@ -5,9 +5,17 @@ const CYCLE_LENGTH = 1024;
 const PATTERN_MATCH_LENGTH = 24;
 const PREDICTION_LENGTH = 1000;
 
+let headButton;
+let tailButton;
+
 /** @param {NS} ns */
 export async function main(ns: NS) {
   ns.disableLog("sleep");
+
+
+  // for speed improvement
+  headButton = findButton("Head!");
+  tailButton = findButton("Tail!");
 
   setBetAmount(1);
 
@@ -30,9 +38,7 @@ export async function main(ns: NS) {
     ns.print("Collecting current pattern...");
     let currentPattern: string[] = [];
     for (let i = 0; i < PATTERN_MATCH_LENGTH; i++) {
-      let button = findButton("Head!");
-      clickElement(button);
-      await ns.sleep(1);
+      clickElement(headButton);
       currentPattern.push(getResult());
     }
 
@@ -56,20 +62,18 @@ export async function main(ns: NS) {
         (matchIndex + PATTERN_MATCH_LENGTH + i) % recording.length;
       predictions.push(recording[nextIndex]);
     }
-    setBetAmount(10000);
+    setBetAmount(100000);
 
     while (predictions.length > 0) {
       let r = predictions.shift();
 
       if (r == "W") {
-        let button = findButton("Head!");
-        clickElement(button);
+        clickElement(headButton);
       } else {
-        let button = findButton("Tail!");
-        clickElement(button);
+        clickElement(tailButton);
       }
-      await ns.sleep(1);
     }
+    await ns.sleep(0)
   }
 }
 
@@ -116,9 +120,8 @@ function findPatternMatch(recording: string[], pattern: string[]): number {
 async function getTheSequence(ns: NS): Promise<string[]> {
   let recording: string[] = [];
   for (let i = 0; i < CYCLE_LENGTH; i++) {
-    let button = findButton("Head!");
-    clickElement(button);
-    await ns.sleep(1);
+    clickElement(headButton!);
+    await ns.sleep(0);
     recording.push(getResult());
 
     if (i % 100 === 0) {

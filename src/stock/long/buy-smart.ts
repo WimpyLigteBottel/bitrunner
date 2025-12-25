@@ -3,10 +3,6 @@ import { RESERVE_MONEY } from "../Models";
 
 // Stability thresholds (BN8-friendly)
 export function buyLongStocks(ns: NS, sym: string) {
-  if (ns.stock.getForecast(sym) < 0.6) {
-    return false;
-  }
-
   const shares = calculatePurchaseAmount(ns, sym);
 
   if (shares === 0) return false;
