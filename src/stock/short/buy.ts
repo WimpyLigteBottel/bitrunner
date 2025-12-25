@@ -1,7 +1,5 @@
 import { NS } from "@ns";
-import { TrendType } from "../Models";
-
-const RESERVE_MONEY = 10_000_000;
+import { RESERVE_MONEY, TrendType } from "../Models";
 
 export function buyShortStocks(
   ns: NS,
@@ -30,23 +28,21 @@ function buy(ns: NS, sym: string) {
 }
 
 function calculateShortPurchaseAmount(ns: NS, symbol: string): number {
-  const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
-    ns.stock.getPosition(symbol);
-  const playerMoney = ns.getServerMoneyAvailable("home");
+  const [sharesLong, , sharesShort] = ns.stock.getPosition(symbol);
+
+  const playerMoney = ns.getServerMoneyAvailable("home") - 100_000;
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
-
-  const minimumRequired = RESERVE_MONEY + currentPrice;
-
-  if (playerMoney <= minimumRequired) {
-    return 0;
-  }
 
   const availableMoney = playerMoney - RESERVE_MONEY;
   const affordableShares = Math.floor(availableMoney / currentPrice);
 
   const remainingShares = maxShares - sharesShort - sharesLong;
-  const sharesToShort = Math.min(affordableShares, remainingShares);
+  const shares = Math.min(affordableShares, remainingShares);
 
-  return sharesToShort;
+    if (currentPrice * shares < RESERVE_MONEY) {
+    return 0;
+  }
+
+  return shares;
 }

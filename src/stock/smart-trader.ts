@@ -19,9 +19,9 @@ export async function main(ns: NS) {
     let longs = getHighest(ns, "LONG");
     let shorts = getHighest(ns, "SHORT");
 
-    //ns.print(`longs ${JSON.stringify(longs[0])}`)
-    //ns.print(`shorts ${JSON.stringify(shorts[0])}`)
-    for (let i = 0; i < longs.length; i++) {
+    // ns.print(`longs ${JSON.stringify(longs[0])}`)
+    // ns.print(`shorts ${JSON.stringify(shorts[0])}`)
+    for (let i = 0; i < longs.length && i < shorts.length; i++) {
       // Then sell stocks if not profitable anymore
       sellLongStocks(ns, longs[i].sym);
       sellShortStocks(ns, shorts[i].sym);
@@ -58,6 +58,7 @@ function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
         spread: getSpread(ns, sym),
       } as SymWithForecast;
     })
+    .filter((x) => x.forecast > 0.6 || x.forecast < 0.4)
     .toSorted((a, b) => {
       if (type == "LONG") {
         // biggest to smallest for longs

@@ -1,3 +1,5 @@
+export let RESERVE_MONEY = 200_000;
+
 export type StockMarketSimplified = {
   price: number;
   date: number;
@@ -25,5 +27,3 @@ export type ServerToSymbol = {
   hostname: string;
   symbol: string;
 };
-
-

@@ -1,7 +1,5 @@
 import { NS } from "@ns";
-import { TrendType } from "../Models";
-
-const RESERVE_MONEY = 10_000_000;
+import { RESERVE_MONEY, TrendType } from "../Models";
 
 // Stability thresholds (BN8-friendly)
 export function buyLongStocks(
@@ -39,15 +37,10 @@ function calculatePurchaseAmount(ns: NS, symbol: string): number {
   const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(symbol);
 
-  const playerMoney = ns.getServerMoneyAvailable("home");
+  
+  const playerMoney = ns.getServerMoneyAvailable("home") - 100_000;
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
-
-  const minimumRequired = RESERVE_MONEY + currentPrice;
-
-  if (playerMoney <= minimumRequired) {
-    return 0;
-  }
 
   const affordableShares = Math.floor(playerMoney / currentPrice);
 

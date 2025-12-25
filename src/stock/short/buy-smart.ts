@@ -1,6 +1,5 @@
 import { NS } from "@ns";
-
-const RESERVE_MONEY = 10_000_000;
+import { RESERVE_MONEY } from "../Models";
 
 export function buyShortStocks(ns: NS, sym: string): boolean {
   if (ns.stock.getForecast(sym) > 0.4) {
@@ -22,15 +21,14 @@ function calculateShortPurchaseAmount(ns: NS, symbol: string): number {
   const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(symbol);
 
-  const playerMoney = ns.getServerMoneyAvailable("home");
+  if (sharesShort > 0 || sharesLong > 0) return 0;
+
+  const playerMoney = ns.getServerMoneyAvailable("home") - 100_000;
+
+  if (playerMoney <= 0) return 0;
+
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);
-
-  const minimumRequired = RESERVE_MONEY + currentPrice;
-
-  if (playerMoney <= minimumRequired) {
-    return 0;
-  }
 
   const affordableShares = Math.floor(playerMoney / currentPrice);
 
