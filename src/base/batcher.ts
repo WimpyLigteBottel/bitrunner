@@ -1,7 +1,6 @@
 import { NS } from "@ns";
 import { Batch, CustomServerV2, RequestType } from "/models/Models";
 import { createBatch } from "./batching/create-batch";
-import { DEBUG } from "/models/debug";
 
 export async function createBatchOptimal(
   ns: NS,
@@ -22,8 +21,8 @@ export async function createBatchOptimal(
       mid = parseFloat(mid);
 
       // // this is safety clamp so that i dont hack too much and cause instability
-      if (mid > 0.50 && requestType == "HACK") {
-        mid = 0.50;
+      if (mid > 0.5 && requestType == "HACK") {
+        mid = 0.5;
       }
 
       const batch = createBatch(ns, targetHost, mid, requestType, server);
