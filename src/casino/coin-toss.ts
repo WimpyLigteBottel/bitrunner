@@ -2,16 +2,18 @@ import { NS } from "@ns";
 import { readState, saveState } from "./state";
 
 const CYCLE_LENGTH = 1024;
-const PATTERN_MATCH_LENGTH = 30;
-const PREDICTION_LENGTH = 900;
+const PATTERN_MATCH_LENGTH = 24;
+const PREDICTION_LENGTH = 1000;
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
   ns.disableLog("sleep");
 
   setBetAmount(1);
+
   // Setup the state
-  let recording: string[];
+  let recording: string[] = [];
+  saveState(ns, recording);
   if (readState(ns).length == 0) {
     ns.print("Recording initial sequence...");
     recording = await getTheSequence(ns);
@@ -30,7 +32,7 @@ export async function main(ns: NS) {
     for (let i = 0; i < PATTERN_MATCH_LENGTH; i++) {
       let button = findButton("Head!");
       clickElement(button);
-      await ns.sleep(5);
+      await ns.sleep(1);
       currentPattern.push(getResult());
     }
 
@@ -116,7 +118,7 @@ async function getTheSequence(ns: NS): Promise<string[]> {
   for (let i = 0; i < CYCLE_LENGTH; i++) {
     let button = findButton("Head!");
     clickElement(button);
-    await ns.sleep(5);
+    await ns.sleep(1);
     recording.push(getResult());
 
     if (i % 100 === 0) {
