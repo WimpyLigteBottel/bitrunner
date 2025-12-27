@@ -1,5 +1,6 @@
 import { NS } from "@ns";
 import { readState, saveState } from "./state";
+import { openTail } from "/models/debug";
 
 const CYCLE_LENGTH = 1024;
 const PATTERN_MATCH_LENGTH = 24;
@@ -11,7 +12,7 @@ let tailButton;
 /** @param {NS} ns */
 export async function main(ns: NS) {
   ns.disableLog("sleep");
-
+  openTail(ns, true);
 
   // for speed improvement
   headButton = findButton("Head!");
@@ -73,7 +74,7 @@ export async function main(ns: NS) {
         clickElement(tailButton);
       }
     }
-    await ns.sleep(0)
+    await ns.sleep(0);
   }
 }
 

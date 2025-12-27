@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 import { getKnownServers } from "/util/find";
 import { CustomServer } from "/models/Models";
-import { disableLogs, printDone } from "/models/debug";
+import { disableLogs } from "/models/debug";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
@@ -9,7 +9,7 @@ export async function main(ns: NS): Promise<void> {
   let knownServers = getKnownServers(ns)
     .filter((x) => x.requiredHackingSkill! < ns.getPlayer().skills.hacking)
     .filter((x) => !x.purchasedByPlayer)
-    .toSorted((b,a)=> a.requiredHackingSkill! - b.requiredHackingSkill!);
+    .toSorted((b, a) => a.requiredHackingSkill! - b.requiredHackingSkill!);
 
   // prints all servers that can be backdoored
   //ns.print(knownServers.map((x) => x.hostname));

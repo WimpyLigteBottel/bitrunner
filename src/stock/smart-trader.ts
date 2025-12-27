@@ -28,11 +28,14 @@ export async function main(ns: NS) {
     }
 
     for (let i = 0; i < longs.length; i++) {
-      if (1 - shorts[i].forecast > longs[i].forecast) {
+      if (
+        1 - shorts[i].forecast > longs[i].forecast &&
+        shorts[i].forecast < 0.45
+      ) {
         if (buyShortStocks(ns, shorts[i].sym)) {
           break;
         }
-      } else {
+      } else if (0.55 < longs[i].forecast) {
         if (buyLongStocks(ns, longs[i].sym)) {
           break;
         }

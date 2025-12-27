@@ -4,6 +4,7 @@ import { createBatchOptimal } from "/base/batcher";
 import { getCustomServer } from "./serverCustomStats";
 import { getKnownServers } from "./find";
 import { disableLogs } from "/models/debug";
+import { isPrepped } from "./preppedServers";
 
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
@@ -79,14 +80,16 @@ export function calculateFullCycleMoneyPerSecond(
     moneyPerSecond: moneyPerSecond,
     totalRamCost: batch.totalCost,
     percentage: batch.percentage,
+    prepped: isPrepped(ns, batch.server),
   } as Stat;
 }
 
 type Stat = {
   server: string;
-  totalRamCost: number;
   moneyPerSecond: number;
+  totalRamCost: number;
   percentage: number;
+  prepped: boolean;
 };
 
 function toPretty(stats: Stat[]) {
@@ -96,6 +99,7 @@ function toPretty(stats: Stat[]) {
       moneyPerSecond: x.moneyPerSecond,
       totalRamCost: x.totalRamCost,
       percentage: x.percentage,
+      prepped: x.prepped
     };
   });
   return JSON.stringify(pretty, null, 1);

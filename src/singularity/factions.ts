@@ -1,4 +1,4 @@
-import { FactionWorkType, NS } from "@ns";
+import { NS } from "@ns";
 import { disableLogs } from "/models/debug";
 
 export async function main(ns: NS): Promise<void> {

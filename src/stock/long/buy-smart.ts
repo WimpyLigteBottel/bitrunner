@@ -19,8 +19,6 @@ function calculatePurchaseAmount(ns: NS, symbol: string): number {
   const [longShares, avgLongPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(symbol);
 
-  if (sharesShort > 0 || longShares > 0) return 0;
-
   const playerMoney = ns.getServerMoneyAvailable("home") - 100_000;
   const currentPrice = ns.stock.getPrice(symbol);
   const maxShares = ns.stock.getMaxShares(symbol);

@@ -22,8 +22,6 @@ export async function main(ns: NS): Promise<void> {
   openTail(ns);
   disableLogs(ns);
 
-  // Try not to loop this as to save RAM since this is quite expense
-
   while (true) {
     await ns.sleep(5000);
     updateSleeveMap(ns);

@@ -1,4 +1,4 @@
-export let RESERVE_MONEY = 1_000_000;
+export let RESERVE_MONEY = 10_000_000;
 
 export type StockMarketSimplified = {
   price: number;

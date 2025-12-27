@@ -281,8 +281,23 @@ export let globalStockList = [
   },
 ];
 
+function isTrendingUpPoorMan(ns: NS, hostname: string) {
+  let result = globalStockList.find((x) => x.hostname == hostname);
+  if (result == undefined) return undefined;
+
+  let trend = simpleForecastPricePoint(ns, result.symbol, 20, readState(ns));
+
+  switch (trend.trend) {
+    case "STRONG":
+    case "VERY_STRONG":
+      return true;
+    default:
+      return false;
+  }
+}
+
 export function isTrendingUp(ns: NS, hostname: string): Boolean | undefined {
-  if (!ns.stock.has4SDataTIXAPI()) return undefined;
+  if (!ns.stock.has4SDataTIXAPI()) return isTrendingUpPoorMan(ns, hostname);
 
   let result = globalStockList.find((x) => x.hostname == hostname);
 
@@ -297,15 +312,15 @@ export function isTrendingUp(ns: NS, hostname: string): Boolean | undefined {
       Math.max(result.highest.high, forecast).toFixed(3)
     );
     result.highest.low = parseFloat(
-      Math.min(result.highest.low, 1 - forecast).toFixed(3)
+      Math.min(result.highest.low, forecast).toFixed(3)
     );
   }
 
   ns.print(`${JSON.stringify(result)}`);
 
-  if (forecast > 0.9 || forecast < 0.1) {
+  if (forecast > 0.95 || forecast < 0.05) {
     return undefined;
   }
 
-  return forecast > 0.5;
+  return forecast > 0.501;
 }

@@ -31,7 +31,7 @@ export async function main(ns: NS): Promise<void> {
     accendMembers(ns, "HACKING");
     figureOutTask(ns, task!);
 
-    // suitUpGangMembers(ns);
+    suitUpGangMembers(ns);
 
     await ns.sleep(5000);
   }

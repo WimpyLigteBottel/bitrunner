@@ -17,8 +17,6 @@ function calculateShortPurchaseAmount(ns: NS, symbol: string): number {
   const [sharesLong, avgLongPrice, sharesShort, avgShortPrice] =
     ns.stock.getPosition(symbol);
 
-  if (sharesShort > 0 || sharesLong > 0) return 0;
-
   const playerMoney = ns.getServerMoneyAvailable("home") - 100_000;
 
   if (playerMoney <= 0) return 0;

@@ -85,6 +85,14 @@ let menu = [
     enabled: true,
   },
   {
+    id: "B",
+    text: "Coin toss!",
+    action: (ns: NS) => {
+      ns.exec("casino/coin-toss.js", "home", 1);
+    },
+    enabled: true,
+  },
+  {
     id: "C",
     text: "Trader",
     action: (ns: NS) => {
