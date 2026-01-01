@@ -5,7 +5,7 @@ let menu = [
     id: "1",
     text: "Crime",
     action: (ns: NS) => {
-      ns.exec("crime/crime.js", "home", 1, "Money");
+      ns.exec("crime/combat/crime.js", "home", 1, "Money");
     },
     enabled: true,
   },

@@ -9,7 +9,6 @@ import { isPrepped } from "./preppedServers";
 export async function main(ns: NS): Promise<void> {
   disableLogs(ns);
   ns.clearLog();
-  // ns.ui.openTail()
   let servers = getKnownServers(ns)
     .map((x) => getCustomServer(ns, x.hostname))
     .filter((x) => x.canHack)
@@ -46,7 +45,7 @@ export async function main(ns: NS): Promise<void> {
     );
   }
 
-  ns.write("profits.txt", toPretty(stats), "w");
+  ns.write("profits.txt", prettyDisplay(ns, stats), "w");
 }
 
 /** @param {NS} ns **/
@@ -99,8 +98,43 @@ function toPretty(stats: Stat[]) {
       moneyPerSecond: x.moneyPerSecond,
       totalRamCost: x.totalRamCost,
       percentage: x.percentage,
-      prepped: x.prepped
+      prepped: x.prepped,
     };
   });
   return JSON.stringify(pretty, null, 1);
+}
+
+function prettyDisplay(ns: NS, stats: Stat[]): string {
+  let longestName: number = stats
+    .map((x) => {
+      return x.server.length;
+    })
+    .reduce((acc, c) => {
+      if (acc > c) return acc;
+
+      return c;
+    });
+
+  let spacing = " ".repeat(longestName - "| name".length);
+
+  let rows = stats
+    .map((x) => {
+
+      let pMoney = ns.formatNumber(x.moneyPerSecond)
+      let nameSpacing = longestName - x.server.length;
+      let row = "";
+      row += `${x.server + " ".repeat(nameSpacing)}| `;
+      row += `${pMoney + " ".repeat(pMoney.length)}      | `;
+      row += `${x.prepped} |`
+
+      return row;
+    })
+    .join("\n");
+
+  let fulltext = "";
+
+  fulltext += `| name${spacing}| money      | prepped     | Ram Cost\n`;
+  fulltext += `------------------------------------------------\n`;
+  fulltext += rows;
+  return fulltext;
 }

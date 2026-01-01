@@ -104,7 +104,7 @@ async function noMoreServers(
   let time = pTime(ns, target.weakTime + offset);
   ns.print(`Going to wait now ${time} for ${target.hostname}`);
 
-  await ns.sleep(target.weakTime + offset);
+  await ns.sleep(target.weakTime + offset + BUFFER);
 
   return true;
 }
