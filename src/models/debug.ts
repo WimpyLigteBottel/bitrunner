@@ -50,5 +50,6 @@ export function disableLogs(ns: NS) {
   ns.disableLog("gang.setMemberTask");
   ns.disableLog("gang.purchaseEquipment");
   ns.disableLog("gang.setTerritoryWarfare");
+  ns.disableLog("stanek.activeFragments");
   ns.clearLog();
 }

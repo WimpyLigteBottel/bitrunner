@@ -1,9 +1,11 @@
 import { NS } from "@ns";
-import { getHackingFragments, getTrainingFragment } from "./model";
+import { Fragment, getHackingFragments, getTrainingFragment } from "./model";
 import { getCustomServer } from "/util/serverCustomStats";
+import { disableLogs } from "/models/debug";
 
 export async function main(ns: NS): Promise<void> {
   ns.clearLog();
+  disableLogs(ns);
 
   await shouldClear(ns);
 
@@ -35,31 +37,40 @@ async function shouldClear(ns: NS) {
 async function training(ns: NS) {
   let fragToCharge = getTrainingFragment().filter((x) => x.fragmentId < 100);
 
+  await executefragments(ns, fragToCharge);
+}
+
+async function executefragments(ns: NS, fragToCharge: Fragment[]) {
   while (true) {
     let threads = Math.floor(
       getCustomServer(ns, "home").availableRam /
         Math.ceil(ns.getScriptRam("gift/chargeFragment.js")) /
         fragToCharge.length
     );
+
+    let pids = [];
     for (const x of fragToCharge) {
-      ns.exec("gift/chargeFragment.js", "home", threads, x.rootX, x.rootY);
+      let pid = ns.exec(
+        "gift/chargeFragment.js",
+        "home",
+        threads,
+        x.rootX,
+        x.rootY
+      );
+
+      pids.push(pid);
     }
-    await ns.sleep(1010);
+
+    let lastScript = ns.getRunningScript(pids[pids.length - 1]);
+    while (lastScript != null) {
+      await ns.sleep(100);
+      lastScript = ns.getRunningScript(pids[pids.length - 1]);
+    }
   }
 }
 
 async function hacking(ns: NS) {
   let fragToCharge = getHackingFragments().filter((x) => x.fragmentId < 100);
 
-  while (true) {
-    let threads = Math.floor(
-      getCustomServer(ns, "home").availableRam /
-        Math.ceil(ns.getScriptRam("gift/chargeFragment.js")) /
-        fragToCharge.length
-    );
-    for (const x of fragToCharge) {
-      ns.exec("gift/chargeFragment.js", "home", threads, x.rootX, x.rootY);
-    }
-    await ns.sleep(1010);
-  }
+  await executefragments(ns, fragToCharge);
 }

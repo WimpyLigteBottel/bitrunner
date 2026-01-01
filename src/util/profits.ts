@@ -91,41 +91,41 @@ type Stat = {
   prepped: boolean;
 };
 
-function toPretty(stats: Stat[]) {
-  let pretty = stats.map((x) => {
-    return {
-      server: x.server,
-      moneyPerSecond: x.moneyPerSecond,
-      totalRamCost: x.totalRamCost,
-      percentage: x.percentage,
-      prepped: x.prepped,
-    };
-  });
-  return JSON.stringify(pretty, null, 1);
-}
-
-function prettyDisplay(ns: NS, stats: Stat[]): string {
-  let longestName: number = stats
+const getLongest = (
+  ns: NS,
+  stats: Stat[],
+  field: "server" | "moneyPerSecond"
+): number => {
+  return stats
     .map((x) => {
-      return x.server.length;
+      if (field == "server") return x.server.length;
+      if (field == "moneyPerSecond")
+        return ns.formatNumber(x.moneyPerSecond).length;
+
+      return 0;
     })
     .reduce((acc, c) => {
       if (acc > c) return acc;
 
       return c;
     });
+};
+
+function prettyDisplay(ns: NS, stats: Stat[]): string {
+  let longestName: number = getLongest(ns, stats, "server");
+  let longestMoney: number = getLongest(ns, stats, "moneyPerSecond");
 
   let spacing = " ".repeat(longestName - "| name".length);
+  let spacingMoney = " ".repeat(longestMoney - "| money".length);
 
   let rows = stats
     .map((x) => {
-
-      let pMoney = ns.formatNumber(x.moneyPerSecond)
-      let nameSpacing = longestName - x.server.length;
+      let pMoney = ns.formatNumber(x.moneyPerSecond);
       let row = "";
-      row += `${x.server + " ".repeat(nameSpacing)}| `;
-      row += `${pMoney + " ".repeat(pMoney.length)}      | `;
-      row += `${x.prepped} |`
+      row += `${x.server + " ".repeat(longestName - x.server.length)}| `;
+      row += `${pMoney + " ".repeat(longestMoney - pMoney.length)} | `;
+      row += `${x.prepped}  | `;
+      row += `${x.totalRamCost}`;
 
       return row;
     })
@@ -133,7 +133,7 @@ function prettyDisplay(ns: NS, stats: Stat[]): string {
 
   let fulltext = "";
 
-  fulltext += `| name${spacing}| money      | prepped     | Ram Cost\n`;
+  fulltext += `| name${spacing}| money${spacingMoney}   | ready | Ram Cost\n`;
   fulltext += `------------------------------------------------\n`;
   fulltext += rows;
   return fulltext;

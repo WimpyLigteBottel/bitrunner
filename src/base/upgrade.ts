@@ -19,7 +19,6 @@ async function upgradeServers(ns: NS) {
         ns.print(`Upgraded server ${lowest?.hostname} for ${ns.formatNumber(latestCost)}`);
       }
     } else {
-      ns.print("Cant upgrade going to sleep");
       await ns.sleep(5000);
     }
     lowest = lowestServer(ns)!;
@@ -28,7 +27,7 @@ async function upgradeServers(ns: NS) {
 
 async function purchaseServers(ns: NS) {
   while (ns.getPurchasedServers().length < ns.getPurchasedServerLimit()) {
-    await ns.sleep(1000);
+    await ns.sleep(100);
     if (ns.getPurchasedServerCost(32) < ns.getPlayer().money) {
       let bought = ns.getPurchasedServers().map((x) => getCustomServer(ns, x));
       let counter = bought.length;
