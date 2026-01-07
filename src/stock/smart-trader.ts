@@ -19,26 +19,27 @@ export async function main(ns: NS) {
     let longs = getHighest(ns, "LONG");
     let shorts = getHighest(ns, "SHORT");
 
-    // ns.print(`longs ${JSON.stringify(longs[0])}`)
-    // ns.print(`shorts ${JSON.stringify(shorts[0])}`)
-    for (let i = 0; i < longs.length && i < shorts.length; i++) {
-      // Then sell stocks if not profitable anymore
-      sellLongStocks(ns, longs[i].sym);
-      sellShortStocks(ns, shorts[i].sym);
+    ns.print(`longs ${JSON.stringify(longs.slice(0, 3), null, 0)}`);
+    ns.print(`shorts ${JSON.stringify(shorts.slice(0, 3), null, 0)}`);
+
+    for (const sym of ns.stock.getSymbols()) {
+      sellLongStocks(ns, sym);
+      sellShortStocks(ns, sym);
     }
 
-    for (let i = 0; i < longs.length; i++) {
-      if (
-        1 - shorts[i].forecast > longs[i].forecast &&
-        shorts[i].forecast < 0.45
-      ) {
-        if (buyShortStocks(ns, shorts[i].sym)) {
+    while (longs.length > 1 && shorts.length > 1) {
+      let long = longs.shift()!;
+      let short = shorts.shift()!;
+
+      if (long.forecast > 1 - short.forecast) {
+        if (buyLongStocks(ns, long!.sym)) {
+          shorts.unshift(short);
           break;
         }
-      } else if (0.55 < longs[i].forecast) {
-        if (buyLongStocks(ns, longs[i].sym)) {
-          break;
-        }
+      }
+      if (buyShortStocks(ns, short!.sym)) {
+        longs.unshift(long);
+        break;
       }
     }
   }
@@ -47,7 +48,6 @@ export async function main(ns: NS) {
 type SymWithForecast = {
   sym: string;
   forecast: number;
-  volatility?: number;
 };
 
 function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
@@ -55,17 +55,24 @@ function getHighest(ns: NS, type: "LONG" | "SHORT"): SymWithForecast[] {
     .getSymbols()
     .map((sym) => {
       return {
-        sym: sym,
-        forecast: ns.stock.getForecast(sym),
+        sym,
+        forecast: parseFloat(ns.stock.getForecast(sym).toFixed(3)),
       } as SymWithForecast;
     })
+    .filter((x) => x.forecast > 0.6 || x.forecast < 0.4)
     .toSorted((a, b) => {
       if (type == "LONG") {
         // biggest to smallest for longs
-        return b.forecast - a.forecast;
+        return expectedReturn(ns, b) - expectedReturn(ns, a);
       }
 
       // smallest to biggest for shorts
-      return a.forecast - b.forecast;
+      return expectedReturn(ns, a) - expectedReturn(ns, b);
     });
+}
+
+function expectedReturn(ns: NS, stock: SymWithForecast) {
+  const f = ns.stock.getForecast(stock.sym);
+  const v = ns.stock.getVolatility(stock.sym);
+  return (2 * f - 1) * (v / 2);
 }

@@ -81,7 +81,7 @@ function isStockAndIsTrendingUp(ns: NS, hostname: string) {
   const trend = isTrendingUp(ns, hostname);
 
   if (trend == undefined) {
-    return undefined
+    return undefined;
   } else if (trend) {
     return TASK_NAME.g;
   } else if (!trend) {
@@ -104,7 +104,7 @@ async function noMoreServers(
   let time = pTime(ns, target.weakTime + offset);
   ns.print(`Going to wait now ${time} for ${target.hostname}`);
 
-  await ns.sleep(target.weakTime + offset + BUFFER);
+  await ns.sleep(target.weakTime + offset + BUFFER * 3);
 
   return true;
 }
@@ -146,12 +146,12 @@ async function nextUsableServer(ns: NS): Promise<CustomServerV2> {
 }
 
 function findServersThatCanBeUsed(ns: NS) {
-  return getKnownServers(ns, false)
-    .map((server) => getCustomServer(ns, server.hostname))
-    .filter((server) => !server.hostname.includes("hacknet"))
-    .filter((server) => server.hostname.includes("home"))
-    .filter(
-      (server) => server.canExecuteScripts || server.hostname.includes("home")
-    )
-    .filter((server) => server.availableRam > 1.75 * 10);
+  return (
+    getKnownServers(ns, false)
+      .map((server) => getCustomServer(ns, server.hostname))
+      // .filter((server) => !server.hostname.includes("hacknet"))
+      .filter((server) => server.hostname.includes("home"))
+      .filter((server) => server.canExecuteScripts)
+      .filter((server) => server.availableRam > 1.75 * 10)
+  );
 }

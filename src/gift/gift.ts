@@ -1,7 +1,7 @@
 import { NS } from "@ns";
-import { Fragment, getHackingFragments, getTrainingFragment } from "./model";
 import { getCustomServer } from "/util/serverCustomStats";
 import { disableLogs } from "/models/debug";
+import { getKnownServers } from "/util/find";
 
 export async function main(ns: NS): Promise<void> {
   ns.clearLog();
@@ -9,18 +9,20 @@ export async function main(ns: NS): Promise<void> {
 
   await shouldClear(ns);
 
-  let stanekType = await ns.prompt("Choose the stanek place grid", {
-    type: "select",
-    choices: ["hacking", "training"],
-  });
+  let stanekType =
+    ns.args[0] ??
+    (await ns.prompt("Choose the stanek place grid", {
+      type: "select",
+      choices: ["hacking", "training"],
+    }));
 
   if (ns.stanek.activeFragments().length == 0)
     ns.exec("gift/placeFragments.js", "home", 1, stanekType);
 
-  if (stanekType == "hacking") {
-    await hacking(ns);
-  } else {
-    await training(ns);
+  while (true) {
+    await executefragments(ns);
+
+    await ns.sleep(1);
   }
 }
 
@@ -34,43 +36,40 @@ async function shouldClear(ns: NS) {
   }
 }
 
-async function training(ns: NS) {
-  let fragToCharge = getTrainingFragment().filter((x) => x.fragmentId < 100);
+async function executefragments(ns: NS) {
+  let fragToCharge = ns.stanek.activeFragments().filter((x) => x.id < 100);
 
-  await executefragments(ns, fragToCharge);
-}
+  let servers = findServersThatCanBeUsed(ns);
 
-async function executefragments(ns: NS, fragToCharge: Fragment[]) {
-  while (true) {
-    let threads = Math.floor(
-      getCustomServer(ns, "home").availableRam /
-        Math.ceil(ns.getScriptRam("gift/chargeFragment.js")) /
-        fragToCharge.length
-    );
+  if (servers.length < 1) {
+    return;
+  }
 
-    let pids = [];
+  for (const server of servers) {
+    let threads = Math.floor(server.availableRam / 2 / fragToCharge.length);
+
+    threads = Math.max(1, threads);
+
     for (const x of fragToCharge) {
-      let pid = ns.exec(
+      ns.exec(
         "gift/chargeFragment.js",
-        "home",
+        server.hostname,
         threads,
-        x.rootX,
-        x.rootY
+        x.x,
+        x.y,
+        `Threads ${threads}`
       );
-
-      pids.push(pid);
-    }
-
-    let lastScript = ns.getRunningScript(pids[pids.length - 1]);
-    while (lastScript != null) {
-      await ns.sleep(100);
-      lastScript = ns.getRunningScript(pids[pids.length - 1]);
     }
   }
 }
 
-async function hacking(ns: NS) {
-  let fragToCharge = getHackingFragments().filter((x) => x.fragmentId < 100);
+function findServersThatCanBeUsed(ns: NS) {
+  let servers = getKnownServers(ns, false)
+    .map((server) => getCustomServer(ns, server.hostname))
+    // .filter((server) => !server.hostname.includes("home"))
+    .filter((server) => server.canExecuteScripts)
+    .filter((server) => server.availableRam > 1 * 6)
+    .toSorted((b, a) => a.maxRam - b.maxRam);
 
-  await executefragments(ns, fragToCharge);
+  return servers;
 }

@@ -106,6 +106,15 @@ let menu = [
     },
     enabled: true,
   },
+  {
+    id: "D",
+    text: "Gift",
+    action: (ns: NS) => {
+      ns.stanek.acceptGift();
+      ns.exec("gift/gift.js", "home", 1);
+    },
+    enabled: true,
+  },
 ];
 
 export async function main(ns: NS): Promise<void> {

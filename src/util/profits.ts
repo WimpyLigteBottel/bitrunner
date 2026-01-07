@@ -125,7 +125,8 @@ function prettyDisplay(ns: NS, stats: Stat[]): string {
       row += `${x.server + " ".repeat(longestName - x.server.length)}| `;
       row += `${pMoney + " ".repeat(longestMoney - pMoney.length)} | `;
       row += `${x.prepped}  | `;
-      row += `${x.totalRamCost}`;
+      row += `${x.totalRamCost}| `;
+      row += `${x.percentage.toFixed(2)}| `;
 
       return row;
     })
@@ -133,7 +134,7 @@ function prettyDisplay(ns: NS, stats: Stat[]): string {
 
   let fulltext = "";
 
-  fulltext += `| name${spacing}| money${spacingMoney}   | ready | Ram Cost\n`;
+  fulltext += `| name${spacing}| money${spacingMoney}   | ready | Ram Cost | percentage\n`;
   fulltext += `------------------------------------------------\n`;
   fulltext += rows;
   return fulltext;
