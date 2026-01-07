@@ -1,6 +1,6 @@
 import { NS } from "@ns";
 import { deltaProduction } from "./deltaProduction";
-import { paybackSeconds } from "./hash-calculations";
+import { currentMoneyPerSecond, paybackSeconds } from "./hash-calculations";
 import { UpgradeCost } from "./models";
 
 export const getBestUpgrade = (ns: NS) => {
@@ -11,7 +11,19 @@ export const getBestUpgrade = (ns: NS) => {
     let core = deltaProduction(ns, i, "core");
     let node = deltaProduction(ns, i, "node");
 
-    let levelpb = paybackSeconds(level.cost, level.production);
+    servers.push({
+      nodeIndex: i,
+      cost: ns.hacknet.getPurchaseNodeCost(),
+      action: "node",
+      execute: () => {
+        ns.hacknet.purchaseNode();
+      },
+      // shortcut to buy node if it can be paid back within 60sec
+      payback:
+        currentMoneyPerSecond(ns) * 60 > node.cost
+          ? 0
+          : paybackSeconds(node.cost, node.production),
+    } as UpgradeCost);
 
     servers.push({
       nodeIndex: i,
@@ -20,10 +32,9 @@ export const getBestUpgrade = (ns: NS) => {
       execute: () => {
         ns.hacknet.upgradeLevel(i, 1);
       },
-      payback: levelpb,
+      payback: paybackSeconds(level.cost, level.production),
     } as UpgradeCost);
 
-    let rampb = paybackSeconds(ram.cost, ram.production);
     servers.push({
       nodeIndex: i,
       cost: ns.hacknet.getRamUpgradeCost(i, 1),
@@ -31,10 +42,9 @@ export const getBestUpgrade = (ns: NS) => {
       execute: () => {
         ns.hacknet.upgradeRam(i, 1);
       },
-      payback: rampb,
+      payback: paybackSeconds(ram.cost, ram.production),
     } as UpgradeCost);
 
-    let corepb = paybackSeconds(core.cost, core.production);
     servers.push({
       nodeIndex: i,
       cost: ns.hacknet.getCoreUpgradeCost(i, 1),
@@ -42,7 +52,7 @@ export const getBestUpgrade = (ns: NS) => {
       execute: () => {
         ns.hacknet.upgradeCore(i, 1);
       },
-      payback: corepb,
+      payback: paybackSeconds(core.cost, core.production),
     } as UpgradeCost);
   }
 
